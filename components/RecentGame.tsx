@@ -1,8 +1,6 @@
 import Card from "./ui/Card"
 import Image from "next/image"
 
-const champBase = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons"
-
 const playerNames = [
   "Player 1",
   "Player 2",
@@ -16,7 +14,7 @@ const playerNames = [
   "Player 10",
 ]
 
-const champIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+const champKeys = ["Aatrox", "Ahri", "Akali", "Alistar", "Amumu", "Anivia", "Annie", "Aphelios", "Ashe", "AurelionSol"]
 
 export default function RecentGame() {
   const team1 = playerNames.slice(0, playerNames.length / 2)
@@ -32,8 +30,18 @@ export default function RecentGame() {
               <p className="opacity-80">0/0/0</p>
             </div>
             <div className="flex items-center gap-2 flex-none">
-              <Image src={`${champBase}/${champIds[idx]}.png`} alt="" width={40} height={40} />
-              <Image src={`${champBase}/${champIds[idx + team1.length]}.png`} alt="" width={40} height={40} />
+              <Image
+                src={`${process.env.NEXT_PUBLIC_CDN_BASE}/img/champion/tiles/${champKeys[idx]}_0.jpg`}
+                alt=""
+                width={40}
+                height={40}
+              />
+              <Image
+                src={`${process.env.NEXT_PUBLIC_CDN_BASE}/img/champion/tiles/${champKeys[idx + team1.length]}_0.jpg`}
+                alt=""
+                width={40}
+                height={40}
+              />
             </div>
             <div className="flex flex-1 flex-col text-left pl-3">
               <p className="font-semibold truncate">{team2[idx]}</p>

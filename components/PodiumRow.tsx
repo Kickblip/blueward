@@ -7,28 +7,36 @@ export default function PodiumRow({
   played,
   mmr,
   name,
+  championKey,
+  size,
 }: {
   ranking: number
   winrate: number
   played: number
   mmr: number
   name: string
+  championKey?: string
+  size: "large" | "small"
 }) {
   return (
     <Link href="/">
-      <GlowingCard>
+      <GlowingCard
+        backgroundImage={
+          championKey ? `${process.env.NEXT_PUBLIC_CDN_BASE}/img/champion/centered/${championKey}_0.jpg` : undefined
+        }
+      >
         <div
           className={`flex flex-col justify-between
-                      ${ranking === 1 ? "h-50" : ""}
-                      ${ranking === 2 || ranking === 3 ? "h-36" : ""}`}
+                      ${size === "large" ? "h-50" : ""}
+                      ${size === "small" ? "h-36" : ""}`}
         >
           <div className="grid grid-cols-3">
             <div className="flex flex-col">
               <h3 className="text-xs font-semibold uppercase">Winrate</h3>
               <p
                 className={`font-oswald font-semibold tabular-nums
-                          ${ranking === 1 ? "text-5xl" : ""}
-                          ${ranking === 2 || ranking === 3 ? "text-3xl" : ""}`}
+                          ${size === "large" ? "text-5xl" : ""}
+                          ${size === "small" ? "text-3xl" : ""}`}
               >
                 {winrate}%
               </p>
@@ -37,8 +45,8 @@ export default function PodiumRow({
               <h3 className="text-xs font-semibold uppercase">Played</h3>
               <p
                 className={`font-oswald font-semibold tabular-nums
-                          ${ranking === 1 ? "text-5xl" : ""}
-                          ${ranking === 2 || ranking === 3 ? "text-3xl" : ""}`}
+                          ${size === "large" ? "text-5xl" : ""}
+                          ${size === "small" ? "text-3xl" : ""}`}
               >
                 {played}
               </p>
@@ -47,8 +55,8 @@ export default function PodiumRow({
               <h3 className="text-xs font-semibold uppercase">MMR</h3>
               <p
                 className={`font-oswald font-semibold tabular-nums
-                          ${ranking === 1 ? "text-5xl" : ""}
-                          ${ranking === 2 || ranking === 3 ? "text-3xl" : ""}`}
+                          ${size === "large" ? "text-5xl" : ""}
+                          ${size === "small" ? "text-3xl" : ""}`}
               >
                 {mmr}
               </p>
@@ -58,16 +66,16 @@ export default function PodiumRow({
           <div className="flex items-center justify-between mb-5">
             <p
               className={`font-oswald scale-y-150 font-semibold tabular-nums 
-                      ${ranking === 1 ? "text-7xl" : ""}
-                      ${ranking === 2 || ranking === 3 ? "text-5xl" : ""}`}
+                      ${size === "large" ? "text-7xl" : ""}
+                      ${size === "small" ? "text-5xl" : ""}`}
             >
               {name}
             </p>
 
             <p
               className={`font-oswald font-semibold opacity-50
-                      ${ranking === 1 ? "text-7xl" : ""}
-                      ${ranking === 2 || ranking === 3 ? "text-5xl" : ""}`}
+                      ${size === "large" ? "text-7xl" : ""}
+                      ${size === "small" ? "text-5xl" : ""}`}
             >
               #{ranking}
             </p>

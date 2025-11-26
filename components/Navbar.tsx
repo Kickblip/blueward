@@ -13,7 +13,10 @@ export default function Navbar() {
         </Link>
 
         <span className="relative inline-block mt-1">
-          <Link href="/leaderboards" className="font-medium uppercase text-md hover:text-zinc-300 transition-colors duration-200">
+          <Link
+            href="/leaderboard/kills"
+            className="font-medium uppercase text-md hover:text-zinc-300 transition-colors duration-200"
+          >
             Leaderboards
           </Link>
           <span className="pointer-events-none absolute -top-3 -right-3 rotate-35">
