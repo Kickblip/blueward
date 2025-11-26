@@ -15,9 +15,7 @@ export default function Countdown({ date }: { date: Date }) {
   }, [date])
 
   return (
-    <Card>
-      <h2 className="text-sm font-semibold uppercase">Season Ends</h2>
-
+    <Card title="Season Ends">
       <div
         className="
             grid grid-cols-4 gap-4

@@ -1,9 +1,14 @@
-export default function Card({ children }: { children: React.ReactNode }) {
+export default function Card({ children, title, subtitle }: { children: React.ReactNode; title?: string; subtitle?: string }) {
   return (
     <div
       className="flex flex-col gap-2 p-3
-        bg-zinc-900 border border-zinc-800 rounded-md"
+                bg-zinc-900 border border-zinc-800 rounded-md"
     >
+      <div className="flex items-center justify-between font-oswald">
+        {title && <h2 className="text-sm font-semibold uppercase font-oswald">{title}</h2>}
+        {subtitle && <h2 className="text-sm font-semibold uppercase font-oswald">{subtitle}</h2>}
+      </div>
+
       {children}
     </div>
   )
