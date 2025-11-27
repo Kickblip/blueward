@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Oswald, Roboto } from "next/font/google"
 import "./globals.css"
 import Navbar from "../components/Navbar"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const oswald = Oswald({
   variable: "--font-oswald",
@@ -26,6 +27,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${oswald.variable} ${roboto.className}`}>
+        <SpeedInsights />
+
         <div className="bg-zinc-900 min-h-screen flex flex-col">
           <Navbar />
           <div className="flex-1 mx-2 mb-2 p-4 rounded-lg bg-zinc-950 border border-zinc-800 shadow-[0_0_60px_rgba(96,165,250,0.35)]">
