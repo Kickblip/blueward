@@ -27,7 +27,8 @@ export default function Navbar() {
 
       <Link href="/signin">
         <GlowingCard glow="heavy" className="flex flex-row items-center gap-2 px-6 py-2">
-          <SiRiotgames className="text-blue-100" /> <span className="uppercase text-blue-100 font-semibold text-sm">Sign In</span>
+          <span className="uppercase text-blue-100 font-semibold text-sm">Sign In</span>
+          <SiRiotgames className="text-blue-100" />
         </GlowingCard>
       </Link>
     </div>

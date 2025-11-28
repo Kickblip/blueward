@@ -15,7 +15,7 @@ export default function LeaderboardRow({
   name: string
 }) {
   return (
-    <Link href="/">
+    <Link href="/player/12345">
       <Card>
         <div className="flex items-center gap-8">
           <p className="font-oswald font-semibold text-xl tabular-nums">{ranking}</p>

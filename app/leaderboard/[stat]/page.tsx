@@ -13,7 +13,7 @@ export default async function Leaderboard({ params }: { params: Promise<{ stat: 
       </div>
 
       <div className="col-span-2 flex flex-col gap-4">
-        <PodiumRow size="large" ranking={1} winrate={65} played={120} mmr={2450} name="Mrbob21" championKey="Briar" />
+        <PodiumRow size="large" ranking={1} winrate={65} played={120} mmr={2450} name="Mrbob21" championKey="Ezreal" />
         <PodiumRow size="large" ranking={2} winrate={58} played={98} mmr={2300} name="AceGamer" championKey="Mel" />
         <PodiumRow size="large" ranking={3} winrate={52} played={75} mmr={2200} name="NoobMaster" championKey="Twitch" />
         <LeaderboardRow ranking={4} winrate={48} played={60} mmr={2100} name="ProPlayer" />

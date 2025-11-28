@@ -19,7 +19,7 @@ export default function PodiumRow({
   size: "large" | "small"
 }) {
   return (
-    <Link href="/">
+    <Link href="/player/12345">
       <GlowingCard
         backgroundImage={
           championKey ? `${process.env.NEXT_PUBLIC_CDN_BASE}/img/champion/centered/${championKey}_0.jpg` : undefined
