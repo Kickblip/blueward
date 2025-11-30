@@ -1,5 +1,5 @@
 import Card from "@/components/ui/Card"
-import ProfileGame from "@/components/ProfileGame"
+import ProfileMatch from "@/components/ProfileMatch"
 
 export default async function PlayerProfile({ params }: { params: Promise<{ pid: string }> }) {
   const { pid } = await params
@@ -16,11 +16,11 @@ export default async function PlayerProfile({ params }: { params: Promise<{ pid:
       </div>
 
       <div className="col-span-2 flex flex-col gap-4">
-        <ProfileGame win={true} />
-        <ProfileGame win={true} />
-        <ProfileGame win={false} />
-        <ProfileGame win={false} />
-        <ProfileGame win={true} />
+        <ProfileMatch win={true} />
+        <ProfileMatch win={true} />
+        <ProfileMatch win={false} />
+        <ProfileMatch win={false} />
+        <ProfileMatch win={true} />
       </div>
     </div>
   )

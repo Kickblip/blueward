@@ -34,7 +34,7 @@ function timeAgo(msSinceEpoch: number): string {
   return rtf.format(-seconds, "second") // “just now”
 }
 
-export default function ProfileGame({ win }: { win: boolean }) {
+export default function ProfileMatch({ win }: { win: boolean }) {
   return (
     <GlowingCard glowColor={win ? "blue" : "red"}>
       <div className="grid grid-cols-2 gap-4">
@@ -43,7 +43,7 @@ export default function ProfileGame({ win }: { win: boolean }) {
           <p className="text-sm opacity-60">{timeAgo(date * 1000)}</p>
           <div className="flex items-center gap-1">
             <p className={`font-semibold uppercase ${win ? "text-blue-500" : "text-red-500"}`}>{win ? "Win" : "Loss"}</p>
-            <p className="opacity-60">|</p>
+            <p className="opacity-60">-</p>
             <p className="opacity-60">
               {Math.floor(gameDuration / 60)}:{(gameDuration % 60).toString().padStart(2, "0")}
             </p>
