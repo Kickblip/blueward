@@ -3,25 +3,56 @@
 import { useEffect, useState } from "react"
 import Card from "./ui/Card"
 
+type TimeLeft = {
+  total: number
+  days: number
+  hours: number
+  minutes: number
+  seconds: number
+}
+
 export default function Countdown({ date }: { date: Date }) {
-  const [timeLeft, setTimeLeft] = useState(getTimeLeft(date))
+  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null)
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    function update() {
       setTimeLeft(getTimeLeft(date))
-    }, 1000)
+    }
 
+    update()
+
+    const interval = setInterval(update, 1000)
     return () => clearInterval(interval)
   }, [date])
+
+  if (!timeLeft) {
+    return (
+      <Card title="Season Ends">
+        <div
+          className="
+            grid grid-cols-4 gap-4
+            w-full mx-auto
+            text-sm
+            items-center justify-items-center
+          "
+        >
+          <TimeBlock label="Days" value={0} />
+          <TimeBlock label="Hours" value={0} />
+          <TimeBlock label="Minutes" value={0} />
+          <TimeBlock label="Seconds" value={0} />
+        </div>
+      </Card>
+    )
+  }
 
   return (
     <Card title="Season Ends">
       <div
         className="
-            grid grid-cols-4 gap-4
-            w-full mx-auto
-            text-sm
-            items-center justify-items-center
+          grid grid-cols-4 gap-4
+          w-full mx-auto
+          text-sm
+          items-center justify-items-center
         "
       >
         <TimeBlock label="Days" value={timeLeft.days} />
@@ -42,7 +73,7 @@ function TimeBlock({ label, value }: { label: string; value: number }) {
   )
 }
 
-function getTimeLeft(target: Date) {
+function getTimeLeft(target: Date): TimeLeft {
   const total = target.getTime() - Date.now()
 
   const seconds = Math.max(0, Math.floor((total / 1000) % 60))
