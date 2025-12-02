@@ -17,3 +17,5 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@custom-variant unstable (&:where([data-theme="unstable"] *));
