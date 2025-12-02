@@ -2,7 +2,7 @@ import Logo from "./ui/Logo"
 import Link from "next/link"
 import { FaTwitch, FaInstagram, FaDiscord } from "react-icons/fa6"
 
-const CONFIG = {
+export const SOCIAL_LINK_CONFIG = {
   discord: "https://discord.com/invite/s7W7Rg7AcW",
   instagram: "https://www.instagram.com/longhorn_lol",
   twitch: "https://www.twitch.tv/longhorn_lol",
@@ -43,24 +43,24 @@ export default function Footer() {
         <div className="flex gap-16">
           <div className="flex flex-col gap-2">
             <h3 className="text-zinc-200 font-semibold">Resources</h3>
-            <FooterLink href={CONFIG.repo}>Open Source</FooterLink>
-            <FooterLink href={CONFIG.docs}>Documentation</FooterLink>
-            <FooterLink href={CONFIG.changelog}>Changelog</FooterLink>
+            <FooterLink href={SOCIAL_LINK_CONFIG.repo}>Open Source</FooterLink>
+            <FooterLink href={SOCIAL_LINK_CONFIG.docs}>Documentation</FooterLink>
+            <FooterLink href={SOCIAL_LINK_CONFIG.changelog}>Changelog</FooterLink>
           </div>
 
           <div className="flex flex-col gap-2">
             <h3 className="text-zinc-200 font-semibold">Related</h3>
-            <FooterLink href={CONFIG.clubsite}>Longhorn LoL</FooterLink>
-            <FooterLink href={CONFIG.pixels}>Pixels Minigame</FooterLink>
+            <FooterLink href={SOCIAL_LINK_CONFIG.clubsite}>Longhorn LoL</FooterLink>
+            <FooterLink href={SOCIAL_LINK_CONFIG.pixels}>Pixels Minigame</FooterLink>
 
             <div className="flex gap-3 mt-2">
-              <FooterLink href={CONFIG.discord}>
+              <FooterLink href={SOCIAL_LINK_CONFIG.discord}>
                 <FaDiscord size={18} className="text-zinc-400 hover:text-zinc-200 transition-colors duration-200" />
               </FooterLink>
-              <FooterLink href={CONFIG.instagram}>
+              <FooterLink href={SOCIAL_LINK_CONFIG.instagram}>
                 <FaInstagram size={18} className="text-zinc-400 hover:text-zinc-200 transition-colors duration-200" />
               </FooterLink>
-              <FooterLink href={CONFIG.twitch}>
+              <FooterLink href={SOCIAL_LINK_CONFIG.twitch}>
                 <FaTwitch size={18} className="text-zinc-400 hover:text-zinc-200 transition-colors duration-200" />
               </FooterLink>
             </div>
@@ -75,7 +75,7 @@ export default function Footer() {
 
         <p className="text-zinc-400 text-xs">
           Built by{" "}
-          <FooterLink href={CONFIG.wyattwebsite} className="underline">
+          <FooterLink href={SOCIAL_LINK_CONFIG.wyattwebsite} className="underline">
             Kickball
           </FooterLink>
         </p>
