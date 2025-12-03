@@ -1,32 +1,31 @@
 "use client"
 
-import { setUnstableVariant } from "@/lib/helpers"
 import { motion } from "motion/react"
 import Link from "next/link"
 
-export default function LightningButton({ children }: { children: React.ReactNode }) {
+export default function LightningButton({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <Link href="/fightclub" onClick={() => setUnstableVariant(true)}>
+    <Link href={href}>
       <motion.div
         className="
         relative overflow-hidden
-        rounded-xl border border-red-400/80
-        bg-gradient-to-b from-red-400 via-red-500 to-red-800
+        rounded-xl border border-blue-400/80
+        bg-gradient-to-b from-blue-400 via-blue-500 to-blue-800
         px-8 py-2
-        font-semibold tracking-wide text-red-50
+        font-semibold tracking-wide text-blue-50
         shadow-[0_0_30px_rgba(248,113,113,0.95)]
         cursor-pointer
       "
         whileHover={{
           scale: 1.05,
-          boxShadow: "0 0 42px rgba(248,113,113,1)",
+          boxShadow: "0 0 42px rgba(113, 174, 248,1)",
           filter: "brightness(1.25)",
         }}
         whileTap={{ scale: 0.97 }}
         animate={{
           scale: [1, 1.01, 0.995, 1],
           rotate: [0, -0.4, 0.3, 0],
-          boxShadow: ["0 0 20px rgba(248,113,113,0.7)", "0 0 32px rgba(248,113,113,1)", "0 0 24px rgba(248,113,113,0.85)"],
+          boxShadow: ["0 0 20px rgba(113, 174, 248,0.7)", "0 0 32px rgba(113, 174, 248, 1)", "0 0 24px rgba(113, 174, 248,0.85)"],
         }}
         transition={{
           duration: 1.3,
@@ -36,7 +35,7 @@ export default function LightningButton({ children }: { children: React.ReactNod
       >
         {/* Outer glow */}
         <motion.span
-          className="pointer-events-none absolute inset-[-40%] rounded-[999px] blur-3xl bg-red-500/40"
+          className="pointer-events-none absolute inset-[-40%] rounded-[999px] blur-3xl bg-blue-500/40"
           animate={{ opacity: [0.5, 0.9, 0.6] }}
           transition={{
             duration: 1.6,
@@ -146,7 +145,7 @@ export default function LightningButton({ children }: { children: React.ReactNod
 
         {/* Inner flicker line */}
         <motion.span
-          className="pointer-events-none absolute inset-x-6 top-1 h-px bg-gradient-to-r from-transparent via-red-100 to-transparent"
+          className="pointer-events-none absolute inset-x-6 top-1 h-px bg-gradient-to-r from-transparent via-blue-100 to-transparent"
           animate={{ opacity: [0.2, 0.8, 0.3] }}
           transition={{
             duration: 0.9,
