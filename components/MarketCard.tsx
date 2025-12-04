@@ -13,7 +13,7 @@ export function Multiplier({ multiplier }: { multiplier: number }) {
 
 export default function MarketCard({ market, outcomes }: { market: string; outcomes: { title: string; popularity: number }[] }) {
   return (
-    <div className="flex flex-col gap-2 p-3 border border-zinc-800 rounded-md mx-1">
+    <div className="flex flex-col gap-2 mx-6">
       <p className="text-sm font-semibold mb-0.5">{market}</p>
 
       <div className="flex items-center justify-between gap-2">

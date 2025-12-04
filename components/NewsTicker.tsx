@@ -1,5 +1,3 @@
-"use client"
-
 import Logo from "./ui/Logo"
 import MarketCard from "./MarketCard"
 import Badge from "./ui/Badge"
@@ -79,7 +77,7 @@ export default function NewsTicker() {
       <div
         className="pointer-events-auto flex items-center gap-3
                    rounded-md border border-blue-400/70
-                   bg-zinc-950 px-4 py-2
+                   bg-zinc-950 p-4
                    shadow-lg shadow-blue-400/30"
       >
         <div className="flex flex-col gap-2">
