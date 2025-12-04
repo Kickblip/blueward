@@ -1,7 +1,3 @@
-import Card from "./ui/Card"
-import Badge from "./ui/Badge"
-import { TbLivePhotoFilled } from "react-icons/tb"
-
 export function Multiplier({ multiplier }: { multiplier: number }) {
   let colorClass = "text-blue-100"
 
@@ -12,44 +8,43 @@ export function Multiplier({ multiplier }: { multiplier: number }) {
   else if (multiplier >= 2) colorClass = "text-blue-300"
   else if (multiplier >= 1.5) colorClass = "text-blue-200"
 
-  return <p className={`${colorClass} text-sm tabular-nums`}>{multiplier.toFixed(2)}×</p>
+  return <p className={`${colorClass} text-xs tabular-nums`}>{multiplier.toFixed(2)}×</p>
 }
 
 export default function MarketCard({ market, outcomes }: { market: string; outcomes: { title: string; popularity: number }[] }) {
   return (
-    <Card>
-      <Badge>
-        <TbLivePhotoFilled />
-        <span className="text-xs">Live</span>
-      </Badge>
+    <div className="flex flex-col gap-2 p-3 border border-zinc-800 rounded-md mx-1">
+      <p className="text-sm font-semibold mb-0.5">{market}</p>
 
-      <p className="text-lg font-semibold mt-2 mb-1">{market}</p>
-
-      <div className="flex gap-4 mx-auto">
-        <button
-          className="px-3 py-2 rounded-sm cursor-pointer
-                      bg-blue-500/40 text-blue-200
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <button
+            className="px-2 py-0.5 rounded-sm cursor-pointer
+                      bg-blue-500/40 text-blue-200 text-xs
                       hover:text-white hover:bg-blue-500
                       transition-colors duration-200"
-        >
-          {outcomes[0].title}
-        </button>
-        <button
-          className="px-3 py-2 rounded-sm cursor-pointer
-                      bg-rose-500/40 text-rose-200
-                      hover:text-white hover:bg-rose-500
-                      transition-colors duration-200"
-        >
-          {outcomes[1].title}
-        </button>
+          >
+            {outcomes[0].title}
+          </button>
+          <p className="text-zinc-300 font-medium text-sm">{(outcomes[0].popularity * 100).toFixed(0)}%</p>
+        </div>
+        <Multiplier multiplier={Math.max((1.0 / outcomes[0].popularity) * 0.85, 1.0)} />
       </div>
 
-      <div className="flex items-center gap-4 mx-auto">
-        <Multiplier multiplier={Math.max((1.0 / outcomes[0].popularity) * 0.85, 1.0)} />
-        <p className="text-zinc-300 font-semibold text-xl">{(outcomes[0].popularity * 100).toFixed(0)}%</p>
-        <p className="text-zinc-300 font-semibold text-xl">{(outcomes[1].popularity * 100).toFixed(0)}%</p>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <button
+            className="px-2 py-0.5 rounded-sm cursor-pointer
+                      bg-rose-500/40 text-rose-200 text-xs
+                      hover:text-white hover:bg-rose-500
+                      transition-colors duration-200"
+          >
+            {outcomes[1].title}
+          </button>
+          <p className="text-zinc-300 font-medium text-sm">{(outcomes[1].popularity * 100).toFixed(0)}%</p>
+        </div>
         <Multiplier multiplier={Math.max((1.0 / outcomes[1].popularity) * 0.85, 1.0)} />
       </div>
-    </Card>
+    </div>
   )
 }

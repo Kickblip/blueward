@@ -4,6 +4,7 @@ import "./globals.css"
 import Navbar from "../components/Navbar"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import Footer from "@/components/Footer"
+import NewsTicker from "@/components/NewsTicker"
 
 const oswald = Oswald({
   variable: "--font-oswald",
@@ -45,6 +46,8 @@ export default function RootLayout({
             <Footer />
           </div>
         </div>
+
+        <NewsTicker />
       </body>
     </html>
   )
