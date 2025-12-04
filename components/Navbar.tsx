@@ -35,7 +35,7 @@ export default function Navbar() {
           </span>
         </span>
 
-        <LightningButton href="/fightclub">Fight Night</LightningButton>
+        <LightningButton href="/fightclub">Fight Club</LightningButton>
       </div>
 
       <Link href="/">
