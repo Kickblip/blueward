@@ -28,7 +28,7 @@ export default function MarketCard({ market, outcomes }: { market: string; outco
       <div className="flex gap-4 mx-auto">
         <button
           className="px-3 py-2 rounded-sm cursor-pointer
-                      bg-blue-500/30 text-blue-300
+                      bg-blue-500/40 text-blue-200
                       hover:text-white hover:bg-blue-500
                       transition-colors duration-200"
         >
@@ -36,8 +36,8 @@ export default function MarketCard({ market, outcomes }: { market: string; outco
         </button>
         <button
           className="px-3 py-2 rounded-sm cursor-pointer
-                      bg-red-500/30 text-red-300
-                      hover:text-white hover:bg-red-500
+                      bg-rose-500/40 text-rose-200
+                      hover:text-white hover:bg-rose-500
                       transition-colors duration-200"
         >
           {outcomes[1].title}
