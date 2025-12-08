@@ -1,9 +1,13 @@
+"use client"
+
 import Logo from "./ui/Logo"
 import MarketCard from "./MarketCard"
 import Badge from "./ui/Badge"
 import { TbLivePhotoFilled } from "react-icons/tb"
 import CrystalIcon from "./ui/CrystalIcon"
 import Marquee from "react-fast-marquee"
+import { useState } from "react"
+import { IoCloseSharp } from "react-icons/io5"
 
 const markets = [
   {
@@ -71,44 +75,64 @@ const markets = [
   },
 ]
 
-export default function NewsTicker() {
+export default function MarketsMarqueePopup() {
+  const [isOpen, setIsOpen] = useState(false)
+
   return (
-    <div className="fixed bottom-4 left-4 z-50 pointer-events-none">
-      <div
-        className="pointer-events-auto flex items-center gap-3
+    <div className="fixed bottom-4 left-4 z-50">
+      {isOpen ? (
+        <div
+          className="relative pointer-events-auto flex items-center gap-3
                    rounded-md border border-blue-400/70
                    bg-zinc-950 p-4
                    shadow-lg shadow-blue-400/30"
-      >
-        <div className="flex flex-col gap-2">
+        >
+          <button
+            onClick={() => setIsOpen(false)}
+            className="absolute top-1 right-1 p-1 cursor-pointer rounded-md
+                      hover:bg-zinc-800 transition-colors duration-200 z-10"
+          >
+            <IoCloseSharp />
+          </button>
+
+          <div className="flex flex-col gap-2">
+            <Badge>
+              <TbLivePhotoFilled />
+              <span className="text-xs">Live Predictions</span>
+            </Badge>
+            <Logo />
+            <div className="flex items-center gap-1.5 text-xs italic text-zinc-400 max-w-xs">
+              <span>* all wagers are </span>
+              <div className="flex items-center">
+                <CrystalIcon className="text-blue-300" size={14} />
+                <span>100</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="max-w-5xl">
+            <Marquee
+              className="gap-4"
+              pauseOnHover={true}
+              gradient={true}
+              gradientColor="oklch(14.1% 0.005 285.823)"
+              gradientWidth={100}
+            >
+              {markets.map((market, index) => (
+                <MarketCard key={index} market={market.title} outcomes={market.outcomes} />
+              ))}
+            </Marquee>
+          </div>
+        </div>
+      ) : (
+        // Not open just show the predictions badge
+        <button onClick={() => setIsOpen(true)} className="cursor-pointer">
           <Badge>
             <TbLivePhotoFilled />
             <span className="text-xs">Live Predictions</span>
           </Badge>
-          <Logo />
-          <div className="flex items-center gap-1.5 text-xs italic text-zinc-400 max-w-xs">
-            <span>* all wagers are </span>
-            <div className="flex items-center">
-              <CrystalIcon className="text-blue-300" size={14} />
-              <span>100</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="max-w-5xl">
-          <Marquee
-            className="gap-4"
-            pauseOnHover={true}
-            gradient={true}
-            gradientColor="oklch(14.1% 0.005 285.823)"
-            gradientWidth={100}
-          >
-            {markets.map((market, index) => (
-              <MarketCard key={index} market={market.title} outcomes={market.outcomes} />
-            ))}
-          </Marquee>
-        </div>
-      </div>
+        </button>
+      )}
     </div>
   )
 }

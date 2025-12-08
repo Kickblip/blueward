@@ -8,11 +8,32 @@ const IMAGE_HEIGHT = 1152
 
 const points = [
   { id: 1, x: 567, y: 444 },
-  { id: 2, x: 800, y: 600 },
-  { id: 3, x: 1500, y: 900 },
-  { id: 4, x: 400, y: 300 },
-  { id: 5, x: 1700, y: 200 },
-  { id: 6, x: 1200, y: 800 },
+  { id: 2, x: 404, y: 682 },
+  { id: 3, x: 312, y: 804 },
+  { id: 4, x: 844, y: 588 },
+]
+
+const territories = [
+  {
+    id: 1,
+    points: [
+      [480, 400],
+      [650, 390],
+      [700, 500],
+      [550, 520],
+      [480, 460],
+    ],
+  },
+  {
+    id: 2,
+    points: [
+      [320, 650],
+      [460, 650],
+      [480, 730],
+      [340, 780],
+    ],
+  },
+  // add more territories...
 ]
 
 export default function Map() {
@@ -25,6 +46,16 @@ export default function Map() {
         height={IMAGE_HEIGHT}
         className="opacity-80 pointer-events-none select-none"
       />
+
+      <svg className="absolute inset-0" viewBox={`0 0 ${IMAGE_WIDTH} ${IMAGE_HEIGHT}`}>
+        {territories.map((t) => (
+          <polygon
+            key={t.id}
+            points={t.points.map(([x, y]) => `${x},${y}`).join(" ")}
+            className="fill-red-500/25 stroke-slate-400/70 stroke-2 hover:fill-red-500/50 transition-colors duration-200"
+          />
+        ))}
+      </svg>
 
       <motion.div
         className="
