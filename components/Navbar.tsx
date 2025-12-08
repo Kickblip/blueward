@@ -4,6 +4,7 @@ import GlowingCard from "./ui/GlowingCard"
 import LightningButton from "./LightningButton"
 import Logo from "./ui/Logo"
 import { PiCrownSimpleFill } from "react-icons/pi"
+import { RiSwordFill } from "react-icons/ri"
 
 export default function Navbar() {
   return (
@@ -22,6 +23,15 @@ export default function Navbar() {
           </Link>
           <span className="pointer-events-none absolute -top-3 -right-3 rotate-35">
             <PiCrownSimpleFill className="inline-block text-blue-500" size={14} />
+          </span>
+        </span>
+
+        <span className="relative inline-block mt-1">
+          <Link href="/map" className="font-medium uppercase text-md hover:text-zinc-300 transition-colors duration-200">
+            Conquest
+          </Link>
+          <span className="pointer-events-none absolute -top-3 -right-3 -rotate-25">
+            <RiSwordFill className="inline-block text-blue-500" size={14} />
           </span>
         </span>
 
