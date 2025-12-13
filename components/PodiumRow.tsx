@@ -1,22 +1,23 @@
 import Link from "next/link"
 import GlowingCard from "./ui/GlowingCard"
+import { numColumnsMap } from "./LeaderboardRow"
 
 export default function PodiumRow({
   ranking,
-  winrate,
-  played,
-  mmr,
+  stats,
   name,
   championKey,
   size,
+  glow = "light",
 }: {
   ranking: number
-  winrate: number
-  played: number
-  mmr: number
+  stats: {
+    [key: string]: string | number
+  }
   name: string
   championKey?: string
   size: "large" | "small"
+  glow?: "light" | "heavy" | "none"
 }) {
   return (
     <Link href="/player/12345">
@@ -24,43 +25,26 @@ export default function PodiumRow({
         backgroundImage={
           championKey ? `${process.env.NEXT_PUBLIC_CDN_BASE}/img/champion/centered/${championKey}_0.jpg` : undefined
         }
+        glow={glow}
       >
         <div
           className={`flex flex-col justify-between
                       ${size === "large" ? "h-50" : ""}
                       ${size === "small" ? "h-36" : ""}`}
         >
-          <div className="grid grid-cols-3">
-            <div className="flex flex-col">
-              <h3 className="text-xs font-semibold uppercase">Winrate</h3>
-              <p
-                className={`font-oswald font-semibold tabular-nums
+          <div className={`grid ${numColumnsMap[Object.keys(stats).length]}`}>
+            {Object.entries(stats).map(([statName, statValue]) => (
+              <div className="flex flex-col" key={statName}>
+                <h3 className="text-xs font-semibold uppercase">{statName}</h3>
+                <p
+                  className={`font-oswald font-semibold tabular-nums
                           ${size === "large" ? "text-5xl" : ""}
                           ${size === "small" ? "text-3xl" : ""}`}
-              >
-                {winrate}%
-              </p>
-            </div>
-            <div className="flex flex-col">
-              <h3 className="text-xs font-semibold uppercase">Played</h3>
-              <p
-                className={`font-oswald font-semibold tabular-nums
-                          ${size === "large" ? "text-5xl" : ""}
-                          ${size === "small" ? "text-3xl" : ""}`}
-              >
-                {played}
-              </p>
-            </div>
-            <div className="flex flex-col">
-              <h3 className="text-xs font-semibold uppercase">MMR</h3>
-              <p
-                className={`font-oswald font-semibold tabular-nums
-                          ${size === "large" ? "text-5xl" : ""}
-                          ${size === "small" ? "text-3xl" : ""}`}
-              >
-                {mmr}
-              </p>
-            </div>
+                >
+                  {statValue}
+                </p>
+              </div>
+            ))}
           </div>
 
           <div className="flex items-center justify-between mb-5">

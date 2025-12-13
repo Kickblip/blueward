@@ -1,17 +1,24 @@
 import Card from "./ui/Card"
 import Link from "next/link"
 
+export const numColumnsMap: { [key: number]: string } = {
+  1: "grid-cols-1",
+  2: "grid-cols-2",
+  3: "grid-cols-3",
+  4: "grid-cols-4",
+  5: "grid-cols-5",
+  6: "grid-cols-6",
+}
+
 export default function LeaderboardRow({
   ranking,
-  winrate,
-  played,
-  mmr,
+  stats,
   name,
 }: {
   ranking: number
-  winrate: number
-  played: number
-  mmr: number
+  stats: {
+    [key: string]: number | string
+  }
   name: string
 }) {
   return (
@@ -20,23 +27,15 @@ export default function LeaderboardRow({
         <div className="flex items-center gap-8">
           <p className="font-oswald font-semibold text-xl tabular-nums">{ranking}</p>
 
-          <div className="grid grid-cols-4 w-full">
+          <div className={`w-full grid ${numColumnsMap[Object.keys(stats).length + 1]}`}>
             <p className="font-oswald font-semibold text-xl">{name}</p>
 
-            <div className="flex items-end gap-2">
-              <p className="font-oswald font-semibold text-xl tabular-nums">{played}</p>
-              <p className="text-xs font-semibold uppercase mb-1">Played</p>
-            </div>
-
-            <div className="flex items-end gap-2">
-              <p className="font-oswald font-semibold text-xl tabular-nums">{winrate}%</p>
-              <p className="text-xs font-semibold uppercase mb-1">Winrate</p>
-            </div>
-
-            <div className="flex items-end gap-2">
-              <p className="font-oswald font-semibold text-xl tabular-nums">{mmr}</p>
-              <p className="text-xs font-semibold uppercase mb-1">MMR</p>
-            </div>
+            {Object.entries(stats).map(([statName, statValue]) => (
+              <div key={statName} className="flex items-end gap-2">
+                <p className="font-oswald font-semibold text-xl tabular-nums">{statValue}</p>
+                <p className="text-xs font-semibold uppercase mb-1">{statName}</p>
+              </div>
+            ))}
           </div>
         </div>
       </Card>
