@@ -44,7 +44,7 @@ export default function Map() {
         alt="Map"
         width={IMAGE_WIDTH}
         height={IMAGE_HEIGHT}
-        className="opacity-80 pointer-events-none select-none"
+        className="pointer-events-none select-none"
       />
 
       <svg className="absolute inset-0" viewBox={`0 0 ${IMAGE_WIDTH} ${IMAGE_HEIGHT}`}>
@@ -62,7 +62,7 @@ export default function Map() {
           pointer-events-none select-none absolute inset-0
           bg-[url('/clouds.jpg')]
           bg-repeat
-          opacity-25
+          opacity-15
         "
         initial={{ backgroundPositionX: "0px" }}
         animate={{ backgroundPositionX: "-512px" }}

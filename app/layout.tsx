@@ -35,8 +35,8 @@ export default function RootLayout({
           <Navbar />
 
           <div
-            className="flex-1 mx-2 mb-2 p-4 rounded-lg bg-zinc-950 border
-                        border-zinc-800 shadow-[0_0_60px_rgba(96,165,250,0.35)]"
+            className="flex-1 mx-2 mb-2 p-4 rounded-lg bg-zinc-950 
+                        border border-zinc-800"
           >
             <div className="w-full max-w-7xl mx-auto">{children}</div>
           </div>
