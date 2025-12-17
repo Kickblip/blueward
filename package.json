@@ -1,41 +1,24 @@
 {
   "name": "blueward",
-  "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
-    "drizzle:generate": "npx drizzle-kit generate",
-    "drizzle:push": "npx drizzle-kit push",
-    "drizzle:migrate": "npx drizzle-kit migrate"
-  },
-  "dependencies": {
-    "@neondatabase/serverless": "^1.0.2",
-    "@vercel/speed-insights": "^1.2.0",
-    "clsx": "^2.1.1",
-    "dotenv": "^17.2.3",
-    "drizzle-orm": "^0.44.7",
-    "motion": "^12.23.24",
-    "next": "^16.0.7",
-    "react": "19.2.0",
-    "react-dom": "19.2.0",
-    "react-fast-marquee": "^1.6.5",
-    "react-icons": "^5.5.0",
-    "tailwind-merge": "^3.4.0"
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "check-types": "turbo run check-types"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "baseline-browser-mapping": "^2.8.32",
-    "drizzle-kit": "^0.31.7",
-    "eslint": "^9",
-    "eslint-config-next": "16.0.4",
-    "tailwindcss": "^4",
-    "tsx": "^4.21.0",
-    "typescript": "^5"
-  }
+    "prettier": "^3.7.4",
+    "turbo": "^2.6.3",
+    "typescript": "5.9.2"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "packageManager": "npm@11.5.1",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
 }
