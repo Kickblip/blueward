@@ -1,10 +1,14 @@
 import type { Metadata } from "next"
 import { Oswald, Roboto } from "next/font/google"
 import "./globals.css"
-import Navbar from "@repo/ui/Navbar"
+import { NavbarLayout, NavbarLink } from "@repo/ui/Navbar"
 import { SpeedInsights } from "@vercel/speed-insights/next"
-import Footer from "@repo/ui/Footer"
 import MarketsMarqueePopup from "@repo/ui/MarketsMarqueePopup"
+import { PiCrownSimpleFill } from "react-icons/pi"
+import { RiSwordFill } from "react-icons/ri"
+import LightningButton from "@repo/ui/LightningButton"
+import MainContentFrame from "@repo/ui/MainContentFrame"
+import { FaPencilAlt } from "react-icons/fa"
 
 const oswald = Oswald({
   variable: "--font-oswald",
@@ -31,23 +35,33 @@ export default function RootLayout({
       <body className={`${oswald.variable} ${roboto.className}`}>
         <SpeedInsights />
 
-        <div className="bg-zinc-900 min-h-screen flex flex-col">
-          <Navbar />
-
-          <div
-            className="flex-1 mx-2 mb-2 p-4 rounded-lg bg-zinc-950 
-                        border border-zinc-800"
-          >
-            <div className="w-full max-w-7xl mx-auto">{children}</div>
-          </div>
-
-          <div className="mt-2">
-            <Footer />
-          </div>
-        </div>
+        <MainContentFrame Navbar={<Navbar />}>{children}</MainContentFrame>
 
         <MarketsMarqueePopup />
       </body>
     </html>
+  )
+}
+
+function Navbar() {
+  return (
+    <NavbarLayout>
+      <NavbarLink
+        href="/leaderboard/kills"
+        icon={<PiCrownSimpleFill className="inline-block text-blue-500 rotate-35" size={14} />}
+      >
+        Leaderboards
+      </NavbarLink>
+
+      <NavbarLink href="/map" icon={<RiSwordFill className="inline-block text-blue-500 rotate-40" size={14} />}>
+        Conquest
+      </NavbarLink>
+
+      <NavbarLink href="/markets" icon={<FaPencilAlt className="inline-block text-blue-500 rotate-270" size={14} />}>
+        Predictions
+      </NavbarLink>
+
+      <LightningButton href="/fightclub">Fight Club</LightningButton>
+    </NavbarLayout>
   )
 }

@@ -1,12 +1,9 @@
 import Link from "next/link"
 import { SiRiotgames } from "react-icons/si"
 import GlowingCard from "./GlowingCard"
-import LightningButton from "./LightningButton"
 import Logo from "./Logo"
-import { PiCrownSimpleFill } from "react-icons/pi"
-import { RiSwordFill } from "react-icons/ri"
 
-export default function Navbar() {
+export function NavbarLayout({ children }: { children?: React.ReactNode }) {
   return (
     <div className="max-w-7xl w-full mx-auto flex justify-between py-4 font-oswald">
       <div className="flex items-center gap-8">
@@ -14,28 +11,7 @@ export default function Navbar() {
           <Logo />
         </Link>
 
-        <span className="relative inline-block mt-1">
-          <Link
-            href="/leaderboard/kills"
-            className="font-medium uppercase text-md hover:text-zinc-300 transition-colors duration-200"
-          >
-            Leaderboards
-          </Link>
-          <span className="pointer-events-none absolute -top-3 -right-3 rotate-35">
-            <PiCrownSimpleFill className="inline-block text-blue-500" size={14} />
-          </span>
-        </span>
-
-        <span className="relative inline-block mt-1">
-          <Link href="/map" className="font-medium uppercase text-md hover:text-zinc-300 transition-colors duration-200">
-            Conquest
-          </Link>
-          <span className="pointer-events-none absolute -top-3 -right-3 -rotate-25">
-            <RiSwordFill className="inline-block text-blue-500" size={14} />
-          </span>
-        </span>
-
-        <LightningButton href="/fightclub">Fight Club</LightningButton>
+        {children ?? null}
       </div>
 
       <Link href="/">
@@ -45,5 +21,16 @@ export default function Navbar() {
         </GlowingCard>
       </Link>
     </div>
+  )
+}
+
+export function NavbarLink({ href, children, icon }: { href: string; children: React.ReactNode; icon?: React.ReactNode }) {
+  return (
+    <span className="relative inline-block mt-1">
+      <Link href={href} className="font-medium uppercase text-md hover:text-zinc-300 transition-colors duration-200">
+        {children}
+      </Link>
+      {icon && <span className="pointer-events-none absolute -top-3 -right-3">{icon}</span>}
+    </span>
   )
 }

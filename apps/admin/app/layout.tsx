@@ -1,8 +1,8 @@
 import type { Metadata } from "next"
 import { Oswald, Roboto } from "next/font/google"
 import "./globals.css"
-import Navbar from "@/components/Navbar"
-import Footer from "@repo/ui/Footer"
+import MainContentFrame from "@repo/ui/MainContentFrame"
+import { NavbarLayout, NavbarLink } from "@repo/ui/Navbar"
 
 const oswald = Oswald({
   variable: "--font-oswald",
@@ -27,21 +27,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${oswald.variable} ${roboto.className}`}>
-        <div className="bg-zinc-900 min-h-screen flex flex-col">
-          <Navbar />
-
-          <div
-            className="flex-1 mx-2 mb-2 p-4 rounded-lg bg-zinc-950 
-                        border border-zinc-800"
-          >
-            <div className="w-full max-w-7xl mx-auto">{children}</div>
-          </div>
-
-          <div className="mt-2">
-            <Footer />
-          </div>
-        </div>
+        <MainContentFrame Navbar={<Navbar />}>{children}</MainContentFrame>
       </body>
     </html>
   )
+}
+
+function Navbar() {
+  return <NavbarLayout />
 }

@@ -1,4 +1,4 @@
-import { integer, pgTable, varchar, timestamp, bigint, doublePrecision, boolean } from "drizzle-orm/pg-core"
+import { integer, pgTable, varchar, timestamp, bigint, doublePrecision, boolean, pgEnum, uniqueIndex } from "drizzle-orm/pg-core"
 import { relations } from "drizzle-orm"
 
 // matches table -> 1 row per game
@@ -153,6 +153,41 @@ export const players = pgTable("players", {
   gamesLost: integer().notNull(),
 })
 
+export const tournamentStatus = pgEnum("tournament_status", ["upcoming", "running", "completed"])
+
+export const tournaments = pgTable("tournaments", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  name: varchar({ length: 128 }).notNull(),
+  status: tournamentStatus().notNull().default("upcoming"),
+})
+
+export const tournamentTeams = pgTable("tournament_teams", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  tournamentId: integer()
+    .notNull()
+    .references(() => tournaments.id, { onDelete: "cascade" }),
+  name: varchar({ length: 64 }).notNull(),
+})
+
+export const tournamentTeamPlayers = pgTable("tournament_team_players", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+
+  tournamentId: integer()
+    .notNull()
+    .references(() => tournaments.id, { onDelete: "cascade" }),
+
+  teamId: integer()
+    .notNull()
+    .references(() => tournamentTeams.id, { onDelete: "cascade" }),
+
+  playerId: integer()
+    .notNull()
+    .references(() => players.id, { onDelete: "cascade" }),
+})
+
 export const matchesRelations = relations(matches, ({ many }) => ({
   objectives: many(teamObjectives),
   performances: many(playerPerformances),
@@ -169,5 +204,33 @@ export const playerPerformancesRelations = relations(playerPerformances, ({ one 
   match: one(matches, {
     fields: [playerPerformances.matchRowId],
     references: [matches.id],
+  }),
+}))
+
+export const tournamentsRelations = relations(tournaments, ({ many }) => ({
+  teams: many(tournamentTeams),
+  roster: many(tournamentTeamPlayers),
+}))
+
+export const tournamentTeamsRelations = relations(tournamentTeams, ({ one, many }) => ({
+  tournament: one(tournaments, {
+    fields: [tournamentTeams.tournamentId],
+    references: [tournaments.id],
+  }),
+  members: many(tournamentTeamPlayers),
+}))
+
+export const tournamentTeamPlayersRelations = relations(tournamentTeamPlayers, ({ one }) => ({
+  tournament: one(tournaments, {
+    fields: [tournamentTeamPlayers.tournamentId],
+    references: [tournaments.id],
+  }),
+  team: one(tournamentTeams, {
+    fields: [tournamentTeamPlayers.teamId],
+    references: [tournamentTeams.id],
+  }),
+  player: one(players, {
+    fields: [tournamentTeamPlayers.playerId],
+    references: [players.id],
   }),
 }))
