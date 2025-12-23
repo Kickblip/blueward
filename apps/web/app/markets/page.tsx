@@ -1,3 +1,7 @@
+import Card from "@repo/ui/Card"
+import CrystalIcon from "@repo/ui/CrystalIcon"
+import { FiChevronRight } from "react-icons/fi"
+
 const markets = [
   {
     title: "Will Kickball get a shutdown kill?",
@@ -67,22 +71,16 @@ const markets = [
 export default function Markets() {
   return (
     <div className="flex flex-col gap-1">
-      <div className="grid grid-cols-8 gap-4 border-b pb-2 px-2 border-zinc-800 text-zinc-400 text-xs">
-        <p className="col-span-3">Markets</p>
-        <p className="col-span-2">Outcomes</p>
-        <p>Popularity</p>
-        <p>Payout</p>
-        <p>Volume</p>
+      <div className="grid grid-cols-3 gap-4">
+        {markets.map((market, index) => (
+          <MarketCard key={index} market={market} />
+        ))}
       </div>
-
-      {markets.map((market, index) => (
-        <MarketRow key={index} market={market} />
-      ))}
     </div>
   )
 }
 
-export function MarketRow({
+export function MarketCard({
   market,
 }: {
   market: { title: string; outcomes: { title: string; popularity: number; volume: number }[] }
@@ -90,41 +88,64 @@ export function MarketRow({
   const o0 = market.outcomes[0]!
   const o1 = market.outcomes[1]!
 
-  // ties will highlight both because of >=
-  const o0PopWins = o0.popularity >= o1.popularity
-  const o1PopWins = o1.popularity >= o0.popularity
-
-  const o0VolWins = o0.volume >= o1.volume
-  const o1VolWins = o1.volume >= o0.volume
-
   return (
-    <div className="grid grid-cols-8 gap-4 py-2 px-4 hover:bg-zinc-900 items-center rounded transition-colors duration-200">
-      <div className="col-span-3">
-        <p className="text-zinc-200 text-xl font-oswald">{market.title}</p>
+    <Card className="text-zinc-200">
+      <div className="flex flex-col gap-1 mb-2">
+        <p className="text-xs text-zinc-400">Market</p>
+        <h2 className="text-md font-semibold">{market.title}</h2>
+      </div>
+      <OutcomeCard outcome={o0} marketTitle={market.title} />
+      <OutcomeCard outcome={o1} marketTitle={market.title} />
+    </Card>
+  )
+}
+
+export function OutcomeCard({
+  outcome,
+  marketTitle,
+}: {
+  outcome: { title: string; popularity: number; volume: number }
+  marketTitle: string
+}) {
+  return (
+    <div className="w-full bg-zinc-950 p-3 flex flex-col gap-2 rounded-sm">
+      {/* <p className="text-sm text-zinc-400 text-center">{marketTitle}</p> */}
+      <p className="text-md text-center">{outcome.title}</p>
+
+      <div className="mx-auto flex items-center gap-8">
+        <div className="flex items-center gap-1 text-lg">
+          <CrystalIcon />
+          <span>100</span>
+        </div>
+
+        <div className="border border-zinc-900 border-1.5 p-1 rounded-full">
+          <FiChevronRight size={16} />
+        </div>
+
+        <div className="flex items-center gap-1 text-lg">
+          <CrystalIcon />
+          <span className="text-green-200 font-semibold">
+            {(Math.max((1.0 / outcome.popularity) * 0.85, 1.0) * 100).toFixed(0)}
+          </span>
+        </div>
       </div>
 
-      <div className="col-span-2 flex flex-col gap-2">
-        <button className="col-span-2 bg-blue-900 hover:bg-blue-600 cursor-pointer transition-colors duration-200 text-zinc-200 text-sm py-1 rounded">
-          {o0.title}
-        </button>
-        <button className="col-span-2 bg-zinc-800 hover:bg-zinc-600 cursor-pointer transition-colors duration-200 text-zinc-200 text-sm py-1 rounded">
-          {o1.title}
-        </button>
-      </div>
+      <hr className="border-t border-zinc-900" />
 
-      <div className="col-span-1 flex flex-col gap-4 text-sm">
-        <p className={`${o0PopWins ? "text-blue-400" : "text-zinc-200"}`}>{(o0.popularity * 100).toFixed(0)}%</p>
-        <p className={`${o1PopWins ? "text-blue-400" : "text-zinc-200"}`}>{(o1.popularity * 100).toFixed(0)}%</p>
-      </div>
+      <div className="grid grid-cols-3 items-center">
+        <div className="flex justify-center items-center gap-1 text-xs border-r border-zinc-900">
+          <span className="text-zinc-400">Popularity:</span>
+          <span className="font-semibold">{(outcome.popularity * 100).toFixed(0)}%</span>
+        </div>
 
-      <div className="col-span-1 flex flex-col gap-4">
-        <Multiplier multiplier={Math.max((1.0 / o0.popularity) * 0.85, 1.0)} />
-        <Multiplier multiplier={Math.max((1.0 / o1.popularity) * 0.85, 1.0)} />
-      </div>
+        <div className="flex justify-center border-r border-zinc-900">
+          <Multiplier multiplier={Math.max((1.0 / outcome.popularity) * 0.85, 1.0)} />
+        </div>
 
-      <div className="col-span-1 flex flex-col gap-4 text-sm">
-        <p className={`${o0VolWins ? "text-blue-400" : "text-zinc-200"}`}>{o0.volume}</p>
-        <p className={`${o1VolWins ? "text-blue-400" : "text-zinc-200"}`}>{o1.volume}</p>
+        <div className="flex justify-center items-center gap-1 text-xs">
+          <span className="text-zinc-400">Volume:</span>
+          <span className="font-semibold">{outcome.volume}</span>
+        </div>
       </div>
     </div>
   )
@@ -140,5 +161,5 @@ export function Multiplier({ multiplier }: { multiplier: number }) {
   else if (multiplier >= 2) colorClass = "text-blue-300"
   else if (multiplier >= 1.5) colorClass = "text-blue-200"
 
-  return <p className={`${colorClass} text-sm tabular-nums`}>{multiplier.toFixed(2)}×</p>
+  return <p className={`${colorClass} text-sm tabular-nums`}>+ {multiplier.toFixed(2)}×</p>
 }

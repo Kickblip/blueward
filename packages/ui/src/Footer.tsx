@@ -46,7 +46,6 @@ export default function Footer() {
             <FooterLink href={SOCIAL_LINK_CONFIG.repo}>Open Source</FooterLink>
             <FooterLink href={SOCIAL_LINK_CONFIG.docs}>Documentation</FooterLink>
             <FooterLink href={SOCIAL_LINK_CONFIG.changelog}>Changelog</FooterLink>
-            <p className="text-zinc-400 text-xs">(* ^ ω ^)つロ</p>
           </div>
 
           <div className="flex flex-col gap-2">

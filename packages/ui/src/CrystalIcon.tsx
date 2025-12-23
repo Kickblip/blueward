@@ -1,6 +1,13 @@
 export default function CrystalIcon({ className, size }: { className?: string; size?: number }) {
   return (
-    <svg className={className} width={size} height={size} viewBox="0 0 226 258" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg
+      className={className ?? "text-blue-300"}
+      width={size ?? 14}
+      height={size ?? 14}
+      viewBox="0 0 226 258"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <path
         d="M74.0523 110.69L108.619 130.702V170.725L38.3674 211.394L3.80107 191.382V151.359L74.0523 110.69Z"
         fill="currentColor"
