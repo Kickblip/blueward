@@ -1,6 +1,7 @@
 import Logo from "./Logo"
 import Link from "next/link"
 import { FaTwitch, FaInstagram, FaDiscord } from "react-icons/fa6"
+import Image from "next/image"
 
 export const SOCIAL_LINK_CONFIG = {
   discord: "https://discord.com/invite/s7W7Rg7AcW",
@@ -46,6 +47,7 @@ export default function Footer() {
             <FooterLink href={SOCIAL_LINK_CONFIG.repo}>Open Source</FooterLink>
             <FooterLink href={SOCIAL_LINK_CONFIG.docs}>Documentation</FooterLink>
             <FooterLink href={SOCIAL_LINK_CONFIG.changelog}>Changelog</FooterLink>
+            <p className="text-zinc-400 text-xs">(* ^ ω ^)つロ</p>
           </div>
 
           <div className="flex flex-col gap-2">
@@ -80,7 +82,8 @@ export default function Footer() {
           </FooterLink>
         </p>
 
-        <div className="flex gap-4">
+        <div className="flex gap-4 items-center">
+          <Image src="/bee.webp" alt="Bee" width={25} height={25} priority={false} className="inline-block -my-2" />
           <Link href="/terms" className="text-zinc-400 text-xs hover:text-zinc-200 transition-colors duration-200">
             Terms of Service
           </Link>

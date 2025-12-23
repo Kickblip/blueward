@@ -35,9 +35,11 @@ export default function RootLayout({
       <body className={`${oswald.variable} ${roboto.className}`}>
         <SpeedInsights />
 
-        <MainContentFrame Navbar={<Navbar />}>{children}</MainContentFrame>
+        <MainContentFrame Navbar={<Navbar />} patternUrl="/grid.svg" patternSize={512}>
+          {children}
+        </MainContentFrame>
 
-        <MarketsMarqueePopup />
+        {/* <MarketsMarqueePopup /> */}
       </body>
     </html>
   )
@@ -51,10 +53,6 @@ function Navbar() {
         icon={<PiCrownSimpleFill className="inline-block text-blue-500 rotate-35" size={14} />}
       >
         Leaderboards
-      </NavbarLink>
-
-      <NavbarLink href="/map" icon={<RiSwordFill className="inline-block text-blue-500 rotate-40" size={14} />}>
-        Conquest
       </NavbarLink>
 
       <NavbarLink href="/markets" icon={<FaPencilAlt className="inline-block text-blue-500 rotate-270" size={14} />}>
