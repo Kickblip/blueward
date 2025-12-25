@@ -1,11 +1,11 @@
 import Card from "@repo/ui/Card"
-import ProfileMatch from "@repo/ui/ProfileMatch"
+import ProfileMatch from "@/components/ProfileMatch"
 
 export default async function PlayerProfile({ params }: { params: Promise<{ pid: string }> }) {
   const { pid } = await params
 
   return (
-    <div className="grid grid-cols-3 gap-4">
+    <div className="grid grid-cols-3 gap-4 min-h-screen">
       <div className="col-span-1 flex flex-col gap-4">
         <Card>
           <div className="flex gap-1 items-end">

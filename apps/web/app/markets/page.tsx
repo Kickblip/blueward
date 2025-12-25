@@ -1,5 +1,6 @@
 import Card from "@repo/ui/Card"
 import CrystalIcon from "@repo/ui/CrystalIcon"
+import { getThresholdTextColor } from "@repo/ui/helpers"
 import { FiChevronRight } from "react-icons/fi"
 
 const markets = [
@@ -139,7 +140,11 @@ export function OutcomeCard({
         </div>
 
         <div className="flex justify-center border-r border-zinc-900">
-          <Multiplier multiplier={Math.max((1.0 / outcome.popularity) * 0.85, 1.0)} />
+          <p
+            className={`${getThresholdTextColor({ value: Math.max((1.0 / outcome.popularity) * 0.85, 1.0), max: 15 })} text-sm tabular-nums`}
+          >
+            + {Math.max((1.0 / outcome.popularity) * 0.85, 1.0).toFixed(2)}×
+          </p>
         </div>
 
         <div className="flex justify-center items-center gap-1 text-xs">
@@ -149,17 +154,4 @@ export function OutcomeCard({
       </div>
     </div>
   )
-}
-
-export function Multiplier({ multiplier }: { multiplier: number }) {
-  let colorClass = "text-blue-100"
-
-  if (multiplier >= 15) colorClass = "text-yellow-400"
-  else if (multiplier >= 10) colorClass = "text-blue-600"
-  else if (multiplier >= 5) colorClass = "text-blue-500"
-  else if (multiplier >= 3) colorClass = "text-blue-400"
-  else if (multiplier >= 2) colorClass = "text-blue-300"
-  else if (multiplier >= 1.5) colorClass = "text-blue-200"
-
-  return <p className={`${colorClass} text-sm tabular-nums`}>+ {multiplier.toFixed(2)}×</p>
 }
