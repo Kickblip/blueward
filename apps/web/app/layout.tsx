@@ -3,12 +3,11 @@ import { Oswald, Roboto } from "next/font/google"
 import "./globals.css"
 import { NavbarLayout, NavbarLink } from "@repo/ui/Navbar"
 import { SpeedInsights } from "@vercel/speed-insights/next"
-import MarketsMarqueePopup from "@repo/ui/MarketsMarqueePopup"
 import { PiCrownSimpleFill } from "react-icons/pi"
-import { RiSwordFill } from "react-icons/ri"
 import LightningButton from "@repo/ui/LightningButton"
 import MainContentFrame from "@repo/ui/MainContentFrame"
 import { FaPencilAlt } from "react-icons/fa"
+import LetterPopup from "@/components/LetterPopup"
 
 const oswald = Oswald({
   variable: "--font-oswald",
@@ -35,11 +34,11 @@ export default function RootLayout({
       <body className={`${oswald.variable} ${roboto.className}`}>
         <SpeedInsights />
 
+        <LetterPopup src={"/postcard.webp"} />
+
         <MainContentFrame Navbar={<Navbar />} patternUrl="/grid.svg" patternSize={512}>
           {children}
         </MainContentFrame>
-
-        {/* <MarketsMarqueePopup /> */}
       </body>
     </html>
   )
