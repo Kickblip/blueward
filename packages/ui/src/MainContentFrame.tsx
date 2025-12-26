@@ -2,28 +2,43 @@ import Footer from "./Footer"
 
 export default function MainContentFrame({
   Navbar,
-  patternUrl,
-  patternSize,
+  backgroundPatternUrl,
+  backgroundPatternSize,
+  foregroundPatternUrl,
+  foregroundPatternSize,
   children,
 }: {
   Navbar: React.ReactNode
-  patternUrl?: string
-  patternSize?: number
+  backgroundPatternUrl?: string
+  backgroundPatternSize?: number
+  foregroundPatternUrl?: string
+  foregroundPatternSize?: number
   children: React.ReactNode
 }) {
   return (
-    <div className="bg-zinc-900 min-h-screen flex flex-col">
+    <div
+      className="bg-zinc-900 min-h-screen flex flex-col bg-repeat"
+      style={
+        foregroundPatternUrl
+          ? {
+              backgroundImage: `url("${foregroundPatternUrl}")`,
+              backgroundRepeat: "repeat",
+              backgroundSize: foregroundPatternSize ? `${foregroundPatternSize}px ${foregroundPatternSize}px` : "32px 32px",
+            }
+          : undefined
+      }
+    >
       {Navbar}
 
       <div
         className="flex-1 mx-2 mb-2 p-4 rounded-lg bg-zinc-950 
                     border border-zinc-800 bg-repeat"
         style={
-          patternUrl
+          backgroundPatternUrl
             ? {
-                backgroundImage: `url("${patternUrl}")`,
+                backgroundImage: `url("${backgroundPatternUrl}")`,
                 backgroundRepeat: "repeat",
-                backgroundSize: patternSize ? `${patternSize}px ${patternSize}px` : "32px 32px",
+                backgroundSize: backgroundPatternSize ? `${backgroundPatternSize}px ${backgroundPatternSize}px` : "32px 32px",
               }
             : undefined
         }

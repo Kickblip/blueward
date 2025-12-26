@@ -36,7 +36,7 @@ export default function RootLayout({
 
         <LetterPopup src={"/postcard.webp"} />
 
-        <MainContentFrame Navbar={<Navbar />} patternUrl="/grid.svg" patternSize={512}>
+        <MainContentFrame Navbar={<Navbar />} backgroundPatternUrl="/grid.svg" backgroundPatternSize={512}>
           {children}
         </MainContentFrame>
       </body>
