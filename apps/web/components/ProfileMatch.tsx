@@ -43,8 +43,11 @@ export default function ProfileMatch({ win }: { win: boolean }) {
   const [isExpanded, setIsExpanded] = useState(false)
 
   return (
-    <Card className="p-4">
-      <div className="grid grid-cols-7 gap-4 items-center cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
+    <Card className="p-0">
+      <div
+        className="grid grid-cols-7 gap-4 items-center cursor-pointer p-4 pr-6 pl-2"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
         <MatchMetadata win={win} gameEndTimestamp={date} gameDuration={gameDuration} payout={crystals} />
 
         <div className="flex items-center gap-1">
@@ -91,7 +94,7 @@ export default function ProfileMatch({ win }: { win: boolean }) {
 
 export function ExpandedMatchDetails() {
   return (
-    <div className="flex flex-col gap-4 p-2">
+    <div className="flex flex-col gap-4 pb-4 px-4">
       <div
         className="grid grid-cols-7 gap-2 items-center text-center
                       bg-zinc-800 py-2

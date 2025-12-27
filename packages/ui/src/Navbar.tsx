@@ -1,9 +1,7 @@
 import Link from "next/link"
-import { SiRiotgames } from "react-icons/si"
-import GlowingCard from "./GlowingCard"
 import Logo from "./Logo"
 
-export function NavbarLayout({ children }: { children?: React.ReactNode }) {
+export function NavbarLayout({ children, signInButtons }: { children?: React.ReactNode; signInButtons?: React.ReactNode }) {
   return (
     <div className="max-w-7xl w-full mx-auto flex justify-between py-4 font-oswald">
       <div className="flex items-center gap-8">
@@ -14,12 +12,7 @@ export function NavbarLayout({ children }: { children?: React.ReactNode }) {
         {children ?? null}
       </div>
 
-      <Link href="/">
-        <GlowingCard glow="heavy" className="flex flex-row items-center gap-2 px-6 py-2 text-blue-100">
-          <span className="uppercase font-semibold text-sm">Sign In</span>
-          <SiRiotgames />
-        </GlowingCard>
-      </Link>
+      {signInButtons}
     </div>
   )
 }

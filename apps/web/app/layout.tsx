@@ -8,6 +8,9 @@ import LightningButton from "@repo/ui/LightningButton"
 import MainContentFrame from "@repo/ui/MainContentFrame"
 import { FaPencilAlt } from "react-icons/fa"
 import LetterPopup from "@/components/LetterPopup"
+import { ClerkProvider, SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs"
+import GlowingCard from "@repo/ui/GlowingCard"
+import { dark } from "@clerk/themes"
 
 const oswald = Oswald({
   variable: "--font-oswald",
@@ -30,23 +33,30 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className={`${oswald.variable} ${roboto.className}`}>
-        <SpeedInsights />
+    <ClerkProvider
+      appearance={{
+        theme: dark,
+        variables: { colorPrimary: "#3aa4fc" },
+      }}
+    >
+      <html lang="en">
+        <body className={`${oswald.variable} ${roboto.className}`}>
+          <SpeedInsights />
 
-        <LetterPopup src={"/postcard.webp"} />
+          <LetterPopup src={"/postcard.webp"} />
 
-        <MainContentFrame Navbar={<Navbar />} backgroundPatternUrl="/grid.svg" backgroundPatternSize={512}>
-          {children}
-        </MainContentFrame>
-      </body>
-    </html>
+          <MainContentFrame Navbar={<Navbar />} backgroundPatternUrl="/grid.svg" backgroundPatternSize={512}>
+            {children}
+          </MainContentFrame>
+        </body>
+      </html>
+    </ClerkProvider>
   )
 }
 
 function Navbar() {
   return (
-    <NavbarLayout>
+    <NavbarLayout signInButtons={<SignInButtons />}>
       <NavbarLink
         href="/leaderboard/kills"
         icon={<PiCrownSimpleFill className="inline-block text-blue-500 rotate-35" size={14} />}
@@ -54,11 +64,33 @@ function Navbar() {
         Leaderboards
       </NavbarLink>
 
-      <NavbarLink href="/markets" icon={<FaPencilAlt className="inline-block text-blue-500 rotate-270" size={14} />}>
+      {/* <NavbarLink href="/markets" icon={<FaPencilAlt className="inline-block text-blue-500 rotate-270" size={14} />}>
         Predictions
-      </NavbarLink>
+      </NavbarLink> */}
 
       <LightningButton href="/fightclub">Fight Club</LightningButton>
     </NavbarLayout>
+  )
+}
+
+function SignInButtons() {
+  return (
+    <div className="flex items-center gap-4">
+      <SignedOut>
+        <SignInButton>
+          <GlowingCard glow="light" className="gap-2 px-6 py-2 text-blue-100 cursor-pointer">
+            <span className="uppercase font-semibold text-sm">Sign In</span>
+          </GlowingCard>
+        </SignInButton>
+        <SignUpButton>
+          <GlowingCard glow="heavy" className="gap-2 px-6 py-2 text-blue-100 cursor-pointer bg-blue-500/30 hover:bg-blue-500/50">
+            <span className="uppercase font-semibold text-sm">Sign Up</span>
+          </GlowingCard>
+        </SignUpButton>
+      </SignedOut>
+      <SignedIn>
+        <UserButton />
+      </SignedIn>
+    </div>
   )
 }
