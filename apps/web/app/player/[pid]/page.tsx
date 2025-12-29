@@ -20,7 +20,7 @@ export default async function PlayerProfile({ params }: { params: Promise<{ pid:
         <Card className="p-0">
           <div className="relative">
             <Image
-              src="/galio.webp"
+              src="/banners/udyr-train.webp" // TODO: Add a default banner
               alt="player background"
               width={400}
               height={400}

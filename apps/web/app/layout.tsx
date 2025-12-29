@@ -11,6 +11,7 @@ import LetterPopup from "@/components/LetterPopup"
 import { ClerkProvider, SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs"
 import GlowingCard from "@repo/ui/GlowingCard"
 import { dark } from "@clerk/themes"
+import Link from "next/link"
 
 const oswald = Oswald({
   variable: "--font-oswald",
@@ -89,6 +90,11 @@ function SignInButtons() {
         </SignUpButton>
       </SignedOut>
       <SignedIn>
+        <Link href="/import">
+          <GlowingCard glow="light" className="gap-2 px-6 py-2 text-blue-100 cursor-pointer">
+            <span className="uppercase font-semibold text-sm">Import Game</span>
+          </GlowingCard>
+        </Link>
         <UserButton />
       </SignedIn>
     </div>
