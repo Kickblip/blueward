@@ -3,6 +3,8 @@ import ProfileMatch from "@/components/ProfileMatch"
 import Image from "next/image"
 import DonutChart from "@repo/ui/DonutChart"
 import { KDA } from "@repo/ui/MatchHistoryWidgets"
+import { FaPencilAlt } from "react-icons/fa"
+import { currentUser } from "@clerk/nextjs/server"
 
 const championsAndWinrates = [
   { name: "Viego", played: 11, wins: 6, losses: 5, winrate: 0.545 },
@@ -13,6 +15,8 @@ const championsAndWinrates = [
 
 export default async function PlayerProfile({ params }: { params: Promise<{ pid: string }> }) {
   const { pid } = await params
+  const user = await currentUser()
+  const imageUrl = user?.imageUrl // TODO: Store clerk uid with player profile data in db so we can fetch the correct image
 
   return (
     <div className="grid grid-cols-3 gap-4 min-h-screen">
@@ -22,19 +26,17 @@ export default async function PlayerProfile({ params }: { params: Promise<{ pid:
             <Image
               src="/banners/udyr-train.webp" // TODO: Add a default banner
               alt="player background"
-              width={400}
-              height={400}
+              width={512}
+              height={512}
               className="aspect-[5/2] w-full rounded-t-md object-cover object-center"
             />
 
-            <div className="absolute -bottom-8 left-4 h-28 w-28 rounded-lg border-4 border-zinc-900 overflow-hidden">
-              <Image
-                src={`${process.env.NEXT_PUBLIC_CDN_BASE}/${process.env.NEXT_PUBLIC_PATCH_VERSION}/img/profileicon/5665.png`}
-                alt="player avatar"
-                width={128}
-                height={128}
-                className="h-full w-full object-cover"
-              />
+            <button className="absolute top-2 right-2 bg-zinc-900 p-2 rounded-lg cursor-pointer hover:bg-zinc-800 transition-colors duration-200">
+              <FaPencilAlt className="text-zinc-200" />
+            </button>
+
+            <div className="absolute -bottom-8 left-4 h-26 w-26 rounded-full border-4 border-zinc-900 overflow-hidden">
+              <Image src={imageUrl || "/"} alt="Player avatar" width={512} height={512} className="h-full w-full object-cover" />
             </div>
           </div>
 
