@@ -3,6 +3,39 @@ import CrystalIcon from "./CrystalIcon"
 import Image from "next/image"
 import { cn } from "./cn"
 
+export function BasicStatFormat({ title, subtitle, className }: { title: string; subtitle: string; className?: string }) {
+  return (
+    <div className={cn("flex flex-col items-center gap-1", className || "")}>
+      <p>{title}</p>
+      <p className="text-xs text-zinc-400 font-normal">{subtitle}</p>
+    </div>
+  )
+}
+
+export function ImageWithLabel({
+  src,
+  label,
+  size,
+  className,
+}: {
+  src: string
+  label: string
+  size?: number
+  className?: string
+}) {
+  return (
+    <div className={cn("relative", className || "")}>
+      <Image src={src} alt={label} width={size || 45} height={size || 45} className="rounded" />
+      <div
+        className="absolute bottom-0 left-0 p-0.5 -ml-1 -mb-1
+                  text-xs bg-zinc-950 rounded-sm"
+      >
+        {label}
+      </div>
+    </div>
+  )
+}
+
 export function MatchMetadata({
   win,
   gameEndTimestamp,

@@ -20,9 +20,13 @@ export default async function Import() {
     return <ErrorMessage code={401} message="User not authenticated" />
   }
 
+  if (user.publicMetadata.role !== "admin") {
+    return <ErrorMessage code={403} message="User not authorized to import game data" />
+  }
+
   const hasRiotAccountConnected = user && user.externalAccounts.some((account) => account.provider === "oauth_custom_riot_games")
   if (!hasRiotAccountConnected) {
-    return <ErrorMessage code={400} message="Please connect your Riot account in your profile settings to import game data." />
+    return <ErrorMessage code={400} message="Please connect your Riot account in your profile settings to import game data" />
   }
 
   const client = await clerkClient()

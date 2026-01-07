@@ -14,8 +14,17 @@ import {
   Username,
   GoldEarned,
   TotalDamage,
+  BasicStatFormat,
+  ImageWithLabel,
 } from "@repo/ui/MatchHistoryWidgets"
+import { toRelativeTime, toNumberWithCommas } from "@repo/ui/helpers"
 
+import { VersusIcon, SwordIcon, WardIcon, HelmetIcon } from "@repo/ui/icons"
+import { LuChartPie, LuLayoutList } from "react-icons/lu"
+import { BsFire } from "react-icons/bs"
+import { BiSolidBellRing } from "react-icons/bi"
+
+import Image from "next/image"
 import { useState } from "react"
 
 const items = [1039, 1040, 2143, 1042, 2052, 2142]
@@ -93,8 +102,35 @@ export default function ProfileMatch({ win }: { win: boolean }) {
 }
 
 export function ExpandedMatchDetails() {
+  const [activeView, setActiveView] = useState<"general" | "details">("general")
+
   return (
     <div className="flex flex-col gap-4 pb-4 px-4">
+      <div className="grid grid-cols-2 items-center">
+        <button
+          className={`flex items-center rounded-md justify-center gap-2 py-3 cursor-pointer ${activeView === "general" ? "bg-zinc-800" : "bg-zinc-900"}`}
+          onClick={() => setActiveView("general")}
+        >
+          <LuLayoutList size={18} />
+          <span className="text-sm font-oswald uppercase font-semibold">General</span>
+        </button>
+        <button
+          className={`flex items-center rounded-md justify-center gap-2 py-3 cursor-pointer ${activeView === "details" ? "bg-zinc-800" : "bg-zinc-900"}`}
+          onClick={() => setActiveView("details")}
+        >
+          <LuChartPie size={18} />
+          <span className="text-sm font-oswald uppercase font-semibold">Details</span>
+        </button>
+      </div>
+
+      {activeView === "general" ? <GeneralView /> : <DetailsView />}
+    </div>
+  )
+}
+
+export function GeneralView() {
+  return (
+    <div className="flex flex-col gap-4">
       <div
         className="grid grid-cols-7 gap-2 items-center text-center
                       bg-zinc-800 py-2
@@ -135,6 +171,142 @@ export function ExpandedMatchDetails() {
         {Array.from({ length: 5 }).map((_, i) => (
           <ParticipantRow key={i} />
         ))}
+      </div>
+    </div>
+  )
+}
+
+export function DetailsView() {
+  const [playerIdx, setPlayerIdx] = useState(0)
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-11">
+        {Array.from({ length: 11 }, (_, col) => {
+          if (col === 5) {
+            return (
+              <div key="vs" className="flex items-center justify-center">
+                <VersusIcon size={40} />
+              </div>
+            )
+          }
+
+          const idx = col > 5 ? col - 1 : col // maps 0..4, then 5..9 after VS
+
+          return (
+            <button
+              key={idx}
+              className={`p-1 px-3 rounded-md flex items-center justify-center cursor-pointer hover:bg-zinc-800 transition-colors duration-200 ${
+                playerIdx === idx ? "bg-zinc-800" : ""
+              }`}
+              onClick={() => setPlayerIdx(idx)}
+            >
+              <Image
+                src={`${process.env.NEXT_PUBLIC_CDN_BASE}/img/champion/tiles/Ashe_0.jpg`}
+                alt=""
+                width={45}
+                height={45}
+                className="rounded-md"
+              />
+            </button>
+          )
+        })}
+      </div>
+
+      <div className="grid grid-cols-3 gap-4">
+        <Card className="gap-4">
+          <div className="flex items-center gap-2">
+            <SwordIcon size={20} className="text-lime-200" />
+            <span className="font-semibold font-oswald uppercase">Laning Phase (at 15)</span>
+          </div>
+
+          <div className="grid grid-cols-4">
+            <BasicStatFormat title="-40" subtitle="CS Diff" className="text-sm font-medium" />
+            <BasicStatFormat title="-1200" subtitle="Gold Diff" className="text-sm font-medium" />
+            <BasicStatFormat title="+300" subtitle="XP Diff" className="text-sm font-medium" />
+            <BasicStatFormat title="Yes" subtitle="First lvl 2" className="text-sm font-medium" />
+          </div>
+        </Card>
+
+        <Card className="gap-4">
+          <div className="flex items-center gap-2">
+            <WardIcon size={20} className="text-yellow-200" />
+            <span className="font-semibold font-oswald uppercase">Wards</span>
+          </div>
+
+          <div className="grid grid-cols-4">
+            <BasicStatFormat title="13" subtitle="Placed" className="text-sm font-medium" />
+            <BasicStatFormat title="5" subtitle="Killed" className="text-sm font-medium" />
+            <BasicStatFormat title="4" subtitle="Control" className="text-sm font-medium" />
+            <BasicStatFormat title="13" subtitle="Vision" className="text-sm font-medium" />
+          </div>
+        </Card>
+
+        <Card className="gap-4">
+          <div className="flex items-center gap-2">
+            <HelmetIcon size={20} className="text-cyan-200" />
+            <span className="font-semibold font-oswald uppercase">Damage</span>
+          </div>
+
+          <div className="grid grid-cols-3">
+            <BasicStatFormat title={toNumberWithCommas(78000)} subtitle="Physical" className="text-sm font-medium" />
+            <BasicStatFormat title={toNumberWithCommas(12000)} subtitle="Magic" className="text-sm font-medium" />
+            <BasicStatFormat title={toNumberWithCommas(1500)} subtitle="True" className="text-sm font-medium" />
+          </div>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <Card>
+          <div className="flex items-center gap-2">
+            <BsFire size={20} className="text-red-300" />
+            <span className="font-semibold font-oswald uppercase">Spells Casted</span>
+          </div>
+
+          <div className="flex items-center gap-8 mx-auto">
+            <div className="grid grid-cols-4 gap-4">
+              <Card className="flex items-center justify-center w-8 h-8 text-sm">Q</Card>
+              <Card className="flex items-center justify-center w-8 h-8 text-sm">W</Card>
+              <Card className="flex items-center justify-center w-8 h-8 text-sm">E</Card>
+              <Card className="flex items-center justify-center w-8 h-8 text-sm">R</Card>
+
+              <BasicStatFormat title="45" subtitle="casts" className="text-xs" />
+              <BasicStatFormat title="23" subtitle="casts" className="text-xs" />
+              <BasicStatFormat title="65" subtitle="casts" className="text-xs" />
+              <BasicStatFormat title="12" subtitle="casts" className="text-xs" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <ImageWithLabel src={`/spells/4.png`} size={30} label="D" />
+              <ImageWithLabel src={`/spells/11.png`} size={30} label="F" />
+
+              <BasicStatFormat title="23" subtitle="casts" className="text-xs" />
+              <BasicStatFormat title="65" subtitle="casts" className="text-xs" />
+            </div>
+          </div>
+        </Card>
+
+        <Card>
+          <div className="flex items-center gap-2">
+            <BiSolidBellRing size={20} className="text-orange-200" />
+            <span className="font-semibold font-oswald uppercase">Pings</span>
+          </div>
+
+          <div className="grid grid-cols-6 gap-4 mx-auto">
+            <Image src="/pings/pushPings.webp" alt="Vision Warded" width={30} height={30} />
+            <Image src="/pings/onMyWayPings.webp" alt="Vision Cleared" width={30} height={30} />
+            <Image src="/pings/enemyMissingPings.webp" alt="Enemy Missing" width={30} height={30} />
+            <Image src="/pings/assistMePings.webp" alt="Assist Me" width={30} height={30} />
+            <Image src="/pings/enemyVisionPings.webp" alt="On My Way" width={30} height={30} />
+            <Image src="/pings/needVisionPings.webp" alt="Retreat" width={30} height={30} />
+
+            <BasicStatFormat title="45" subtitle="times" className="text-xs" />
+            <BasicStatFormat title="23" subtitle="times" className="text-xs" />
+            <BasicStatFormat title="65" subtitle="times" className="text-xs" />
+            <BasicStatFormat title="12" subtitle="times" className="text-xs" />
+            <BasicStatFormat title="65" subtitle="times" className="text-xs" />
+            <BasicStatFormat title="12" subtitle="times" className="text-xs" />
+          </div>
+        </Card>
       </div>
     </div>
   )
