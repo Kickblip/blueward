@@ -8,16 +8,11 @@ import {
   Runes,
   Items,
   WardAndVisionScore,
-  KDA,
-  CS,
-  DamageBar,
   Username,
-  GoldEarned,
-  TotalDamage,
   BasicStatFormat,
   ImageWithLabel,
 } from "@repo/ui/MatchHistoryWidgets"
-import { toRelativeTime, toNumberWithCommas } from "@repo/ui/helpers"
+import { toNumberWithCommas } from "@repo/ui/helpers"
 
 import { VersusIcon, SwordIcon, WardIcon, HelmetIcon } from "@repo/ui/icons"
 import { LuChartPie, LuLayoutList } from "react-icons/lu"
@@ -39,14 +34,14 @@ const assists = 8
 const cs = 150
 const gameDuration = 1800
 const visionScore = 20
-const totalDamage = 25000
 const magicDamage = 5000
 const physicalDamage = 18000
 const trueDamage = 2000
-const gameMode = "Classic"
 const primaryTrait = 8000
 const secondaryTrait = 8100
 const crystals = 52257
+const goldEarned = 13500
+const pentaKills = 1
 
 export default function ProfileMatch({ win }: { win: boolean }) {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -54,7 +49,7 @@ export default function ProfileMatch({ win }: { win: boolean }) {
   return (
     <Card className="p-0">
       <div
-        className="grid grid-cols-7 gap-4 items-center cursor-pointer p-4 pr-6 pl-2"
+        className="grid grid-cols-6 gap-4 items-center cursor-pointer p-2.5 pr-6 pl-2"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <MatchMetadata win={win} gameEndTimestamp={date} gameDuration={gameDuration} payout={crystals} />
@@ -70,9 +65,17 @@ export default function ProfileMatch({ win }: { win: boolean }) {
           <Runes primaryTrait={primaryTrait} secondaryTrait={secondaryTrait} size={21.5} className="p-0.5" />
         </div>
 
-        <KDA kills={kills} deaths={deaths} assists={assists} />
+        <BasicStatFormat
+          title={`${kills} / ${deaths} / ${assists}`}
+          subtitle={`${((kills + assists) / Math.max(1, deaths)).toFixed(1)} KDA`}
+        />
 
-        <CS cs={cs} gameDuration={gameDuration} />
+        <BasicStatFormat title={`${cs} CS`} subtitle={`${(cs / (gameDuration / 60)).toFixed(1)}/min`} />
+
+        <BasicStatFormat
+          title={`${toNumberWithCommas(physicalDamage + magicDamage + trueDamage)}`}
+          subtitle={`${((physicalDamage + magicDamage + trueDamage) / (gameDuration / 60)).toFixed(1)}/min`}
+        />
 
         <div className="flex items-center gap-1">
           <Items
@@ -86,14 +89,6 @@ export default function ProfileMatch({ win }: { win: boolean }) {
             visionScore={visionScore}
           />
         </div>
-
-        <DamageBar
-          magicDamage={magicDamage}
-          physicalDamage={physicalDamage}
-          trueDamage={trueDamage}
-          totalDamage={totalDamage}
-          gameDuration={gameDuration}
-        />
       </div>
 
       {isExpanded && <ExpandedMatchDetails />}
@@ -217,14 +212,18 @@ export function DetailsView() {
         <Card className="gap-4">
           <div className="flex items-center gap-2">
             <SwordIcon size={20} className="text-lime-200" />
-            <span className="font-semibold font-oswald uppercase">Laning Phase (at 15)</span>
+            <span className="font-semibold font-oswald uppercase">Multikills</span>
           </div>
 
           <div className="grid grid-cols-4">
-            <BasicStatFormat title="-40" subtitle="CS Diff" className="text-sm font-medium" />
-            <BasicStatFormat title="-1200" subtitle="Gold Diff" className="text-sm font-medium" />
-            <BasicStatFormat title="+300" subtitle="XP Diff" className="text-sm font-medium" />
-            <BasicStatFormat title="Yes" subtitle="First lvl 2" className="text-sm font-medium" />
+            <BasicStatFormat title="4" subtitle="Double" className="text-sm font-medium" />
+            <BasicStatFormat title="2" subtitle="Triple" className="text-sm font-medium" />
+            <BasicStatFormat title="1" subtitle="Quadra" className="text-sm font-medium" />
+            <BasicStatFormat
+              title={`${pentaKills}`}
+              subtitle="Penta"
+              className={`text-sm font-medium ${pentaKills > 0 ? "text-yellow-300" : ""}`}
+            />
           </div>
         </Card>
 
@@ -327,13 +326,26 @@ export function ParticipantRow() {
         <Username username="PlayerOne" className="ml-2" />
       </div>
 
-      <KDA kills={5} deaths={3} assists={10} className="text-xs" />
+      <BasicStatFormat
+        title={`${kills} / ${deaths} / ${assists}`}
+        subtitle={`${((kills + assists) / Math.max(1, deaths)).toFixed(1)} KDA`}
+        className="text-xs"
+      />
 
-      <TotalDamage totalDamage={18000} gameDuration={1800} className="text-xs" />
+      {/* <TotalDamage totalDamage={18000} gameDuration={1800} className="text-xs" /> */}
+      <BasicStatFormat
+        title={toNumberWithCommas(physicalDamage + magicDamage + trueDamage)}
+        subtitle={`${((physicalDamage + magicDamage + trueDamage) / (gameDuration / 60)).toFixed(1)}/min`}
+        className="text-xs"
+      />
 
-      <GoldEarned goldEarned={15000} gameDuration={gameDuration} className="text-xs" />
+      <BasicStatFormat
+        title={toNumberWithCommas(goldEarned)}
+        subtitle={`${(goldEarned / (gameDuration / 60)).toFixed(1)}/min`}
+        className="text-xs"
+      />
 
-      <CS cs={200} gameDuration={1800} className="text-xs" />
+      <BasicStatFormat title={`${cs} CS`} subtitle={`${(cs / (gameDuration / 60)).toFixed(1)}/min`} className="text-xs" />
 
       <div className="flex items-center">
         <Items

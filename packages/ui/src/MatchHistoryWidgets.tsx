@@ -72,23 +72,6 @@ export function Username({ username, className }: { username: string; className?
   return <p className={`text-sm truncate ${className || ""}`}>{username}</p>
 }
 
-export function GoldEarned({
-  goldEarned,
-  gameDuration,
-  className,
-}: {
-  goldEarned: number
-  gameDuration: number
-  className?: string
-}) {
-  return (
-    <div className={cn("flex flex-col items-center gap-1", className || "")}>
-      <p>{toNumberWithCommas(goldEarned)}</p>
-      <p className="text-xs text-zinc-400">{(goldEarned / (gameDuration / 60)).toFixed(1)}/min</p>
-    </div>
-  )
-}
-
 export function ChampionIconAndLevel({
   src,
   championLevel,
@@ -170,109 +153,6 @@ export function WardAndVisionScore({ src, visionScore, size = 35 }: { src: strin
                   text-xs bg-zinc-950 rounded-sm"
       >
         {visionScore}
-      </div>
-    </div>
-  )
-}
-
-export function KDA({
-  kills,
-  deaths,
-  assists,
-  className,
-}: {
-  kills: number
-  deaths: number
-  assists: number
-  className?: string
-}) {
-  return (
-    <div className={cn("flex flex-col items-center gap-1", className || "")}>
-      <p>
-        {kills} / {deaths} / {assists}
-      </p>
-      <p className="text-xs text-zinc-400">{((kills + assists) / Math.max(1, deaths)).toFixed(1)} KDA</p>
-    </div>
-  )
-}
-
-export function CS({ cs, gameDuration, className }: { cs: number; gameDuration: number; className?: string }) {
-  return (
-    <div className={cn("flex flex-col items-center gap-1", className || "")}>
-      <span>{cs} CS</span>
-      <p className="text-xs text-zinc-400">{(cs / (gameDuration / 60)).toFixed(1)}/min</p>
-    </div>
-  )
-}
-
-export function TotalDamage({
-  totalDamage,
-  gameDuration,
-  className,
-}: {
-  totalDamage: number
-  gameDuration: number
-  className?: string
-}) {
-  return (
-    <div className={cn("flex flex-col items-center gap-1", className || "")}>
-      <span>{toNumberWithCommas(totalDamage)}</span>
-      <p className="text-xs text-zinc-400">{(totalDamage / (gameDuration / 60)).toFixed(1)}/min</p>
-    </div>
-  )
-}
-
-export function DamageBar({
-  magicDamage,
-  physicalDamage,
-  trueDamage,
-  totalDamage,
-  gameDuration,
-  className,
-}: {
-  magicDamage: number
-  physicalDamage: number
-  trueDamage: number
-  totalDamage: number
-  gameDuration: number
-  className?: string
-}) {
-  const damageColors = {
-    magic: "bg-blue-500",
-    physical: "bg-rose-500",
-    true: "bg-zinc-200",
-  }
-
-  return (
-    <div className="flex flex-col gap-1 col-span-2">
-      <div className={`flex justify-between text-sm ${className || ""}`}>
-        <div className="flex items-center gap-1">
-          <span className={`inline-block h-3 w-3 rounded-sm ${damageColors.magic}`} />
-          <span>{toNumberWithCommas(magicDamage)}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span className={`inline-block h-3 w-3 rounded-sm ${damageColors.physical}`} />
-          <span>{toNumberWithCommas(physicalDamage)}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span className={`inline-block h-3 w-3 rounded-sm ${damageColors.true}`} />
-          <span>{toNumberWithCommas(trueDamage)}</span>
-        </div>
-      </div>
-
-      <div className="flex h-3 w-full overflow-hidden rounded">
-        {[magicDamage, physicalDamage, trueDamage].map((v, i) => (
-          <div
-            key={i}
-            className={`${Object.values(damageColors)[i]} transition-all duration-300`}
-            style={{ width: `${(v / Math.max(1, totalDamage)) * 100}%` }}
-          />
-        ))}
-      </div>
-
-      <div className="flex items-center justify-between w-full">
-        <p className="text-xs text-zinc-400">{toNumberWithCommas(totalDamage)} total</p>
-        <p className="text-xs text-zinc-400">{(totalDamage / (gameDuration / 60)).toFixed(1)} /min</p>
       </div>
     </div>
   )

@@ -2,9 +2,9 @@ import Card from "@repo/ui/Card"
 import ProfileMatch from "@/components/ProfileMatch"
 import Image from "next/image"
 import DonutChart from "@repo/ui/DonutChart"
-import { KDA } from "@repo/ui/MatchHistoryWidgets"
 import { FaPencilAlt } from "react-icons/fa"
 import { currentUser } from "@clerk/nextjs/server"
+import { BasicStatFormat } from "@repo/ui/MatchHistoryWidgets"
 
 const championsAndWinrates = [
   { name: "Viego", played: 11, wins: 6, losses: 5, winrate: 0.545 },
@@ -12,6 +12,10 @@ const championsAndWinrates = [
   { name: "Yasuo", played: 7, wins: 3, losses: 4, winrate: 0.429 },
   { name: "Zed", played: 5, wins: 3, losses: 2, winrate: 0.6 },
 ]
+
+const kills = 8.5
+const deaths = 6.2
+const assists = 9.1
 
 export default async function PlayerProfile({ params }: { params: Promise<{ pid: string }> }) {
   const { pid } = await params
@@ -55,7 +59,10 @@ export default async function PlayerProfile({ params }: { params: Promise<{ pid:
                 </div>
               </div>
 
-              <KDA kills={8.5} deaths={6.2} assists={9.1} />
+              <BasicStatFormat
+                title={`${kills} / ${deaths} / ${assists}`}
+                subtitle={`${((kills + assists) / Math.max(1, deaths)).toFixed(1)} KDA`}
+              />
             </div>
 
             <div
