@@ -1,26 +1,17 @@
 import { currentUser, clerkClient } from "@clerk/nextjs/server"
 import ErrorMessage from "@repo/ui/ErrorMessage"
+import RecentGame from "@repo/ui/RecentGame"
 import pLimit from "p-limit"
+import Link from "next/link"
+import { fetchWithRetry } from "./helpers"
 
-async function fetchWithRetry(url: string, opts: RequestInit, retries = 3) {
-  for (let i = 0; i < retries; i++) {
-    const res = await fetch(url, opts)
-    if (res.status !== 429) return res
-
-    const sleep = Number(res.headers.get("retry-after") ?? "1") * 1_000
-    await new Promise((r) => setTimeout(r, sleep))
-  }
-  throw new Error("Exceeded retry budget (429)")
-}
-
-export default async function Import() {
-  console.time("Import total")
+export default async function RecentGames() {
   const user = await currentUser()
   if (!user) {
     return <ErrorMessage code={401} message="User not authenticated" />
   }
 
-  if (user.publicMetadata.role !== "admin") {
+  if (user.privateMetadata.role !== "admin") {
     return <ErrorMessage code={403} message="User not authorized to import game data" />
   }
 
@@ -53,7 +44,27 @@ export default async function Import() {
     ),
   )
 
-  console.timeEnd("Import total")
+  return (
+    <div className="flex flex-col gap-4">
+      <h1 className="text-2xl font-semibold font-oswald">Recently Played (Click to import)</h1>
 
-  return <>{JSON.stringify(rawMatches)}</>
+      <div className="grid grid-cols-3 gap-4">
+        {rawMatches.map((m, idx) => (
+          <Link href={`/import/${m.metadata.matchId}`} key={idx}>
+            <RecentGame
+              key={idx}
+              players={m.info.participants.map((p: any) => ({
+                riotIdGameName: p.riotIdGameName,
+                championName: p.championName,
+                kills: p.kills,
+                deaths: p.deaths,
+                assists: p.assists,
+              }))}
+              gameEndTimestamp={m.info.gameEndTimestamp}
+            />
+          </Link>
+        ))}
+      </div>
+    </div>
+  )
 }

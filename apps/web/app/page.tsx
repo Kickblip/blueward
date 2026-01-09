@@ -1,5 +1,5 @@
 import Countdown from "@repo/ui/Countdown"
-import RecentGame from "@repo/ui/RecentGame"
+// import RecentGame from "@repo/ui/RecentGame"
 import PodiumRow from "@repo/ui/PodiumRow"
 import LeaderboardRow from "@repo/ui/LeaderboardRow"
 
@@ -20,9 +20,9 @@ export default function Home() {
       </div>
       <div className="col-span-1 flex flex-col gap-4">
         <Countdown date={new Date(process.env.NEXT_PUBLIC_SEASON_END!)} />
+        {/* <RecentGame />
         <RecentGame />
-        <RecentGame />
-        <RecentGame />
+        <RecentGame /> */}
       </div>
     </div>
   )

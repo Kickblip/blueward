@@ -1,6 +1,6 @@
 import Loading from "@repo/ui/Loading"
 
-export default function LoadingRecentGames() {
+export default function LoadingImport() {
   return (
     <div className="flex justify-center items-center">
       <Loading />

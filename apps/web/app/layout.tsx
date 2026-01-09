@@ -6,8 +6,8 @@ import { SpeedInsights } from "@vercel/speed-insights/next"
 import { PiCrownSimpleFill } from "react-icons/pi"
 import LightningButton from "@repo/ui/LightningButton"
 import MainContentFrame from "@repo/ui/MainContentFrame"
-import { FaPencilAlt } from "react-icons/fa"
-import LetterPopup from "@/components/LetterPopup"
+// import { FaPencilAlt } from "react-icons/fa"
+// import LetterPopup from "@/components/LetterPopup"
 import { ClerkProvider, SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs"
 import GlowingCard from "@repo/ui/GlowingCard"
 import { dark } from "@clerk/themes"
@@ -44,7 +44,7 @@ export default function RootLayout({
         <body className={`${oswald.variable} ${roboto.className}`}>
           <SpeedInsights />
 
-          <LetterPopup src={"/postcard.webp"} />
+          {/* <LetterPopup src={"/postcard.webp"} /> */}
 
           <MainContentFrame Navbar={<Navbar />} backgroundPatternUrl="/grid.svg" backgroundPatternSize={512}>
             {children}

@@ -29,3 +29,8 @@ export function getThresholdTextColor({ value, max }: { value: number; max: numb
   else if (value >= max * 0.15) colorClass = "text-blue-200"
   return colorClass
 }
+
+export function toErrorMessage(err: unknown) {
+  if (err instanceof Error) return err.message
+  return "Unknown error"
+}
