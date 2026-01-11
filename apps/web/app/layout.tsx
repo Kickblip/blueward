@@ -12,6 +12,7 @@ import { ClerkProvider, SignInButton, SignUpButton, SignedIn, SignedOut, UserBut
 import GlowingCard from "@repo/ui/GlowingCard"
 import { dark } from "@clerk/themes"
 import Link from "next/link"
+import Search from "@/components/Search"
 
 const oswald = Oswald({
   variable: "--font-oswald",
@@ -77,6 +78,7 @@ function Navbar() {
 function SignInButtons() {
   return (
     <div className="flex items-center gap-4">
+      <Search />
       <SignedOut>
         <SignInButton>
           <GlowingCard glow="light" className="gap-2 px-6 py-2 text-blue-100 cursor-pointer">
