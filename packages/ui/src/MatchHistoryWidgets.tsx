@@ -1,4 +1,4 @@
-import { toRelativeTime, toNumberWithCommas } from "./helpers"
+import { epochToRelativeTime, toNumberWithCommas } from "./helpers"
 import CrystalIcon from "./CrystalIcon"
 import Image from "next/image"
 import { cn } from "./cn"
@@ -57,7 +57,7 @@ export function MatchMetadata({
         </span>
       </div>
 
-      <p className="text-xs text-zinc-400">{toRelativeTime(gameEndTimestamp * 1000)}</p>
+      <p className="text-xs text-zinc-400">{epochToRelativeTime(gameEndTimestamp * 1000)}</p>
 
       <div className="flex items-center gap-1 mt-0.5">
         <span>+</span>

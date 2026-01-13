@@ -14,15 +14,17 @@ export default function LeaderboardRow({
   ranking,
   stats,
   name,
+  puuid,
 }: {
   ranking: number
   stats: {
     [key: string]: number | string
   }
   name: string
+  puuid: string
 }) {
   return (
-    <Link href="/player/12345">
+    <Link href={`/player/${puuid}`}>
       <Card>
         <div className="flex items-center gap-8">
           <p className="font-oswald font-semibold text-xl tabular-nums">{ranking}</p>

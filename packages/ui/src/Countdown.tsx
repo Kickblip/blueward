@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import Card from "./Card"
 
 type TimeLeft = {
@@ -11,12 +11,13 @@ type TimeLeft = {
   seconds: number
 }
 
-export default function Countdown({ date }: { date: Date }) {
+export default function Countdown({ date }: { date: string }) {
   const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null)
+  const targetDate = useMemo(() => new Date(date), [date])
 
   useEffect(() => {
     function update() {
-      setTimeLeft(getTimeLeft(date))
+      setTimeLeft(getTimeLeft(targetDate))
     }
 
     update()

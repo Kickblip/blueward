@@ -1,19 +1,18 @@
 import Card from "./Card"
 import Image from "next/image"
-import { toRelativeTime } from "./helpers"
+import { epochToRelativeTime } from "./helpers"
 
-export default function RecentGame({
-  players,
-  gameEndTimestamp,
-}: {
+export type RecentGameProps = {
   players: { riotIdGameName: string; championName: string; kills: number; deaths: number; assists: number }[]
   gameEndTimestamp: number
-}) {
+}
+
+export default function RecentGame({ players, gameEndTimestamp }: RecentGameProps) {
   const team1 = players.slice(0, players.length / 2)
   const team2 = players.slice(players.length / 2)
 
   return (
-    <Card title="Recent Game" subtitle={toRelativeTime(gameEndTimestamp)}>
+    <Card title="Recent Game" subtitle={epochToRelativeTime(gameEndTimestamp)}>
       <div className="flex flex-col gap-3 h-full">
         {team1.map((_, idx) => (
           <div className="flex h-1/5 items-center text-sm" key={idx}>

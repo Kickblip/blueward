@@ -11,7 +11,7 @@ import {
   index,
   uniqueIndex,
 } from "drizzle-orm/pg-core"
-import { relations, sql } from "drizzle-orm"
+import { relations } from "drizzle-orm"
 
 // matches table -> 1 row per game
 // objectives table -> 1 row per team per game (2 rows per game)

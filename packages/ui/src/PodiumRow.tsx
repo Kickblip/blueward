@@ -6,7 +6,8 @@ export default function PodiumRow({
   ranking,
   stats,
   name,
-  championKey,
+  puuid,
+  championName,
   size,
   glow = "light",
 }: {
@@ -15,15 +16,16 @@ export default function PodiumRow({
     [key: string]: string | number
   }
   name: string
-  championKey?: string
+  puuid: string
+  championName?: string
   size: "large" | "small"
   glow?: "light" | "heavy" | "none"
 }) {
   return (
-    <Link href="/player/12345">
+    <Link href={`/player/${puuid}`}>
       <GlowingCard
         backgroundImage={
-          championKey ? `${process.env.NEXT_PUBLIC_CDN_BASE}/img/champion/centered/${championKey}_0.jpg` : undefined
+          championName ? `${process.env.NEXT_PUBLIC_CDN_BASE}/img/champion/centered/${championName}_0.jpg` : undefined
         }
         glow={glow}
       >

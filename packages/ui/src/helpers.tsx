@@ -1,5 +1,5 @@
-export function toRelativeTime(msSinceEpoch: number): string {
-  const diffMs = Date.now() - msSinceEpoch
+export function epochToRelativeTime(epochTime: number): string {
+  const diffMs = Date.now() - epochTime
 
   const seconds = Math.floor(diffMs / 1_000)
   const minutes = Math.floor(seconds / 60)
@@ -12,6 +12,11 @@ export function toRelativeTime(msSinceEpoch: number): string {
   if (hours) return rtf.format(-hours, "hour") // “an hour ago”
   if (minutes) return rtf.format(-minutes, "minute")
   return rtf.format(-seconds, "second") // “just now”
+}
+
+export function timestampToRelativeTime(timestamp: string): string {
+  const date = new Date(timestamp)
+  return epochToRelativeTime(date.getTime())
 }
 
 export function toNumberWithCommas(num: number): string {
