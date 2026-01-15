@@ -62,6 +62,9 @@ export const FetchRecentGames = unstable_cache(
     return games
   },
   ["recent-games"],
+  {
+    tags: ["recent-games"],
+  },
 )
 
 export type TopLadderPlayer = {
@@ -103,4 +106,7 @@ export const FetchTopLadderPlayers = unstable_cache(
     }))
   },
   ["top-players-by-mmr"],
+  {
+    tags: ["top-players-by-mmr"],
+  },
 )

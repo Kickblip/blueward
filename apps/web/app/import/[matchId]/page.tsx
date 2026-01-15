@@ -2,7 +2,7 @@ import { fetchWithRetry, importMatchJson } from "../helpers"
 import { currentUser, clerkClient } from "@clerk/nextjs/server"
 import ErrorMessage from "@repo/ui/ErrorMessage"
 import { toErrorMessage } from "@repo/ui/helpers"
-import { revalidateTag, revalidatePath } from "next/cache"
+import RevalidateAfterImport from "./RevalidateAfterImport"
 
 export default async function Import({ params }: { params: Promise<{ matchId: string }> }) {
   const { matchId } = await params
@@ -38,13 +38,10 @@ export default async function Import({ params }: { params: Promise<{ matchId: st
   try {
     await importMatchJson(matchData)
 
-    revalidateTag("recent-games", "max")
-    revalidateTag("top-players-by-mmr", "max")
-    revalidatePath("/leaderboard/[stat]", "page")
-
     return (
       <div className="flex flex-col items-center gap-2">
         <h1 className="text-xl font-oswald font-semibold">Import complete for {matchId}</h1>
+        <RevalidateAfterImport />
       </div>
     )
   } catch (err) {
