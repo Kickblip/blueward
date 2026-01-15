@@ -11,7 +11,7 @@ import {
   index,
   uniqueIndex,
 } from "drizzle-orm/pg-core"
-import { relations } from "drizzle-orm"
+import { relations, sql } from "drizzle-orm"
 
 // matches table -> 1 row per game
 // objectives table -> 1 row per team per game (2 rows per game)
@@ -200,6 +200,10 @@ export const players = pgTable("players", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   authId: varchar({ length: 128 }).unique(),
   bannerId: integer().notNull().default(0),
+  banners: integer("banners")
+    .array()
+    .notNull()
+    .default(sql`ARRAY[0,1,2,3]::int[]`),
   createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
 
   puuid: varchar({ length: 128 }).notNull().unique(),

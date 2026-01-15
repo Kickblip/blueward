@@ -6,6 +6,8 @@ import { unstable_cache } from "next/cache"
 
 export const FetchRecentGames = unstable_cache(
   async (limit = 3) => {
+    "use server"
+
     const roleOrder: Record<string, number> = {
       TOP: 0,
       JUNGLE: 1,
@@ -72,6 +74,8 @@ export type TopLadderPlayer = {
 
 export const FetchTopLadderPlayers = unstable_cache(
   async (limit = 15): Promise<TopLadderPlayer[]> => {
+    "use server"
+
     const gamesPlayed = sql<number>`count(*)::int`
     const totalMmr = sql<number>`coalesce(sum(${playerPerformances.mmr}), 0)::int`
     const winrate = sql<number>`avg((${playerPerformances.win})::int)::float`

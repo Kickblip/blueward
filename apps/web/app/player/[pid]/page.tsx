@@ -2,25 +2,29 @@ import Card from "@repo/ui/Card"
 import ProfileMatch from "@/components/ProfileMatch"
 import Image from "next/image"
 import DonutChart from "@repo/ui/DonutChart"
-import { FaPencilAlt } from "react-icons/fa"
-import { currentUser } from "@clerk/nextjs/server"
 import { BasicStatFormat } from "@repo/ui/MatchHistoryWidgets"
-
-const championsAndWinrates = [
-  { name: "Viego", played: 11, wins: 6, losses: 5, winrate: 0.545 },
-  { name: "Kayn", played: 8, wins: 5, losses: 3, winrate: 0.625 },
-  { name: "Yasuo", played: 7, wins: 3, losses: 4, winrate: 0.429 },
-  { name: "Zed", played: 5, wins: 3, losses: 2, winrate: 0.6 },
-]
-
-const kills = 8.5
-const deaths = 6.2
-const assists = 9.1
+import { fetchRecentMatchesByPuuid, fetchPlayerProfileByPuuid, fetchProfilePictureByAuthId } from "./actions"
+import { calcAverageKDA, calcWinrate, calcWinrateByChampion } from "./helpers"
+import { BsPersonFillAdd } from "react-icons/bs"
+import Link from "next/link"
+import { currentUser } from "@clerk/nextjs/server"
+import BannerSelector from "@/components/BannerSelector"
 
 export default async function PlayerProfile({ params }: { params: Promise<{ pid: string }> }) {
   const { pid } = await params
+  const matches = await fetchRecentMatchesByPuuid(pid)
+  const playerProfile = await fetchPlayerProfileByPuuid(pid)
+  const profilePictureUrl = await fetchProfilePictureByAuthId(playerProfile?.authId)
+
+  const avgKDA = calcAverageKDA(matches)
+  const winrate = calcWinrate(matches)
+  const winrateByChampion = calcWinrateByChampion(matches)
+
   const user = await currentUser()
-  const imageUrl = user?.imageUrl // TODO: Store clerk uid with player profile data in db so we can fetch the correct image
+  let userOwnsProfile = false
+  if (user && playerProfile?.authId) {
+    userOwnsProfile = playerProfile.authId === user.id
+  }
 
   return (
     <div className="grid grid-cols-3 gap-4 min-h-screen">
@@ -28,40 +32,44 @@ export default async function PlayerProfile({ params }: { params: Promise<{ pid:
         <Card className="p-0">
           <div className="relative">
             <Image
-              src="/banners/udyr-train.webp" // TODO: Add a default banner
+              src={`/banners/${playerProfile?.bannerId ?? 0}.webp`}
               alt="player background"
-              width={512}
-              height={512}
-              className="aspect-[5/2] w-full rounded-t-md object-cover object-center"
+              width={1000}
+              height={1000}
+              className="aspect-[2/1] w-full rounded-t-md object-cover object-center"
             />
 
-            <button className="absolute top-2 right-2 bg-zinc-900 p-2 rounded-lg cursor-pointer hover:bg-zinc-800 transition-colors duration-200">
-              <FaPencilAlt className="text-zinc-200" />
-            </button>
+            {userOwnsProfile && <BannerSelector puuid={pid} playerBanners={playerProfile?.banners ?? []} />}
 
-            <div className="absolute -bottom-8 left-4 h-26 w-26 rounded-full border-4 border-zinc-900 overflow-hidden">
-              <Image src={imageUrl || "/"} alt="Player avatar" width={512} height={512} className="h-full w-full object-cover" />
+            <div className="absolute -bottom-8 left-4 h-32 w-32 rounded-full border-4 border-zinc-900 overflow-hidden">
+              <Image
+                src={profilePictureUrl || "/defaultpfp.webp"}
+                alt="Player avatar"
+                width={512}
+                height={512}
+                className="h-full w-full object-cover"
+              />
             </div>
           </div>
 
           <div className="flex gap-1 px-4 pt-10 mb-2 items-end">
-            <p className="font-oswald scale-y-150 font-semibold text-4xl">Mrbob21</p>
-            <p className="text-sm text-zinc-400">#1234</p>
+            <p className="font-oswald scale-y-150 font-semibold text-4xl">{playerProfile?.riotIdGameName}</p>
+            <p className="text-sm text-zinc-400">#{playerProfile?.riotIdTagline}</p>
           </div>
 
           <div className="flex flex-col p-4 gap-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <DonutChart value={0.67} size={70} thickness={14} />
+                <DonutChart value={winrate.winrate} size={70} thickness={14} />
                 <div className="flex flex-col">
-                  <p className="text-zinc-200 font-semibold text-lg">72% WR</p>
-                  <div className="text-sm text-zinc-400">56 Played</div>
+                  <p className="text-zinc-200 font-semibold text-lg">{(winrate.winrate * 100).toFixed(0)}% WR</p>
+                  <div className="text-sm text-zinc-400">{winrate.total} Played</div>
                 </div>
               </div>
 
               <BasicStatFormat
-                title={`${kills} / ${deaths} / ${assists}`}
-                subtitle={`${((kills + assists) / Math.max(1, deaths)).toFixed(1)} KDA`}
+                title={`${avgKDA.avgKills.toFixed(1)} / ${avgKDA.avgDeaths.toFixed(1)} / ${avgKDA.avgAssists.toFixed(1)}`}
+                subtitle={`${((avgKDA.avgKills + avgKDA.avgAssists) / Math.max(1, avgKDA.avgDeaths)).toFixed(1)} KDA`}
               />
             </div>
 
@@ -77,7 +85,7 @@ export default async function PlayerProfile({ params }: { params: Promise<{ pid:
             </div>
 
             <div className="flex flex-col gap-1">
-              {championsAndWinrates.map((c, index) => (
+              {winrateByChampion.map((c, index) => (
                 <div
                   key={index}
                   className="grid grid-cols-4 gap-2 items-center text-zinc-200 font-semibold text-sm text-center justify-items-center"
@@ -87,6 +95,7 @@ export default async function PlayerProfile({ params }: { params: Promise<{ pid:
                     alt=""
                     width={40}
                     height={40}
+                    className="rounded"
                   />
                   <p>{c.played}</p>
 
@@ -100,14 +109,23 @@ export default async function PlayerProfile({ params }: { params: Promise<{ pid:
             </div>
           </div>
         </Card>
+
+        {!playerProfile?.authId && (
+          <Link href={`/player/${pid}/claim`}>
+            <Card className="hover:bg-zinc-800 transition-colors duration-200">
+              <div className="flex items-center justify-center gap-2">
+                <BsPersonFillAdd size={18} />
+                <p className="text-sm">Claim Account</p>
+              </div>
+            </Card>
+          </Link>
+        )}
       </div>
 
       <div className="col-span-2 flex flex-col gap-4">
-        <ProfileMatch win={true} />
-        <ProfileMatch win={true} />
-        <ProfileMatch win={false} />
-        <ProfileMatch win={false} />
-        <ProfileMatch win={true} />
+        {matches.map((match, index) => (
+          <ProfileMatch key={index} match={match} />
+        ))}
       </div>
     </div>
   )

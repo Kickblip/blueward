@@ -3,6 +3,7 @@ import PodiumRow from "@repo/ui/PodiumRow"
 import { statList, getTopPlayersForStat, StatKey } from "./helpers"
 import Link from "next/link"
 import Card from "@repo/ui/Card"
+import { timestampToRelativeTime } from "@repo/ui/helpers"
 
 export async function generateStaticParams() {
   return Object.keys(statList).map((stat) => ({ stat }))
@@ -17,7 +18,7 @@ export default async function Leaderboard({ params }: { params: Promise<{ stat: 
 
   const buildStatsProp = (value: number, createdAt: string) => ({
     [statList[stat]]: value,
-    // date: createdAt,
+    date: timestampToRelativeTime(createdAt),
   })
 
   return (

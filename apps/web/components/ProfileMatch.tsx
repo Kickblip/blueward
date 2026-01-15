@@ -1,13 +1,14 @@
 "use client"
 
 import Card from "@repo/ui/Card"
+import { type RecentMatchRow } from "@/app/player/[pid]/actions"
+import Link from "next/link"
 import {
   MatchMetadata,
   ChampionIconAndLevel,
   SummonerSpells,
   Runes,
   Items,
-  WardAndVisionScore,
   Username,
   BasicStatFormat,
   ImageWithLabel,
@@ -18,85 +19,173 @@ import { VersusIcon, SwordIcon, WardIcon, HelmetIcon } from "@repo/ui/icons"
 import { LuChartPie, LuLayoutList } from "react-icons/lu"
 import { BsFire } from "react-icons/bs"
 import { BiSolidBellRing } from "react-icons/bi"
+import Loading from "@repo/ui/Loading"
 
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useCallback } from "react"
+import ErrorMessage from "@repo/ui/ErrorMessage"
 
-const items = [1039, 1040, 2143, 1042, 2052, 2142]
-const ward = 2055
-const summonerSpells = [1, 3]
-const championKey = "Olaf"
-const championLevel = 15
-const date = 1764350287
-const kills = 10
-const deaths = 2
-const assists = 8
-const cs = 150
-const gameDuration = 1800
-const visionScore = 20
-const magicDamage = 5000
-const physicalDamage = 18000
-const trueDamage = 2000
-const primaryTrait = 8000
-const secondaryTrait = 8100
-const crystals = 52257
-const goldEarned = 13500
-const pentaKills = 1
+type ParticipantRow = {
+  puuid: string
+  riotIdGameName: string
+  riotIdTagline: string
+  champLevel: number
+  championName: string
+  role: string
+  kills: number
+  deaths: number
+  assists: number
+  goldEarned: number
+  item0: number
+  item1: number
+  item2: number
+  item3: number
+  item4: number
+  item5: number
+  item6: number
+  roleBoundItem: number
+  summoner1Id: number
+  summoner2Id: number
+  magicDamageDealtToChampions: number
+  physicalDamageDealtToChampions: number
+  neutralMinionsKilled: number
+  trueDamageDealtToChampions: number
+  totalMinionsKilled: number
+  win: boolean
+  perkPrimaryStyleId: number
+  perkSecondaryStyleId: number
+  doubleKills: number
+  tripleKills: number
+  quadraKills: number
+  pentaKills: number
+  wardsPlaced: number
+  controlWardsPlaced: number
+  wardTakedowns: number
+  visionScore: number
+  spell1Casts: number
+  spell2Casts: number
+  spell3Casts: number
+  spell4Casts: number
+  summoner1Casts: number
+  summoner2Casts: number
+  assistMePings: number
+  enemyMissingPings: number
+  enemyVisionPings: number
+  needVisionPings: number
+  onMyWayPings: number
+  pushPings: number
+}
 
-export default function ProfileMatch({ win }: { win: boolean }) {
+export default function ProfileMatch({ match }: { match: RecentMatchRow }) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [participants, setParticipants] = useState<ParticipantRow[] | null>(null)
+
+  const cs = match.totalMinionsKilled + match.neutralMinionsKilled
+  const totalDamage = match.physicalDamageDealtToChampions + match.magicDamageDealtToChampions + match.trueDamageDealtToChampions
+
+  const items = [match.item0, match.item1, match.item2, match.item6, match.item3, match.item4, match.item5, match.roleBoundItem]
+
+  const onToggleExpanded = useCallback(async () => {
+    const next = !isExpanded
+    setIsExpanded(next)
+
+    if (next && !participants && !isLoading) {
+      try {
+        setIsLoading(true)
+        setError(null)
+
+        const res = await fetch(`/api/match/${match.matchRowId}/participants`, {
+          method: "GET",
+          cache: "force-cache",
+        })
+
+        if (!res.ok) throw new Error(`Request failed: ${res.status}`)
+        const data = (await res.json()) as ParticipantRow[]
+        setParticipants(data)
+        console.log("Fetched participants:", data)
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Failed to load match details")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+  }, [isExpanded, participants, isLoading, match.matchRowId])
 
   return (
     <Card className="p-0">
-      <div
-        className="grid grid-cols-6 gap-4 items-center cursor-pointer p-2.5 pr-6 pl-2"
-        onClick={() => setIsExpanded(!isExpanded)}
-      >
-        <MatchMetadata win={win} gameEndTimestamp={date} gameDuration={gameDuration} payout={crystals} />
+      <div className="grid grid-cols-6 gap-4 items-center cursor-pointer p-2.5 pr-6 pl-2" onClick={onToggleExpanded}>
+        <MatchMetadata
+          win={match.win}
+          gameEndTimestamp={match.gameEndTimestamp}
+          gameDuration={match.gameDuration}
+          payout={match.goldEarned}
+          mmr={match.mmr}
+        />
 
         <div className="flex items-center gap-1">
           <ChampionIconAndLevel
-            src={`${process.env.NEXT_PUBLIC_CDN_BASE}/img/champion/tiles/${championKey}_0.jpg`}
-            championLevel={championLevel}
-            championName={championKey}
+            src={`${process.env.NEXT_PUBLIC_CDN_BASE}/img/champion/tiles/${match.championName}_0.jpg`}
+            championLevel={match.champLevel}
+            championName={match.championName}
             size={45}
           />
-          <SummonerSpells spells={summonerSpells} size={21.5} />
-          <Runes primaryTrait={primaryTrait} secondaryTrait={secondaryTrait} size={21.5} className="p-0.5" />
+          <SummonerSpells spells={[match.summoner1Id, match.summoner2Id]} size={21.5} />
+          <Runes
+            primaryTrait={match.perkPrimaryStyleId}
+            secondaryTrait={match.perkSecondaryStyleId}
+            size={21.5}
+            className="p-0.5"
+          />
         </div>
 
         <BasicStatFormat
-          title={`${kills} / ${deaths} / ${assists}`}
-          subtitle={`${((kills + assists) / Math.max(1, deaths)).toFixed(1)} KDA`}
+          title={`${match.kills} / ${match.deaths} / ${match.assists}`}
+          subtitle={`${((match.kills + match.assists) / Math.max(1, match.deaths)).toFixed(1)} KDA`}
         />
 
-        <BasicStatFormat title={`${cs} CS`} subtitle={`${(cs / (gameDuration / 60)).toFixed(1)}/min`} />
+        <BasicStatFormat title={`${cs} CS`} subtitle={`${(cs / (match.gameDuration / 60)).toFixed(1)}/min`} />
 
         <BasicStatFormat
-          title={`${toNumberWithCommas(physicalDamage + magicDamage + trueDamage)}`}
-          subtitle={`${((physicalDamage + magicDamage + trueDamage) / (gameDuration / 60)).toFixed(1)}/min`}
+          title={`${toNumberWithCommas(totalDamage)} dmg`}
+          subtitle={`${(totalDamage / (match.gameDuration / 60)).toFixed(1)}/min`}
         />
 
         <div className="flex items-center gap-1">
           <Items
-            srcs={items.map(
-              (item) => `${process.env.NEXT_PUBLIC_CDN_BASE}/${process.env.NEXT_PUBLIC_PATCH_VERSION}/img/item/${item}.png`,
+            srcs={items.map((item) =>
+              item === 0
+                ? "/"
+                : `${process.env.NEXT_PUBLIC_CDN_BASE}/${process.env.NEXT_PUBLIC_PATCH_VERSION}/img/item/${item}.png`,
             )}
             size={30}
-          />
-          <WardAndVisionScore
-            src={`${process.env.NEXT_PUBLIC_CDN_BASE}/${process.env.NEXT_PUBLIC_PATCH_VERSION}/img/item/${ward}.png`}
-            visionScore={visionScore}
           />
         </div>
       </div>
 
-      {isExpanded && <ExpandedMatchDetails />}
+      {isExpanded && (
+        <>
+          {isLoading && (
+            <div className="flex items-center justify-center p-4">
+              <Loading />
+            </div>
+          )}
+          {!isLoading && error && (
+            <div className="p-4">
+              <ErrorMessage message={error} />
+            </div>
+          )}
+          {!isLoading && !error && participants && (
+            <ExpandedMatchDetails participants={participants} gameDuration={match.gameDuration} />
+          )}
+        </>
+      )}
     </Card>
   )
 }
 
-export function ExpandedMatchDetails() {
+export function ExpandedMatchDetails({ participants, gameDuration }: { participants: ParticipantRow[]; gameDuration: number }) {
   const [activeView, setActiveView] = useState<"general" | "details">("general")
 
   return (
@@ -118,21 +207,28 @@ export function ExpandedMatchDetails() {
         </button>
       </div>
 
-      {activeView === "general" ? <GeneralView /> : <DetailsView />}
+      {activeView === "general" ? (
+        <GeneralView participants={participants} gameDuration={gameDuration} />
+      ) : (
+        <DetailsView participants={participants} />
+      )}
     </div>
   )
 }
 
-export function GeneralView() {
+export function GeneralView({ participants, gameDuration }: { participants: ParticipantRow[]; gameDuration: number }) {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-2">
       <div
         className="grid grid-cols-7 gap-2 items-center text-center
                       bg-zinc-800 py-2
                       text-xs text-zinc-300"
       >
-        <p className="col-span-2 text-left pl-4 text-blue-500 font-semibold text-sm">
-          Victory <span className="text-zinc-200 font-normal text-xs">(Blue Team)</span>
+        <p className="col-span-2 text-left pl-4 flex items-center gap-2">
+          <span className={`font-semibold text-sm ${participants[0]?.win ? "text-blue-500" : "text-rose-500"}`}>
+            {participants[0]?.win ? "Victory" : "Defeat"}
+          </span>
+          <span className="text-zinc-200 font-normal text-xs">(Blue Team)</span>
         </p>
         <p>KDA</p>
         <p>Damage</p>
@@ -142,8 +238,8 @@ export function GeneralView() {
       </div>
 
       <div className="flex flex-col gap-2">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <ParticipantRow key={i} />
+        {participants.slice(0, 5).map((participant, i) => (
+          <ParticipantRow key={i + gameDuration} participant={participant} gameDuration={gameDuration} />
         ))}
       </div>
 
@@ -152,8 +248,11 @@ export function GeneralView() {
                       bg-zinc-800 py-2
                       text-xs text-zinc-300"
       >
-        <p className="col-span-2 text-left pl-4 text-rose-500 font-semibold text-sm">
-          Defeat <span className="text-zinc-200 font-normal text-xs">(Red Team)</span>
+        <p className="col-span-2 text-left pl-4 flex items-center gap-2">
+          <span className={`font-semibold text-sm ${participants[5]?.win ? "text-blue-500" : "text-rose-500"}`}>
+            {participants[5]?.win ? "Victory" : "Defeat"}
+          </span>
+          <span className="text-zinc-200 font-normal text-xs">(Red Team)</span>
         </p>
         <p>KDA</p>
         <p>Damage</p>
@@ -163,16 +262,17 @@ export function GeneralView() {
       </div>
 
       <div className="flex flex-col gap-2">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <ParticipantRow key={i} />
+        {participants.slice(5, 10).map((participant, i) => (
+          <ParticipantRow key={i + 5 + gameDuration} participant={participant} gameDuration={gameDuration} />
         ))}
       </div>
     </div>
   )
 }
 
-export function DetailsView() {
+export function DetailsView({ participants }: { participants: ParticipantRow[] }) {
   const [playerIdx, setPlayerIdx] = useState(0)
+  const [participant, setParticipant] = useState<ParticipantRow>(participants[0]!)
 
   return (
     <div className="flex flex-col gap-4">
@@ -194,10 +294,13 @@ export function DetailsView() {
               className={`p-1 px-3 rounded-md flex items-center justify-center cursor-pointer hover:bg-zinc-800 transition-colors duration-200 ${
                 playerIdx === idx ? "bg-zinc-800" : ""
               }`}
-              onClick={() => setPlayerIdx(idx)}
+              onClick={() => {
+                setPlayerIdx(idx)
+                setParticipant(participants[idx]!)
+              }}
             >
               <Image
-                src={`${process.env.NEXT_PUBLIC_CDN_BASE}/img/champion/tiles/Ashe_0.jpg`}
+                src={`${process.env.NEXT_PUBLIC_CDN_BASE}/img/champion/tiles/${participants[idx]!.championName}_0.jpg`}
                 alt=""
                 width={45}
                 height={45}
@@ -216,13 +319,13 @@ export function DetailsView() {
           </div>
 
           <div className="grid grid-cols-4">
-            <BasicStatFormat title="4" subtitle="Double" className="text-sm font-medium" />
-            <BasicStatFormat title="2" subtitle="Triple" className="text-sm font-medium" />
-            <BasicStatFormat title="1" subtitle="Quadra" className="text-sm font-medium" />
+            <BasicStatFormat title={participant.doubleKills} subtitle="Double" className="text-sm font-medium" />
+            <BasicStatFormat title={participant.tripleKills} subtitle="Triple" className="text-sm font-medium" />
+            <BasicStatFormat title={participant.quadraKills} subtitle="Quadra" className="text-sm font-medium" />
             <BasicStatFormat
-              title={`${pentaKills}`}
+              title={`${participant.pentaKills}`}
               subtitle="Penta"
-              className={`text-sm font-medium ${pentaKills > 0 ? "text-yellow-300" : ""}`}
+              className={`text-sm font-medium ${1 > 0 ? "text-yellow-300" : ""}`}
             />
           </div>
         </Card>
@@ -234,10 +337,10 @@ export function DetailsView() {
           </div>
 
           <div className="grid grid-cols-4">
-            <BasicStatFormat title="13" subtitle="Placed" className="text-sm font-medium" />
-            <BasicStatFormat title="5" subtitle="Killed" className="text-sm font-medium" />
-            <BasicStatFormat title="4" subtitle="Control" className="text-sm font-medium" />
-            <BasicStatFormat title="13" subtitle="Vision" className="text-sm font-medium" />
+            <BasicStatFormat title={participant.wardsPlaced} subtitle="Placed" className="text-sm font-medium" />
+            <BasicStatFormat title={participant.wardTakedowns} subtitle="Killed" className="text-sm font-medium" />
+            <BasicStatFormat title={participant.controlWardsPlaced} subtitle="Control" className="text-sm font-medium" />
+            <BasicStatFormat title={participant.visionScore} subtitle="Vision" className="text-sm font-medium" />
           </div>
         </Card>
 
@@ -248,9 +351,21 @@ export function DetailsView() {
           </div>
 
           <div className="grid grid-cols-3">
-            <BasicStatFormat title={toNumberWithCommas(78000)} subtitle="Physical" className="text-sm font-medium" />
-            <BasicStatFormat title={toNumberWithCommas(12000)} subtitle="Magic" className="text-sm font-medium" />
-            <BasicStatFormat title={toNumberWithCommas(1500)} subtitle="True" className="text-sm font-medium" />
+            <BasicStatFormat
+              title={toNumberWithCommas(participant.physicalDamageDealtToChampions)}
+              subtitle="Physical"
+              className="text-sm font-medium"
+            />
+            <BasicStatFormat
+              title={toNumberWithCommas(participant.magicDamageDealtToChampions)}
+              subtitle="Magic"
+              className="text-sm font-medium"
+            />
+            <BasicStatFormat
+              title={toNumberWithCommas(participant.trueDamageDealtToChampions)}
+              subtitle="True"
+              className="text-sm font-medium"
+            />
           </div>
         </Card>
       </div>
@@ -269,17 +384,17 @@ export function DetailsView() {
               <Card className="flex items-center justify-center w-8 h-8 text-sm">E</Card>
               <Card className="flex items-center justify-center w-8 h-8 text-sm">R</Card>
 
-              <BasicStatFormat title="45" subtitle="casts" className="text-xs" />
-              <BasicStatFormat title="23" subtitle="casts" className="text-xs" />
-              <BasicStatFormat title="65" subtitle="casts" className="text-xs" />
-              <BasicStatFormat title="12" subtitle="casts" className="text-xs" />
+              <BasicStatFormat title={participant.spell1Casts} subtitle="casts" className="text-xs" />
+              <BasicStatFormat title={participant.spell2Casts} subtitle="casts" className="text-xs" />
+              <BasicStatFormat title={participant.spell3Casts} subtitle="casts" className="text-xs" />
+              <BasicStatFormat title={participant.spell4Casts} subtitle="casts" className="text-xs" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <ImageWithLabel src={`/spells/4.png`} size={30} label="D" />
               <ImageWithLabel src={`/spells/11.png`} size={30} label="F" />
 
-              <BasicStatFormat title="23" subtitle="casts" className="text-xs" />
-              <BasicStatFormat title="65" subtitle="casts" className="text-xs" />
+              <BasicStatFormat title={participant.summoner1Casts} subtitle="casts" className="text-xs" />
+              <BasicStatFormat title={participant.summoner2Casts} subtitle="casts" className="text-xs" />
             </div>
           </div>
         </Card>
@@ -298,12 +413,12 @@ export function DetailsView() {
             <Image src="/pings/enemyVisionPings.webp" alt="On My Way" width={30} height={30} />
             <Image src="/pings/needVisionPings.webp" alt="Retreat" width={30} height={30} />
 
-            <BasicStatFormat title="45" subtitle="times" className="text-xs" />
-            <BasicStatFormat title="23" subtitle="times" className="text-xs" />
-            <BasicStatFormat title="65" subtitle="times" className="text-xs" />
-            <BasicStatFormat title="12" subtitle="times" className="text-xs" />
-            <BasicStatFormat title="65" subtitle="times" className="text-xs" />
-            <BasicStatFormat title="12" subtitle="times" className="text-xs" />
+            <BasicStatFormat title={`${participant.pushPings}`} subtitle="times" className="text-xs" />
+            <BasicStatFormat title={`${participant.onMyWayPings}`} subtitle="times" className="text-xs" />
+            <BasicStatFormat title={`${participant.enemyMissingPings}`} subtitle="times" className="text-xs" />
+            <BasicStatFormat title={`${participant.assistMePings}`} subtitle="times" className="text-xs" />
+            <BasicStatFormat title={`${participant.enemyVisionPings}`} subtitle="times" className="text-xs" />
+            <BasicStatFormat title={`${participant.needVisionPings}`} subtitle="times" className="text-xs" />
           </div>
         </Card>
       </div>
@@ -311,55 +426,69 @@ export function DetailsView() {
   )
 }
 
-export function ParticipantRow() {
+export function ParticipantRow({ participant, gameDuration }: { participant: ParticipantRow; gameDuration: number }) {
+  const cs = participant.totalMinionsKilled + participant.neutralMinionsKilled
+  const totalDamage =
+    participant.physicalDamageDealtToChampions + participant.magicDamageDealtToChampions + participant.trueDamageDealtToChampions
+
+  const items = [
+    participant.item0,
+    participant.item1,
+    participant.item2,
+    participant.item6,
+    participant.item3,
+    participant.item4,
+    participant.item5,
+    participant.roleBoundItem,
+  ]
+
   return (
     <div className="grid grid-cols-7 gap-2 items-center text-center">
       <div className="flex items-center gap-1 col-span-2">
         <ChampionIconAndLevel
-          src={`${process.env.NEXT_PUBLIC_CDN_BASE}/img/champion/tiles/Ashe_0.jpg`}
-          championLevel={15}
-          championName={"Ashe"}
+          src={`${process.env.NEXT_PUBLIC_CDN_BASE}/img/champion/tiles/${participant.championName}_0.jpg`}
+          championLevel={participant.champLevel}
+          championName={participant.championName}
           size={40}
         />
-        <SummonerSpells spells={summonerSpells} size={19} />
-        <Runes primaryTrait={primaryTrait} secondaryTrait={secondaryTrait} size={19} className="p-0.5" />
-        <Username username="PlayerOne" className="ml-2" />
+        <SummonerSpells spells={[participant.summoner1Id, participant.summoner2Id]} size={19} />
+        <Runes
+          primaryTrait={participant.perkPrimaryStyleId}
+          secondaryTrait={participant.perkSecondaryStyleId}
+          size={19}
+          className="p-0.5"
+        />
+        <Link href={`/player/${participant.puuid}`} className="hover:text-blue-400 transition-colors duration-200">
+          <Username username={participant.riotIdGameName} className="ml-2" />
+        </Link>
       </div>
 
       <BasicStatFormat
-        title={`${kills} / ${deaths} / ${assists}`}
-        subtitle={`${((kills + assists) / Math.max(1, deaths)).toFixed(1)} KDA`}
-        className="text-xs"
-      />
-
-      {/* <TotalDamage totalDamage={18000} gameDuration={1800} className="text-xs" /> */}
-      <BasicStatFormat
-        title={toNumberWithCommas(physicalDamage + magicDamage + trueDamage)}
-        subtitle={`${((physicalDamage + magicDamage + trueDamage) / (gameDuration / 60)).toFixed(1)}/min`}
+        title={`${participant.kills} / ${participant.deaths} / ${participant.assists}`}
+        subtitle={`${((participant.kills + participant.assists) / Math.max(1, participant.deaths)).toFixed(1)} KDA`}
         className="text-xs"
       />
 
       <BasicStatFormat
-        title={toNumberWithCommas(goldEarned)}
-        subtitle={`${(goldEarned / (gameDuration / 60)).toFixed(1)}/min`}
+        title={toNumberWithCommas(totalDamage)}
+        subtitle={`${(totalDamage / (gameDuration / 60)).toFixed(1)}/min`}
+        className="text-xs"
+      />
+
+      <BasicStatFormat
+        title={toNumberWithCommas(participant.goldEarned)}
+        subtitle={`${(participant.goldEarned / (gameDuration / 60)).toFixed(1)}/min`}
         className="text-xs"
       />
 
       <BasicStatFormat title={`${cs} CS`} subtitle={`${(cs / (gameDuration / 60)).toFixed(1)}/min`} className="text-xs" />
 
-      <div className="flex items-center">
-        <Items
-          srcs={[1055, 3006, 3085, 3031, 3046, 3153].map(
-            (item) => `${process.env.NEXT_PUBLIC_CDN_BASE}/${process.env.NEXT_PUBLIC_PATCH_VERSION}/img/item/${item}.png`,
-          )}
-          size={20}
-        />
-        <WardAndVisionScore
-          src={`${process.env.NEXT_PUBLIC_CDN_BASE}/${process.env.NEXT_PUBLIC_PATCH_VERSION}/img/item/${ward}.png`}
-          visionScore={visionScore}
-          size={25}
-        />
-      </div>
+      <Items
+        srcs={items.map((item) =>
+          item === 0 ? "/" : `${process.env.NEXT_PUBLIC_CDN_BASE}/${process.env.NEXT_PUBLIC_PATCH_VERSION}/img/item/${item}.png`,
+        )}
+        size={20}
+      />
     </div>
   )
 }

@@ -3,7 +3,15 @@ import CrystalIcon from "./CrystalIcon"
 import Image from "next/image"
 import { cn } from "./cn"
 
-export function BasicStatFormat({ title, subtitle, className }: { title: string; subtitle: string; className?: string }) {
+export function BasicStatFormat({
+  title,
+  subtitle,
+  className,
+}: {
+  title: string | number
+  subtitle: string | number
+  className?: string
+}) {
   return (
     <div className={cn("flex flex-col items-center gap-1", className || "")}>
       <p>{title}</p>
@@ -41,11 +49,13 @@ export function MatchMetadata({
   gameEndTimestamp,
   gameDuration,
   payout,
+  mmr,
 }: {
   win: boolean
   gameEndTimestamp: number
   gameDuration: number
   payout: number
+  mmr: number
 }) {
   return (
     <div className="flex flex-col items-center gap-0.5 text-sm">
@@ -57,13 +67,15 @@ export function MatchMetadata({
         </span>
       </div>
 
-      <p className="text-xs text-zinc-400">{epochToRelativeTime(gameEndTimestamp * 1000)}</p>
+      <p className="text-xs text-zinc-400">{epochToRelativeTime(gameEndTimestamp)}</p>
 
-      <div className="flex items-center gap-1 mt-0.5">
+      {/* <div className="flex items-center gap-1 mt-0.5">
         <span>+</span>
         <CrystalIcon />
         <span>{toNumberWithCommas(payout)}</span>
-      </div>
+      </div> */}
+
+      <p className="text-xs mt-0.5">{mmr} MMR</p>
     </div>
   )
 }
@@ -106,14 +118,16 @@ export function SummonerSpells({ spells, size = 30 }: { spells: number[]; size?:
   )
 }
 
-const runePaths = {
+const runePaths: Record<number, string> = {
   8000: "/runes/precision.png",
   8100: "/runes/domination.png",
   8200: "/runes/sorcery.png",
   8300: "/runes/resolve.png",
   8400: "/runes/inspiration.png",
-}
-type RuneTraitId = keyof typeof runePaths
+} as const
+
+const PRIMARY_FALLBACK = "/runes/precision.png"
+const SECONDARY_FALLBACK = "/runes/domination.png"
 
 export function Runes({
   primaryTrait,
@@ -121,39 +135,45 @@ export function Runes({
   size = 30,
   className,
 }: {
-  primaryTrait: RuneTraitId
-  secondaryTrait: RuneTraitId
+  primaryTrait: number
+  secondaryTrait: number
   size?: number
   className?: string
 }) {
   return (
     <div className="flex flex-col items-center gap-0.5">
-      <Image src={runePaths[primaryTrait]} alt="" width={size} height={size} className={cn("p-1", className || "")} />
-      <Image src={runePaths[secondaryTrait]} alt="" width={size} height={size} className={cn("p-1", className || "")} />
+      <Image
+        src={runePaths[primaryTrait] ?? PRIMARY_FALLBACK}
+        alt=""
+        width={size}
+        height={size}
+        className={cn("p-1", className || "")}
+      />
+      <Image
+        src={runePaths[secondaryTrait] ?? SECONDARY_FALLBACK}
+        alt=""
+        width={size}
+        height={size}
+        className={cn("p-1", className || "")}
+      />
     </div>
   )
 }
 
 export function Items({ srcs, size = 30 }: { srcs: string[]; size?: number }) {
   return (
-    <div className="grid grid-cols-3 gap-0.5">
-      {srcs.map((src, index) => (
-        <Image key={index} src={src} alt="" width={size} height={size} className="rounded" />
-      ))}
-    </div>
-  )
-}
-
-export function WardAndVisionScore({ src, visionScore, size = 35 }: { src: string; visionScore: number; size?: number }) {
-  return (
-    <div className="relative mx-auto">
-      <Image src={src} alt="" width={size} height={size} className="rounded" />
-      <div
-        className="absolute bottom-0 left-0 p-0.5 -ml-1 -mb-1
-                  text-xs bg-zinc-950 rounded-sm"
-      >
-        {visionScore}
-      </div>
+    <div className="grid grid-cols-4">
+      {srcs.map((src, index) =>
+        src === "/" ? (
+          <div
+            key={index}
+            className="aspect-square bg-zinc-950 rounded border border-zinc-800"
+            style={{ width: size, height: size }}
+          ></div>
+        ) : (
+          <Image key={index} src={src} alt="" width={size} height={size} className="aspect-square rounded" />
+        ),
+      )}
     </div>
   )
 }

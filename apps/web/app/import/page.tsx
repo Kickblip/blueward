@@ -8,7 +8,7 @@ import { fetchWithRetry } from "./helpers"
 export default async function RecentGames() {
   const user = await currentUser()
   if (!user) {
-    return <ErrorMessage code={401} message="User not authenticated" />
+    return <ErrorMessage code={401} message="User not authenticated. Please log in!" />
   }
 
   if (user.privateMetadata.role !== "admin") {
