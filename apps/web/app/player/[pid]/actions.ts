@@ -1,14 +1,17 @@
-import { desc, eq } from "drizzle-orm"
+import { desc, eq, sql, type InferSelectModel } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { players, playerPerformances, matches } from "@/lib/schema"
 import { clerkClient } from "@clerk/nextjs/server"
-import type { InferSelectModel } from "drizzle-orm"
 type PlayerRow = InferSelectModel<typeof players>
 
 export async function fetchPlayerProfileByPuuid(puuid: string): Promise<PlayerRow | null> {
   "use server"
 
-  const result = await db.select().from(players).where(eq(players.puuid, puuid)).limit(1)
+  const result = await db
+    .select()
+    .from(players)
+    .where(eq(sql`left(${players.puuid}, 20)`, puuid))
+    .limit(1)
 
   return result[0] ?? null
 }
@@ -64,7 +67,7 @@ const recentMatchesQuery = (puuid: string) =>
     })
     .from(playerPerformances)
     .innerJoin(matches, eq(matches.id, playerPerformances.matchRowId))
-    .where(eq(playerPerformances.puuid, puuid))
+    .where(eq(sql`left(${playerPerformances.puuid}, 20)`, puuid))
     .orderBy(desc(matches.gameEndTimestamp), desc(playerPerformances.id))
 
 export type RecentMatchRow = Awaited<ReturnType<typeof recentMatchesQuery>>[number]

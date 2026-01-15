@@ -22,7 +22,7 @@ export default function PodiumRow({
   glow?: "light" | "heavy" | "none"
 }) {
   return (
-    <Link href={`/player/${puuid}`}>
+    <Link href={`/player/${puuid.substring(0, 20)}`}>
       <GlowingCard
         backgroundImage={
           championName ? `${process.env.NEXT_PUBLIC_CDN_BASE}/img/champion/centered/${championName}_0.jpg` : undefined

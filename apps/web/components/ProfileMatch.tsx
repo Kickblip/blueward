@@ -458,7 +458,10 @@ export function ParticipantRow({ participant, gameDuration }: { participant: Par
           size={19}
           className="p-0.5"
         />
-        <Link href={`/player/${participant.puuid}`} className="hover:text-blue-400 transition-colors duration-200">
+        <Link
+          href={`/player/${participant.puuid.substring(0, 20)}`}
+          className="hover:text-blue-400 transition-colors duration-200"
+        >
           <Username username={participant.riotIdGameName} className="ml-2" />
         </Link>
       </div>

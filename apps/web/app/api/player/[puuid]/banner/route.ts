@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { currentUser } from "@clerk/nextjs/server"
 import { db } from "@/lib/db"
 import { players } from "@/lib/schema"
-import { and, eq } from "drizzle-orm"
+import { and, eq, sql } from "drizzle-orm"
 
 export async function POST(req: Request, { params }: { params: Promise<{ puuid: string }> }) {
   const user = await currentUser()
@@ -18,7 +18,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ puuid: 
   const updated = await db
     .update(players)
     .set({ bannerId })
-    .where(and(eq(players.puuid, puuid), eq(players.authId, user.id)))
+    .where(and(eq(sql`left(${players.puuid}, 20)`, puuid), eq(players.authId, user.id)))
     .returning({ id: players.id, bannerId: players.bannerId })
 
   if (updated.length === 0) {

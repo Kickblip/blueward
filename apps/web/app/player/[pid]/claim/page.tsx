@@ -62,7 +62,7 @@ export default async function ClaimProfile({ params }: { params: Promise<{ pid: 
   const puuid: string | undefined = summoner?.puuid
   if (!puuid) return <ErrorMessage code={500} message="No puuid returned from summoner/me." />
 
-  if (puuid !== pid) {
+  if (puuid.substring(0, 20) !== pid) {
     return <ErrorMessage code={400} message="Your connected Riot account does not match the profile you are trying to claim." />
   }
 

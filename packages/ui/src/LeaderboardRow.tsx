@@ -24,7 +24,7 @@ export default function LeaderboardRow({
   puuid: string
 }) {
   return (
-    <Link href={`/player/${puuid}`}>
+    <Link href={`/player/${puuid.substring(0, 20)}`}>
       <Card>
         <div className="flex items-center gap-8">
           <p className="font-oswald font-semibold text-xl tabular-nums">{ranking}</p>

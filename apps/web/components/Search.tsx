@@ -133,7 +133,7 @@ export default function Search() {
                       {!isLoading &&
                         results.map(({ riotIdGameName, puuid }) => (
                           <Link
-                            href={`/player/${puuid}`}
+                            href={`/player/${puuid.substring(0, 20)}`}
                             key={puuid}
                             className="block w-full rounded-lg px-4 py-2 hover:bg-zinc-800 cursor-pointer"
                           >
