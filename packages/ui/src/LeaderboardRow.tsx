@@ -1,5 +1,6 @@
 import Card from "./Card"
 import Link from "next/link"
+import { safeSubstring } from "./helpers"
 
 export const numColumnsMap: { [key: number]: string } = {
   1: "grid-cols-1",
@@ -24,7 +25,7 @@ export default function LeaderboardRow({
   puuid: string
 }) {
   return (
-    <Link href={`/player/${puuid.substring(0, 20)}`}>
+    <Link href={`/player/${safeSubstring(puuid, 0, 20)}`}>
       <Card>
         <div className="flex items-center gap-8">
           <p className="font-oswald font-semibold text-xl tabular-nums">{ranking}</p>

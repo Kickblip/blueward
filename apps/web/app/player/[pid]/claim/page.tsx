@@ -4,6 +4,7 @@ import { fetchWithRetry } from "@/app/import/helpers"
 import { db } from "@/lib/db"
 import { players } from "@/lib/schema"
 import { eq, isNull, and } from "drizzle-orm"
+import { safeSubstring } from "@repo/ui/helpers"
 
 const CPID_TO_PLATFORM: Record<string, string> = {
   NA1: "na1",
@@ -62,7 +63,7 @@ export default async function ClaimProfile({ params }: { params: Promise<{ pid: 
   const puuid: string | undefined = summoner?.puuid
   if (!puuid) return <ErrorMessage code={500} message="No puuid returned from summoner/me." />
 
-  if (puuid.substring(0, 20) !== pid) {
+  if (safeSubstring(puuid, 0, 20) !== pid) {
     return <ErrorMessage code={400} message="Your connected Riot account does not match the profile you are trying to claim." />
   }
 

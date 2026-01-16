@@ -1,6 +1,7 @@
 import Link from "next/link"
 import GlowingCard from "./GlowingCard"
 import { numColumnsMap } from "./LeaderboardRow"
+import { safeSubstring } from "./helpers"
 
 export default function PodiumRow({
   ranking,
@@ -22,7 +23,7 @@ export default function PodiumRow({
   glow?: "light" | "heavy" | "none"
 }) {
   return (
-    <Link href={`/player/${puuid.substring(0, 20)}`}>
+    <Link href={`/player/${safeSubstring(puuid, 0, 20)}`}>
       <GlowingCard backgroundImage={backgroundImage} glow={glow}>
         <div
           className={`flex flex-col justify-between

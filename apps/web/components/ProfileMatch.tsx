@@ -24,6 +24,7 @@ import Loading from "@repo/ui/Loading"
 import Image from "next/image"
 import { useState, useCallback } from "react"
 import ErrorMessage from "@repo/ui/ErrorMessage"
+import { safeSubstring } from "@repo/ui/helpers"
 
 type ParticipantRow = {
   puuid: string
@@ -459,7 +460,7 @@ export function ParticipantRow({ participant, gameDuration }: { participant: Par
           className="p-0.5"
         />
         <Link
-          href={`/player/${participant.puuid.substring(0, 20)}`}
+          href={`/player/${safeSubstring(participant.puuid, 0, 20)}`}
           className="hover:text-blue-400 transition-colors duration-200"
         >
           <Username username={participant.riotIdGameName} className="ml-2" />

@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation"
 import { statList } from "@/app/leaderboard/[stat]/helpers"
 import { IoPodium } from "react-icons/io5"
 import { FaUserGroup } from "react-icons/fa6"
+import { safeSubstring } from "@repo/ui/helpers"
 
 type PlayerResult = { riotIdGameName: string; puuid: string; riotIdTagline: string; authId: string }
 
@@ -158,7 +159,7 @@ export function SearchButton() {
     const topLb = leaderboardResults[0]
 
     if (topPlayer) {
-      navigateTo(`/player/${topPlayer.puuid.substring(0, 20)}`, {
+      navigateTo(`/player/${safeSubstring(topPlayer.puuid, 0, 20)}`, {
         type: "player",
         puuid: topPlayer.puuid,
         riotIdGameName: topPlayer.riotIdGameName,
@@ -283,7 +284,7 @@ export function SearchButton() {
                               key={`p:${item.puuid}`}
                               type="button"
                               className="w-full flex items-center justify-between rounded-lg px-4 py-2 font-semibold hover:bg-zinc-800 cursor-pointer border border-zinc-900 hover:border-zinc-700 text-left"
-                              onClick={() => navigateTo(`/player/${item.puuid.substring(0, 20)}`, item)}
+                              onClick={() => navigateTo(`/player/${safeSubstring(item.puuid, 0, 20)}`, item)}
                             >
                               <div className="flex items-center gap-2 text-zinc-200">
                                 <FaUserGroup className="text-zinc-400" size={14} />
@@ -336,12 +337,12 @@ export function SearchButton() {
                       {!isLoading &&
                         results.map(({ riotIdGameName, puuid, riotIdTagline }) => (
                           <Link
-                            href={`/player/${puuid.substring(0, 20)}`}
+                            href={`/player/${safeSubstring(puuid, 0, 20)}`}
                             key={puuid}
                             className="w-full flex items-center justify-between rounded-lg px-4 py-2 font-semibold hover:bg-zinc-800 cursor-pointer border border-zinc-900 hover:border-zinc-700 hover:text-blue-400 text-zinc-200"
                             onClick={(e) => {
                               e.preventDefault()
-                              navigateTo(`/player/${puuid.substring(0, 20)}`, {
+                              navigateTo(`/player/${safeSubstring(puuid, 0, 20)}`, {
                                 type: "player",
                                 puuid,
                                 riotIdGameName,

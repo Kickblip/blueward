@@ -2,6 +2,7 @@ import Card from "./Card"
 import Image from "next/image"
 import { epochToRelativeTime } from "./helpers"
 import Link from "next/link"
+import { safeSubstring } from "./helpers"
 
 export type RecentGameProps = {
   players: { riotIdGameName: string; championName: string; kills: number; deaths: number; assists: number; puuid: string }[]
@@ -20,7 +21,7 @@ export default function RecentGame({ players, gameEndTimestamp, interactive = tr
           <div className="flex h-1/5 items-center text-sm" key={idx}>
             {interactive ? (
               <Link
-                href={`/player/${team1[idx]?.puuid.substring(0, 20)}`}
+                href={`/player/${safeSubstring(team1[idx]?.puuid, 0, 20)}`}
                 className="hover:text-blue-400 transition-colors duration-200 flex flex-1 flex-col text-right pr-3"
               >
                 <p className="font-semibold truncate">{team1[idx]?.riotIdGameName}</p>
@@ -52,7 +53,7 @@ export default function RecentGame({ players, gameEndTimestamp, interactive = tr
 
             {interactive ? (
               <Link
-                href={`/player/${team2[idx]?.puuid.substring(0, 20)}`}
+                href={`/player/${safeSubstring(team2[idx]?.puuid, 0, 20)}`}
                 className="hover:text-blue-400 transition-colors duration-200 flex flex-1 flex-col text-left pl-3"
               >
                 <p className="font-semibold truncate">{team2[idx]?.riotIdGameName}</p>

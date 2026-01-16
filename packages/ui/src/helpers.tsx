@@ -39,3 +39,20 @@ export function toErrorMessage(err: unknown) {
   if (err instanceof Error) return err.message
   return "Unknown error"
 }
+
+export function safeSubstring(value: unknown, start = 0, end?: number, fallback = ""): string {
+  if (typeof value !== "string") return fallback
+
+  const len = value.length
+
+  const s0 = Number.isFinite(start) ? Math.trunc(start) : 0
+  const e0 = end === undefined ? len : Number.isFinite(end) ? Math.trunc(end) : len
+
+  const s = Math.max(0, Math.min(len, s0))
+  const e = Math.max(0, Math.min(len, e0))
+
+  const from = Math.min(s, e)
+  const to = Math.max(s, e)
+
+  return value.substring(from, to)
+}

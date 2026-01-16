@@ -13,6 +13,7 @@ import { SearchButton } from "@/components/Search"
 import { currentUser } from "@clerk/nextjs/server"
 import { Analytics } from "@vercel/analytics/next"
 import { FaUserGroup } from "react-icons/fa6"
+import { safeSubstring } from "@repo/ui/helpers"
 
 const oswald = Oswald({
   variable: "--font-oswald",
@@ -98,7 +99,7 @@ async function SignInButtons() {
 
         {puuid && (
           <Link
-            href={`/player/${puuid.substring(0, 20)}`}
+            href={`/player/${safeSubstring(puuid, 0, 20)}`}
             className="flex items-center gap-2 rounded-xl px-3 py-1.5 border border-blue-500 bg-blue-600/80 hover:bg-blue-600 transition-colors duration-200"
           >
             <span className="text-sm">Go to Linked Account</span>
