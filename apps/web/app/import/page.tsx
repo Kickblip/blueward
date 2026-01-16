@@ -61,6 +61,7 @@ export default async function RecentGames() {
                 assists: p.assists,
               }))}
               gameEndTimestamp={m.info.gameEndTimestamp}
+              interactive={false}
             />
           </Link>
         ))}

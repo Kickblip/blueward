@@ -1,5 +1,5 @@
 import { Section, TextLink } from "../terms/page"
-import { SOCIAL_LINK_CONFIG } from "@repo/ui/Footer"
+import { SOCIAL_LINK_CONFIG } from "@repo/ui/config"
 
 export default function Privacy() {
   return (

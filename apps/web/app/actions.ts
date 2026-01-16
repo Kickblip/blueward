@@ -32,6 +32,7 @@ export const FetchRecentGames = unstable_cache(
             assists: true,
             teamId: true,
             role: true,
+            puuid: true,
           },
         },
       },
@@ -56,6 +57,7 @@ export const FetchRecentGames = unstable_cache(
           kills: p.kills,
           deaths: p.deaths,
           assists: p.assists,
+          puuid: p.puuid,
         })),
     }))
 

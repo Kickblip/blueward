@@ -1,7 +1,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { cn } from "@/lib/cn"
-import { SOCIAL_LINK_CONFIG } from "@repo/ui/Footer"
+import { SOCIAL_LINK_CONFIG } from "@repo/ui/config"
 
 export function TextLink({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) {
   return (

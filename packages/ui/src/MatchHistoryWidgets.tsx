@@ -1,5 +1,5 @@
 import { epochToRelativeTime, toNumberWithCommas } from "./helpers"
-import CrystalIcon from "./CrystalIcon"
+import { CrystalIcon } from "./icons"
 import Image from "next/image"
 import { cn } from "./cn"
 

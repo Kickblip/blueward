@@ -325,7 +325,7 @@ export function DetailsView({ participants }: { participants: ParticipantRow[] }
             <BasicStatFormat
               title={`${participant.pentaKills}`}
               subtitle="Penta"
-              className={`text-sm font-medium ${1 > 0 ? "text-yellow-300" : ""}`}
+              className={`text-sm font-medium ${participant.pentaKills > 0 ? "text-yellow-300" : ""}`}
             />
           </div>
         </Card>

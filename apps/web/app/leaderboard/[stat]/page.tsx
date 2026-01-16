@@ -3,7 +3,7 @@ import PodiumRow from "@repo/ui/PodiumRow"
 import { statList, getTopPlayersForStat, StatKey } from "./helpers"
 import Link from "next/link"
 import Card from "@repo/ui/Card"
-import { timestampToRelativeTime } from "@repo/ui/helpers"
+import { timestampToRelativeTime, toNumberWithCommas } from "@repo/ui/helpers"
 
 export async function generateStaticParams() {
   return Object.keys(statList).map((stat) => ({ stat }))
@@ -17,8 +17,8 @@ export default async function Leaderboard({ params }: { params: Promise<{ stat: 
   const podium = players.slice(0, 3)
 
   const buildStatsProp = (value: number, createdAt: string) => ({
-    [statList[stat]]: value,
-    date: timestampToRelativeTime(createdAt),
+    [statList[stat]]: toNumberWithCommas(value),
+    Set: timestampToRelativeTime(createdAt),
   })
 
   return (
@@ -53,7 +53,7 @@ export default async function Leaderboard({ params }: { params: Promise<{ stat: 
             stats={buildStatsProp(player.value, player.createdAt)}
             name={player.riotIdGameName}
             puuid={player.puuid}
-            championName={player.championName}
+            backgroundImage={`${process.env.NEXT_PUBLIC_CDN_BASE}/img/champion/centered/${player.championName}_0.jpg`}
           />
         ))}
 

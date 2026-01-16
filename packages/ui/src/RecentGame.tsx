@@ -1,13 +1,15 @@
 import Card from "./Card"
 import Image from "next/image"
 import { epochToRelativeTime } from "./helpers"
+import Link from "next/link"
 
 export type RecentGameProps = {
-  players: { riotIdGameName: string; championName: string; kills: number; deaths: number; assists: number }[]
+  players: { riotIdGameName: string; championName: string; kills: number; deaths: number; assists: number; puuid: string }[]
   gameEndTimestamp: number
+  interactive?: boolean
 }
 
-export default function RecentGame({ players, gameEndTimestamp }: RecentGameProps) {
+export default function RecentGame({ players, gameEndTimestamp, interactive = true }: RecentGameProps) {
   const team1 = players.slice(0, players.length / 2)
   const team2 = players.slice(players.length / 2)
 
@@ -16,10 +18,21 @@ export default function RecentGame({ players, gameEndTimestamp }: RecentGameProp
       <div className="flex flex-col gap-3 h-full">
         {team1.map((_, idx) => (
           <div className="flex h-1/5 items-center text-sm" key={idx}>
-            <div className="flex flex-1 flex-col text-right pr-3">
-              <p className="font-semibold truncate">{team1[idx]?.riotIdGameName}</p>
-              <p className="opacity-80">{`${team1[idx]?.kills}/${team1[idx]?.deaths}/${team1[idx]?.assists}`}</p>
-            </div>
+            {interactive ? (
+              <Link
+                href={`/player/${team1[idx]?.puuid.substring(0, 20)}`}
+                className="hover:text-blue-400 transition-colors duration-200 flex flex-1 flex-col text-right pr-3"
+              >
+                <p className="font-semibold truncate">{team1[idx]?.riotIdGameName}</p>
+                <p className="text-zinc-400">{`${team1[idx]?.kills}/${team1[idx]?.deaths}/${team1[idx]?.assists}`}</p>
+              </Link>
+            ) : (
+              <div className="flex flex-1 flex-col text-right pr-3">
+                <p className="font-semibold truncate">{team1[idx]?.riotIdGameName}</p>
+                <p className="text-zinc-400">{`${team1[idx]?.kills}/${team1[idx]?.deaths}/${team1[idx]?.assists}`}</p>
+              </div>
+            )}
+
             <div className="flex items-center gap-3 flex-none">
               <Image
                 src={`${process.env.NEXT_PUBLIC_CDN_BASE}/img/champion/tiles/${team1[idx]?.championName}_0.jpg`}
@@ -36,10 +49,21 @@ export default function RecentGame({ players, gameEndTimestamp }: RecentGameProp
                 className="rounded-sm"
               />
             </div>
-            <div className="flex flex-1 flex-col text-left pl-3">
-              <p className="font-semibold truncate">{team2[idx]?.riotIdGameName}</p>
-              <p className="opacity-80">{`${team2[idx]?.kills}/${team2[idx]?.deaths}/${team2[idx]?.assists}`}</p>
-            </div>
+
+            {interactive ? (
+              <Link
+                href={`/player/${team2[idx]?.puuid.substring(0, 20)}`}
+                className="hover:text-blue-400 transition-colors duration-200 flex flex-1 flex-col text-left pl-3"
+              >
+                <p className="font-semibold truncate">{team2[idx]?.riotIdGameName}</p>
+                <p className="text-zinc-400">{`${team2[idx]?.kills}/${team2[idx]?.deaths}/${team2[idx]?.assists}`}</p>
+              </Link>
+            ) : (
+              <div className="flex flex-1 flex-col text-left pl-3">
+                <p className="font-semibold truncate">{team2[idx]?.riotIdGameName}</p>
+                <p className="text-zinc-400">{`${team2[idx]?.kills}/${team2[idx]?.deaths}/${team2[idx]?.assists}`}</p>
+              </div>
+            )}
           </div>
         ))}
       </div>

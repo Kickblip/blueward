@@ -76,6 +76,12 @@ export default async function ClaimProfile({ params }: { params: Promise<{ pid: 
 
   await db.update(players).set({ authId: user.id }).where(eq(players.id, player.id))
 
+  await client.users.updateUserMetadata(user.id, {
+    privateMetadata: {
+      puuid,
+    },
+  })
+
   return (
     <div className="flex flex-col items-center gap-2">
       <h1 className="text-xl font-oswald font-semibold">Successfully claimed this account</h1>

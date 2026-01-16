@@ -6,13 +6,13 @@ import { SpeedInsights } from "@vercel/speed-insights/next"
 import { PiCrownSimpleFill } from "react-icons/pi"
 import LightningButton from "@repo/ui/LightningButton"
 import MainContentFrame from "@repo/ui/MainContentFrame"
-// import { FaPencilAlt } from "react-icons/fa"
-// import LetterPopup from "@/components/LetterPopup"
-import { ClerkProvider, SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs"
-import GlowingCard from "@repo/ui/GlowingCard"
+import { ClerkProvider, SignUpButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs"
 import { dark } from "@clerk/themes"
 import Link from "next/link"
-import Search from "@/components/Search"
+import { SearchButton } from "@/components/Search"
+import { currentUser } from "@clerk/nextjs/server"
+import { Analytics } from "@vercel/analytics/next"
+import { FaUserGroup } from "react-icons/fa6"
 
 const oswald = Oswald({
   variable: "--font-oswald",
@@ -42,10 +42,9 @@ export default function RootLayout({
       }}
     >
       <html lang="en">
-        <body className={`${oswald.variable} ${roboto.className}`}>
+        <body className={`${oswald.variable} ${roboto.className} ${roboto.variable}`}>
           <SpeedInsights />
-
-          {/* <LetterPopup src={"/postcard.webp"} /> */}
+          <Analytics />
 
           <MainContentFrame Navbar={<Navbar />} backgroundPatternUrl="/grid.svg" backgroundPatternSize={512}>
             {children}
@@ -66,39 +65,49 @@ function Navbar() {
         Leaderboards
       </NavbarLink>
 
-      {/* <NavbarLink href="/markets" icon={<FaPencilAlt className="inline-block text-blue-500 rotate-270" size={14} />}>
-        Predictions
-      </NavbarLink> */}
-
       <LightningButton href="/fightclub">Fight Club</LightningButton>
     </NavbarLayout>
   )
 }
 
-function SignInButtons() {
+async function SignInButtons() {
+  const user = await currentUser()
+  const puuid = user?.privateMetadata.puuid as string | undefined
+
   return (
     <div className="flex items-center gap-4">
-      <Search />
       <SignedOut>
-        <SignInButton>
-          <GlowingCard glow="light" className="gap-2 px-6 py-2 text-blue-100 cursor-pointer">
-            <span className="uppercase font-semibold text-sm">Sign In</span>
-          </GlowingCard>
-        </SignInButton>
         <SignUpButton>
-          <GlowingCard glow="heavy" className="gap-2 px-6 py-2 text-blue-100 cursor-pointer bg-blue-500/30 hover:bg-blue-500/50">
-            <span className="uppercase font-semibold text-sm">Sign Up</span>
-          </GlowingCard>
+          <div className="flex items-center gap-2 rounded-xl px-6 py-1.5 border border-blue-500 bg-blue-600/80 hover:bg-blue-600 transition-colors duration-200">
+            <FaUserGroup size={14} />
+            <span className="text-sm uppercase">Sign Up</span>
+          </div>
         </SignUpButton>
       </SignedOut>
       <SignedIn>
-        <Link href="/import">
-          <GlowingCard glow="light" className="gap-2 px-6 py-2 text-blue-100 cursor-pointer">
-            <span className="uppercase font-semibold text-sm">Import Game</span>
-          </GlowingCard>
-        </Link>
+        {user && user.privateMetadata.role === "admin" && (
+          <Link
+            href="/import"
+            className="flex items-center gap-2 rounded-xl px-6 py-1.5 border border-blue-500 bg-blue-600/80 hover:bg-blue-600 transition-colors duration-200"
+          >
+            <span className="text-sm uppercase">Import Game</span>
+          </Link>
+        )}
+
         <UserButton />
+
+        {puuid && (
+          <Link
+            href={`/player/${puuid.substring(0, 20)}`}
+            className="flex items-center gap-2 rounded-xl px-3 py-1.5 border border-blue-500 bg-blue-600/80 hover:bg-blue-600 transition-colors duration-200"
+          >
+            <span className="text-sm">Go to Linked Account</span>
+            <FaUserGroup size={15} />
+          </Link>
+        )}
       </SignedIn>
+
+      <SearchButton />
     </div>
   )
 }

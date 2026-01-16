@@ -7,7 +7,7 @@ export default function PodiumRow({
   stats,
   name,
   puuid,
-  championName,
+  backgroundImage,
   size,
   glow = "light",
 }: {
@@ -17,21 +17,16 @@ export default function PodiumRow({
   }
   name: string
   puuid: string
-  championName?: string
+  backgroundImage?: string
   size: "large" | "small"
   glow?: "light" | "heavy" | "none"
 }) {
   return (
     <Link href={`/player/${puuid.substring(0, 20)}`}>
-      <GlowingCard
-        backgroundImage={
-          championName ? `${process.env.NEXT_PUBLIC_CDN_BASE}/img/champion/centered/${championName}_0.jpg` : undefined
-        }
-        glow={glow}
-      >
+      <GlowingCard backgroundImage={backgroundImage} glow={glow}>
         <div
           className={`flex flex-col justify-between
-                      ${size === "large" ? "h-50" : ""}
+                      ${size === "large" ? "h-60" : ""}
                       ${size === "small" ? "h-36" : ""}`}
         >
           <div className={`grid ${numColumnsMap[Object.keys(stats).length]}`}>
