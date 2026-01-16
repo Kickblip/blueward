@@ -2,18 +2,16 @@ import Countdown from "@repo/ui/Countdown"
 import RecentGame from "@repo/ui/RecentGame"
 import PodiumRow from "@repo/ui/PodiumRow"
 import LeaderboardRow from "@repo/ui/LeaderboardRow"
-import { FetchRecentGames, FetchTopLadderPlayers } from "./actions"
+import { fetchRecentGames, fetchTopLadderPlayers, fetchPlayerBannersByPuuids } from "./actions"
 import { SEASON_END_DATE } from "@repo/ui/config"
-import { fetchPlayerProfileByPuuid } from "@/app/player/[pid]/actions"
 
 export default async function Home() {
-  const games = await FetchRecentGames()
-  const players = await FetchTopLadderPlayers()
+  const games = await fetchRecentGames()
+  const players = await fetchTopLadderPlayers()
 
   const podium = players.slice(0, 3)
 
-  const podiumProfiles = await Promise.all(podium.map((player) => fetchPlayerProfileByPuuid(player.puuid)))
-  const bannerIds = podiumProfiles.map((profile) => profile?.bannerId ?? 0)
+  const banners = await fetchPlayerBannersByPuuids(podium.map((player) => player.puuid))
 
   return (
     <div className="flex flex-col gap-4">
@@ -28,7 +26,7 @@ export default async function Home() {
               name={player.riotIdGameName}
               puuid={player.puuid}
               glow={"none"}
-              backgroundImage={`/banners/${bannerIds[index]}.webp`}
+              backgroundImage={`/banners/${banners[index]?.bannerId ?? 0}.webp`}
             />
           ))}
 

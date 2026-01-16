@@ -267,7 +267,7 @@ export function SearchButton() {
                               <button
                                 key={`lb:${item.slug}`}
                                 type="button"
-                                className="flex items-center justify-between w-full rounded-lg px-4 py-2 hover:bg-zinc-800 cursor-pointer text-left"
+                                className="w-full flex items-center justify-between rounded-lg px-4 py-2 font-semibold hover:bg-zinc-800 cursor-pointer border border-zinc-900 hover:border-zinc-700 text-left"
                                 onClick={() => navigateTo(`/leaderboard/${item.slug}`, item)}
                               >
                                 <div className="flex items-center gap-2 text-zinc-200">

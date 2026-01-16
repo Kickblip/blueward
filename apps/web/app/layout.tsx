@@ -40,6 +40,7 @@ export default function RootLayout({
       appearance={{
         theme: dark,
         variables: { colorPrimary: "#3aa4fc" },
+        cssLayerName: "clerk",
       }}
     >
       <html lang="en">
@@ -95,8 +96,6 @@ async function SignInButtons() {
           </Link>
         )}
 
-        <UserButton />
-
         {puuid && (
           <Link
             href={`/player/${safeSubstring(puuid, 0, 20)}`}
@@ -109,6 +108,16 @@ async function SignInButtons() {
       </SignedIn>
 
       <SearchButton />
+
+      <div className="w-[2.7rem] h-[2.7rem] rounded-full border border-zinc-700 flex items-center justify-center">
+        <UserButton
+          appearance={{
+            elements: {
+              avatarBox: "w-10 h-10",
+            },
+          }}
+        />
+      </div>
     </div>
   )
 }

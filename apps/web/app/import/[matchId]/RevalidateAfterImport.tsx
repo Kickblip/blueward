@@ -9,7 +9,7 @@ export default function RevalidateAfterImport() {
     let cancelled = false
 
     ;(async () => {
-      const res = await fetch("/api/match/revalidate", {
+      const res = await fetch("/api/match/revalidate/match", {
         method: "POST",
         cache: "no-store",
       })

@@ -55,7 +55,7 @@ export default function PodiumRow({
             </p>
 
             <p
-              className={`font-oswald font-semibold opacity-50
+              className={`font-oswald font-semibold opacity-80
                       ${size === "large" ? "text-7xl" : ""}
                       ${size === "small" ? "text-5xl" : ""}`}
             >

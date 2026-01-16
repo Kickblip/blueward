@@ -1,10 +1,10 @@
 import { db } from "@/lib/db"
 import { type RecentGameProps } from "@repo/ui/RecentGame"
-import { desc, sql } from "drizzle-orm"
-import { playerPerformances } from "@/lib/schema"
+import { desc, sql, inArray } from "drizzle-orm"
+import { playerPerformances, players } from "@/lib/schema"
 import { unstable_cache } from "next/cache"
 
-export const FetchRecentGames = unstable_cache(
+export const fetchRecentGames = unstable_cache(
   async (limit = 3) => {
     "use server"
 
@@ -77,7 +77,7 @@ export type TopLadderPlayer = {
   winrate: number
 }
 
-export const FetchTopLadderPlayers = unstable_cache(
+export const fetchTopLadderPlayers = unstable_cache(
   async (limit = 15): Promise<TopLadderPlayer[]> => {
     "use server"
 
@@ -112,3 +112,16 @@ export const FetchTopLadderPlayers = unstable_cache(
     tags: ["top-players-by-mmr"],
   },
 )
+
+export type PlayerBannerMap = {
+  puuid: string
+  bannerId: number
+}
+
+export async function fetchPlayerBannersByPuuids(puuids: string[]): Promise<PlayerBannerMap[]> {
+  "use server"
+
+  if (puuids.length === 0) return []
+
+  return db.select({ puuid: players.puuid, bannerId: players.bannerId }).from(players).where(inArray(players.puuid, puuids))
+}
