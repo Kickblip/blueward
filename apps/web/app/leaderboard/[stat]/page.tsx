@@ -9,6 +9,14 @@ export async function generateStaticParams() {
   return Object.keys(statList).map((stat) => ({ stat }))
 }
 
+export async function generateMetadata({ params }: { params: Promise<{ stat: StatKey }> }) {
+  const { stat } = await params
+
+  return {
+    title: `BLUEWARD | Top ${statList[stat]}`,
+  }
+}
+
 export default async function Leaderboard({ params }: { params: Promise<{ stat: StatKey }> }) {
   const { stat } = await params
 
