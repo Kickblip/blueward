@@ -113,15 +113,20 @@ export const fetchTopLadderPlayers = unstable_cache(
   },
 )
 
-export type PlayerBannerMap = {
-  puuid: string
-  bannerId: number
-}
+export type PlayerBannerMap = Record<string, number>
 
-export async function fetchPlayerBannersByPuuids(puuids: string[]): Promise<PlayerBannerMap[]> {
+export async function fetchPlayerBannersByPuuids(puuids: string[]): Promise<PlayerBannerMap> {
   "use server"
 
-  if (puuids.length === 0) return []
+  if (puuids.length === 0) return {}
 
-  return db.select({ puuid: players.puuid, bannerId: players.bannerId }).from(players).where(inArray(players.puuid, puuids))
+  const rows = await db
+    .select({ puuid: players.puuid, bannerId: players.bannerId })
+    .from(players)
+    .where(inArray(players.puuid, puuids))
+
+  return rows.reduce<PlayerBannerMap>((acc, row) => {
+    acc[row.puuid] = row.bannerId
+    return acc
+  }, {})
 }
