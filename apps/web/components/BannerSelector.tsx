@@ -4,7 +4,7 @@ import { useMemo, useState } from "react"
 import { FaPencilAlt, FaLock } from "react-icons/fa"
 import { AnimatePresence, motion } from "framer-motion"
 import Image from "next/image"
-import { BANNER_CONFIG } from "@/app/player/[pid]/config"
+import { BANNER_CONFIG } from "@repo/ui/config"
 import Loading from "@repo/ui/Loading"
 import { useRouter } from "next/navigation"
 
