@@ -310,26 +310,6 @@ export function SearchButton() {
                         </div>
                       )}
 
-                      {!isLoading &&
-                        leaderboardResults.map(([slug, label]) => (
-                          <Link
-                            href={`/leaderboard/${slug}`}
-                            key={slug}
-                            className="w-full flex items-center justify-between rounded-lg px-4 py-2 font-semibold hover:bg-zinc-800 cursor-pointer border border-zinc-900 hover:border-zinc-700 hover:text-blue-400 text-zinc-200"
-                            onClick={(e) => {
-                              e.preventDefault()
-                              navigateTo(`/leaderboard/${slug}`, { type: "leaderboard", slug, label })
-                            }}
-                          >
-                            <div className="flex items-center gap-2">
-                              <IoPodium className="text-zinc-400" size={14} />
-                              <span className="text-sm">Top {label}</span>
-                            </div>
-
-                            <span className="text-xs text-zinc-500">Leaderboard</span>
-                          </Link>
-                        ))}
-
                       {!isLoading && results.length === 0 && debouncedQuery.length > 2 && leaderboardResults.length === 0 && (
                         <div className="py-4 text-center text-sm text-zinc-500">No results found</div>
                       )}
@@ -359,6 +339,26 @@ export function SearchButton() {
                             </div>
 
                             <span className="text-xs text-zinc-500">Player</span>
+                          </Link>
+                        ))}
+
+                      {!isLoading &&
+                        leaderboardResults.map(([slug, label]) => (
+                          <Link
+                            href={`/leaderboard/${slug}`}
+                            key={slug}
+                            className="w-full flex items-center justify-between rounded-lg px-4 py-2 font-semibold hover:bg-zinc-800 cursor-pointer border border-zinc-900 hover:border-zinc-700 hover:text-blue-400 text-zinc-200"
+                            onClick={(e) => {
+                              e.preventDefault()
+                              navigateTo(`/leaderboard/${slug}`, { type: "leaderboard", slug, label })
+                            }}
+                          >
+                            <div className="flex items-center gap-2">
+                              <IoPodium className="text-zinc-400" size={14} />
+                              <span className="text-sm">Top {label}</span>
+                            </div>
+
+                            <span className="text-xs text-zinc-500">Leaderboard</span>
                           </Link>
                         ))}
                     </div>

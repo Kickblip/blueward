@@ -28,7 +28,7 @@ export default function PodiumRow({
         <div
           className={`flex flex-col justify-between
                       ${size === "large" ? "h-60" : ""}
-                      ${size === "small" ? "h-36" : ""}`}
+                      ${size === "small" ? "h-42" : ""}`}
         >
           <div className={`grid ${numColumnsMap[Object.keys(stats).length]}`}>
             {Object.entries(stats).map(([statName, statValue]) => (
