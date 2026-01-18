@@ -41,7 +41,7 @@ export default async function Import({ params }: { params: Promise<{ matchId: st
     return (
       <div className="flex flex-col items-center gap-2">
         <h1 className="text-xl font-oswald font-semibold">Import complete for {matchId}</h1>
-        <RevalidateAfterImport />
+        <RevalidateAfterImport matchId={matchId} />
       </div>
     )
   } catch (err) {

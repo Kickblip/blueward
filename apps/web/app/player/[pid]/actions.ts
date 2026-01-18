@@ -2,6 +2,8 @@ import { desc, eq, sql, type InferSelectModel } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { players, playerPerformances, matches } from "@/lib/schema"
 import { clerkClient } from "@clerk/nextjs/server"
+import { unstable_cache } from "next/cache"
+
 type PlayerRow = InferSelectModel<typeof players>
 
 export async function fetchPlayerProfileByPuuid(puuid: string): Promise<PlayerRow | null> {
@@ -72,6 +74,16 @@ const recentMatchesQuery = (puuid: string) =>
 
 export type RecentMatchRow = Awaited<ReturnType<typeof recentMatchesQuery>>[number]
 
-export async function fetchRecentMatchesByPuuid(puuid: string): Promise<RecentMatchRow[]> {
-  return recentMatchesQuery(puuid)
+export const fetchRecentMatchesByPuuid = (puuid: string) => {
+  return unstable_cache(
+    async (): Promise<RecentMatchRow[]> => {
+      "use server"
+      if (!puuid) return []
+      return recentMatchesQuery(puuid)
+    },
+
+    ["recent-matches-by-puuid", puuid],
+
+    { tags: [`recent-matches:${puuid}`, "recent-matches-by-puuid"] },
+  )()
 }

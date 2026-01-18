@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from "react"
 
-export default function RevalidateAfterImport() {
+export default function RevalidateAfterImport({ matchId }: { matchId: string }) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
 
     ;(async () => {
-      const res = await fetch("/api/match/revalidate/match", {
+      const res = await fetch(`/api/match/revalidate/match/${matchId}`, {
         method: "POST",
         cache: "no-store",
       })

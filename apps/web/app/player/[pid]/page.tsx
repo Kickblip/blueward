@@ -12,19 +12,26 @@ import BannerSelector from "@/components/BannerSelector"
 
 export default async function PlayerProfile({ params }: { params: Promise<{ pid: string }> }) {
   const { pid } = await params
-  const matches = await fetchRecentMatchesByPuuid(pid)
-  const playerProfile = await fetchPlayerProfileByPuuid(pid)
+
+  const [matchesRes, profileRes, userRes] = await Promise.allSettled([
+    fetchRecentMatchesByPuuid(pid),
+    fetchPlayerProfileByPuuid(pid),
+    currentUser(),
+  ])
+
+  const matches = matchesRes.status === "fulfilled" ? matchesRes.value : []
+  const playerProfile = profileRes.status === "fulfilled" ? profileRes.value : null
+  const user = userRes.status === "fulfilled" ? userRes.value : null
+
   const profilePictureUrl = await fetchProfilePictureByAuthId(playerProfile?.authId)
 
-  const avgKDA = calcAverageKDA(matches)
-  const winrate = calcWinrate(matches)
-  const winrateByChampion = calcWinrateByChampion(matches)
-
-  const user = await currentUser()
   let userOwnsProfile = false
   if (user && playerProfile?.authId) {
     userOwnsProfile = playerProfile.authId === user.id
   }
+  const avgKDA = calcAverageKDA(matches)
+  const winrate = calcWinrate(matches)
+  const winrateByChampion = calcWinrateByChampion(matches)
 
   return (
     <div className="grid grid-cols-3 gap-4 min-h-screen">
@@ -32,7 +39,7 @@ export default async function PlayerProfile({ params }: { params: Promise<{ pid:
         <Card className="p-0">
           <div className="relative">
             <Image
-              src={`/banners/${playerProfile?.bannerId ?? 0}.webp`}
+              src={`/banners/${playerProfile?.bannerId ?? 0}_compressed.webp`}
               alt="player background"
               width={1000}
               height={1000}
