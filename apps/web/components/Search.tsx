@@ -180,7 +180,7 @@ export function SearchButton() {
       <button
         type="button"
         onClick={() => setIsOpen((v) => !v)}
-        className="flex items-center justify-center gap-3 rounded-xl pl-3 p-1.5 border border-zinc-700 bg-zinc-800/60 hover:bg-zinc-800 transition-colors duration-200"
+        className="flex items-center justify-center gap-3 rounded-xl pl-3 p-1.5 border border-zinc-700 bg-zinc-800/60 hover:bg-zinc-800 transition-colors duration-200 cursor-pointer"
       >
         <BsSearch size={12} />
         <span className="text-sm text-zinc-200 font-medium">Search Blueward</span>

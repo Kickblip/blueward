@@ -1,6 +1,7 @@
 import Logo from "./Logo"
 import Link from "next/link"
 import { FaTwitch, FaInstagram, FaDiscord } from "react-icons/fa6"
+import { SOCIAL_LINK_CONFIG } from "./config"
 
 function FooterLink({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) {
   return (
@@ -14,19 +15,7 @@ function FooterLink({ href, children, className }: { href: string; children: Rea
   )
 }
 
-export type config = {
-  discord: string
-  instagram: string
-  twitch: string
-  wyattwebsite: string
-  pixels: string
-  docs: string
-  changelog: string
-  repo: string
-  clubsite: string
-}
-
-export default function Footer({ config }: { config: config }) {
+export default function Footer() {
   return (
     <div className="max-w-7xl w-full mx-auto mb-8 mt-6 flex flex-col gap-6">
       <div className="flex justify-between">
@@ -43,24 +32,24 @@ export default function Footer({ config }: { config: config }) {
         <div className="flex gap-16">
           <div className="flex flex-col gap-2">
             <h3 className="text-zinc-200 font-semibold">Resources</h3>
-            <FooterLink href={config.repo}>Open Source</FooterLink>
-            <FooterLink href={config.docs}>Documentation</FooterLink>
-            <FooterLink href={config.changelog}>Changelog</FooterLink>
+            <FooterLink href={SOCIAL_LINK_CONFIG.repo}>Open Source</FooterLink>
+            <FooterLink href={SOCIAL_LINK_CONFIG.docs}>Documentation</FooterLink>
+            <FooterLink href={SOCIAL_LINK_CONFIG.changelog}>Changelog</FooterLink>
           </div>
 
           <div className="flex flex-col gap-2">
             <h3 className="text-zinc-200 font-semibold">Related</h3>
-            <FooterLink href={config.clubsite}>Longhorn LoL</FooterLink>
-            <FooterLink href={config.pixels}>Pixels Minigame</FooterLink>
+            <FooterLink href={SOCIAL_LINK_CONFIG.clubsite}>Longhorn LoL</FooterLink>
+            <FooterLink href={SOCIAL_LINK_CONFIG.pixels}>Pixels Minigame</FooterLink>
 
             <div className="flex gap-3 mt-2">
-              <FooterLink href={config.discord}>
+              <FooterLink href={SOCIAL_LINK_CONFIG.discord}>
                 <FaDiscord size={18} className="text-zinc-400 hover:text-zinc-200 transition-colors duration-200" />
               </FooterLink>
-              <FooterLink href={config.instagram}>
+              <FooterLink href={SOCIAL_LINK_CONFIG.instagram}>
                 <FaInstagram size={18} className="text-zinc-400 hover:text-zinc-200 transition-colors duration-200" />
               </FooterLink>
-              <FooterLink href={config.twitch}>
+              <FooterLink href={SOCIAL_LINK_CONFIG.twitch}>
                 <FaTwitch size={18} className="text-zinc-400 hover:text-zinc-200 transition-colors duration-200" />
               </FooterLink>
             </div>
@@ -75,7 +64,7 @@ export default function Footer({ config }: { config: config }) {
 
         <p className="text-zinc-400 text-xs">
           Built by{" "}
-          <FooterLink href={config.wyattwebsite} className="underline">
+          <FooterLink href={SOCIAL_LINK_CONFIG.wyattwebsite} className="underline">
             Kickball
           </FooterLink>
         </p>

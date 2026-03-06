@@ -1,5 +1,4 @@
 import Footer from "./Footer"
-import { SOCIAL_LINK_CONFIG } from "./config"
 
 export default function MainContentFrame({
   Navbar,
@@ -48,7 +47,7 @@ export default function MainContentFrame({
       </div>
 
       <div className="mt-2">
-        <Footer config={SOCIAL_LINK_CONFIG} />
+        <Footer />
       </div>
     </div>
   )

@@ -88,7 +88,7 @@ function Navbar() {
         Leaderboards
       </NavbarLink>
 
-      <LightningButton href="/fightclub">Fight Club</LightningButton>
+      {/* <LightningButton href="/fightclub">Fight Club</LightningButton> */}
     </NavbarLayout>
   )
 }

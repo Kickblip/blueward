@@ -44,7 +44,8 @@ export function calculateMMR(participant: any): number {
 
   /* --------------------------- primary impact -------------------------- */
   const carryPoints = tierScore(participant.challenges.teamDamagePercentage ?? 0, [
-    { threshold: 0.25, points: 6 },
+    { threshold: 0.2, points: 6 },
+    { threshold: 0.25, points: 8 },
     { threshold: 0.3, points: 10 },
   ])
 
@@ -54,13 +55,13 @@ export function calculateMMR(participant: any): number {
   ])
 
   const enchanterPoints = tierScore(participant.challenges.effectiveHealAndShielding ?? 0, [
-    { threshold: 4000, points: 6 },
-    { threshold: 8000, points: 10 },
+    { threshold: 5000, points: 6 },
+    { threshold: 9500, points: 10 },
   ])
 
   const ccPoints = tierScore(participant.totalTimeCCDealt ?? 0, [
     { threshold: 35, points: 6 },
-    { threshold: 60, points: 10 },
+    { threshold: 75, points: 10 },
   ])
 
   points += clamp(Math.max(carryPoints, tankPoints, enchanterPoints, ccPoints), 0, 10)
@@ -83,12 +84,14 @@ export function calculateMMR(participant: any): number {
 
   const platePoints = tierScore(participant.challenges.turretPlatesTaken ?? 0, [
     { threshold: 3, points: 5 },
-    { threshold: 5, points: 10 },
+    { threshold: 10, points: 8 },
+    { threshold: 18, points: 10 },
   ])
 
   const objectiveDamagePoints = tierScore(participant.damageDealtToObjectives ?? 0, [
     { threshold: 6000, points: 5 },
-    { threshold: 12000, points: 10 },
+    { threshold: 30000, points: 7 },
+    { threshold: 60000, points: 10 },
   ])
 
   const epicStealPoints = (participant.challenges.epicMonsterSteals ?? 0) >= 1 ? 10 : 0

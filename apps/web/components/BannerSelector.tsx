@@ -18,7 +18,7 @@ export default function BannerSelector({ playerBanners, puuid }: { playerBanners
     return Object.entries(BANNER_CONFIG)
       .map(([id, banner]) => {
         const bannerId = Number(id)
-        return { id: bannerId, name: banner.name, owned: owned.has(bannerId) }
+        return { id: bannerId, name: banner.name, owned: owned.has(bannerId), description: banner.description }
       })
       .sort((a, b) => Number(b.owned) - Number(a.owned) || a.id - b.id)
   }, [playerBanners])
@@ -64,7 +64,7 @@ export default function BannerSelector({ playerBanners, puuid }: { playerBanners
             <button className="absolute inset-0 bg-black/70" onClick={() => setOpen(false)} aria-label="Close modal" />
 
             <motion.div
-              className="relative w-full max-w-5xl rounded-lg border border-zinc-800 bg-zinc-900 p-4 grid grid-cols-3 gap-4"
+              className="relative w-full max-w-6xl rounded-lg border border-zinc-800 bg-zinc-900 p-4 grid grid-cols-3 gap-4"
               initial={{ opacity: 0, scale: 0.98, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.98, y: 8 }}
@@ -102,14 +102,17 @@ export default function BannerSelector({ playerBanners, puuid }: { playerBanners
                             <Loading size="small" />
                           </div>
                         ) : (
-                          <p className="text-xs font-medium text-zinc-100 truncate">{banner.name}</p>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-zinc-100">{banner.name}</p>
+                            {banner.description ? <p className="text-xs text-zinc-300">{banner.description}</p> : null}
+                          </div>
                         )}
                       </div>
                     </div>
 
                     {!banner.owned && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="rounded-full bg-black/50 p-3">
+                      <div className="absolute top-2 right-2 flex items-center justify-center">
+                        <div className="rounded-lg bg-black/50 p-3">
                           <FaLock className="text-zinc-100" />
                         </div>
                       </div>
