@@ -4,6 +4,7 @@ import { currentUser } from "@clerk/nextjs/server"
 import { db } from "@/lib/db"
 import { matches } from "@/lib/schema"
 import { eq } from "drizzle-orm"
+import { safeSubstring } from "@repo/ui/helpers"
 
 export async function POST(_req: Request, { params }: { params: Promise<{ matchId: string }> }) {
   const { matchId } = await params
@@ -24,7 +25,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ matchI
   const players = rows[0]?.players ?? []
 
   for (const puuid of players) {
-    revalidateTag(`recent-matches:${puuid}`, "max")
+    revalidateTag(`recent-matches:${safeSubstring(puuid, 0, 20)}`, "max")
   }
 
   return NextResponse.json({ ok: true })
