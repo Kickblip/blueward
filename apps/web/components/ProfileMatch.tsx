@@ -53,7 +53,7 @@ type ParticipantRow = {
   trueDamageDealtToChampions: number
   totalMinionsKilled: number
   win: boolean
-  perkPrimaryStyleId: number
+  perkPrimary1Id: number
   perkSecondaryStyleId: number
   doubleKills: number
   tripleKills: number
@@ -133,12 +133,7 @@ export default function ProfileMatch({ match }: { match: RecentMatchRow }) {
             size={45}
           />
           <SummonerSpells spells={[match.summoner1Id, match.summoner2Id]} size={21.5} />
-          <Runes
-            primaryTrait={match.perkPrimaryStyleId}
-            secondaryTrait={match.perkSecondaryStyleId}
-            size={21.5}
-            className="p-0.5"
-          />
+          <Runes primaryTrait={match.perkPrimary1Id} secondaryTrait={match.perkSecondaryStyleId} size={21.5} />
         </div>
 
         <BasicStatFormat
@@ -453,12 +448,7 @@ export function ParticipantRow({ participant, gameDuration }: { participant: Par
           size={40}
         />
         <SummonerSpells spells={[participant.summoner1Id, participant.summoner2Id]} size={19} />
-        <Runes
-          primaryTrait={participant.perkPrimaryStyleId}
-          secondaryTrait={participant.perkSecondaryStyleId}
-          size={19}
-          className="p-0.5"
-        />
+        <Runes primaryTrait={participant.perkPrimary1Id} secondaryTrait={participant.perkSecondaryStyleId} size={19} />
         <Link
           href={`/player/${safeSubstring(participant.puuid, 0, 20)}`}
           className="hover:text-blue-400 transition-colors duration-200"

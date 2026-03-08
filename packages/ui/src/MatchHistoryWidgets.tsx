@@ -1,5 +1,5 @@
 import { epochToRelativeTime, toNumberWithCommas } from "./helpers"
-import { CrystalIcon } from "./icons"
+// import { CrystalIcon } from "./icons"
 import Image from "next/image"
 import { cn } from "./cn"
 
@@ -122,11 +122,11 @@ const runePaths: Record<number, string> = {
   8000: "/runes/precision.png",
   8100: "/runes/domination.png",
   8200: "/runes/sorcery.png",
-  8300: "/runes/resolve.png",
-  8400: "/runes/inspiration.png",
+  8300: "/runes/inspiration.png",
+  8400: "/runes/resolve.png",
 } as const
+// https://darkintaqt.com/blog/perk-ids
 
-const PRIMARY_FALLBACK = "/runes/precision.png"
 const SECONDARY_FALLBACK = "/runes/domination.png"
 
 export function Runes({
@@ -143,18 +143,18 @@ export function Runes({
   return (
     <div className="flex flex-col items-center gap-0.5">
       <Image
-        src={runePaths[primaryTrait] ?? PRIMARY_FALLBACK}
+        src={`/runes/keystones/${primaryTrait}.webp`}
         alt=""
         width={size}
         height={size}
-        className={cn("p-1", className || "")}
+        className={cn("", className || "")}
       />
       <Image
         src={runePaths[secondaryTrait] ?? SECONDARY_FALLBACK}
         alt=""
         width={size}
         height={size}
-        className={cn("p-1", className || "")}
+        className={cn("p-0.5", className || "")}
       />
     </div>
   )

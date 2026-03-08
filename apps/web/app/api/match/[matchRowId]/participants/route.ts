@@ -33,7 +33,7 @@ export const matchParticipantsPerformancesQuery = (matchRowId: number) =>
       trueDamageDealtToChampions: playerPerformances.trueDamageDealtToChampions,
       totalMinionsKilled: playerPerformances.totalMinionsKilled,
       win: playerPerformances.win,
-      perkPrimaryStyleId: playerPerformances.perkPrimaryStyleId,
+      perkPrimary1Id: playerPerformances.perkPrimary1Id,
       perkSecondaryStyleId: playerPerformances.perkSecondaryStyleId,
 
       doubleKills: playerPerformances.doubleKills,
