@@ -4,6 +4,9 @@ import PodiumRow from "@repo/ui/PodiumRow"
 import LeaderboardRow from "@repo/ui/LeaderboardRow"
 import { fetchRecentGames, fetchTopLadderPlayers, fetchPlayerBannersByPuuids } from "./actions"
 import { SEASON_END_DATE } from "@repo/ui/config"
+// import Card from "@repo/ui/Card"
+// import Image from "next/image"
+// import Link from "next/link"
 
 export default async function Home() {
   const games = await fetchRecentGames()
@@ -26,7 +29,7 @@ export default async function Home() {
               name={player.riotIdGameName}
               puuid={player.puuid}
               glow={"none"}
-              backgroundImage={`/banners/${banners[player.puuid] ?? 0}_compressed.webp`}
+              backgroundImage={`/banners/webp/${banners[player.puuid] ?? 0}.webp`}
             />
           ))}
 
@@ -42,6 +45,17 @@ export default async function Home() {
         </div>
         <div className="col-span-1 flex flex-col gap-4">
           <Countdown date={SEASON_END_DATE} />
+
+          {/* <Link href="/predictions">
+            <Card className="flex-row items-center justify-center gap-2 bg-blue-950 border-blue-400 hover:border-blue-300 transition-colors duration-200 cursor-pointer">
+              <Image src="/stonks.webp" alt="" width={96} height={96} />
+              <div className="flex flex-col gap-1 text-center pr-8">
+                <h3 className="text-5xl font-semibold font-oswald uppercase">Predictions</h3>
+                <p className="text-zinc-300 text-xs">Guess the outcomes of upcoming matches and win points!</p>
+              </div>
+            </Card>
+          </Link> */}
+
           {games.map((g) => (
             <RecentGame key={g.matchId} players={g.players} gameEndTimestamp={g.gameEndTimestamp} />
           ))}

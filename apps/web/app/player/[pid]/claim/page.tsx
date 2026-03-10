@@ -25,63 +25,135 @@ const CPID_TO_PLATFORM: Record<string, string> = {
   VN2: "vn2",
 }
 
-export default async function ClaimProfile({ params }: { params: Promise<{ pid: string }> }) {
-  const { pid } = await params
+type ErrorResult = { ok: false; code: number; message: string }
 
+type RiotIdentityResult =
+  | {
+      ok: true
+      puuid: string
+      userId: string
+      client: Awaited<ReturnType<typeof clerkClient>>
+    }
+  | ErrorResult
+
+type ClaimProfileResult = { ok: true; puuid: string } | ErrorResult
+
+export async function getCurrentRiotIdentity(): Promise<RiotIdentityResult> {
   const user = await currentUser()
-  if (!user) return <ErrorMessage code={401} message="User not authenticated. Please log in!" />
+  if (!user) {
+    return { ok: false, code: 401, message: "User not authenticated. Please log in!" }
+  }
 
   const client = await clerkClient()
   const provider = await client.users.getUserOauthAccessToken(user.id, "custom_riot_games")
   const riotToken = provider.data[0]?.token
-  if (!riotToken) return <ErrorMessage code={401} message="Missing Riot access token." />
+
+  if (!riotToken) {
+    return { ok: false, code: 401, message: "Missing Riot access token." }
+  }
 
   const userinfoRes = await fetchWithRetry("https://auth.riotgames.com/userinfo", {
     headers: { Authorization: `Bearer ${riotToken}` },
   })
+
   if (!userinfoRes.ok) {
-    return <ErrorMessage code={userinfoRes.status} message="Failed to fetch Riot userinfo." />
+    return { ok: false, code: userinfoRes.status, message: "Failed to fetch Riot userinfo." }
   }
+
   const userinfo = await userinfoRes.json()
   const cpid: string | undefined = userinfo?.cpid
+
   if (!cpid) {
-    return (
-      <ErrorMessage code={400} message="No cpid returned. Make sure your OAuth scopes include cpid when initiating Riot login." />
-    )
+    return {
+      ok: false,
+      code: 400,
+      message: "No cpid returned. Make sure your OAuth scopes include cpid when initiating Riot login.",
+    }
   }
 
   const platform = CPID_TO_PLATFORM[cpid]
-  if (!platform) return <ErrorMessage code={400} message={`Unknown cpid: ${cpid}`} />
+  if (!platform) {
+    return { ok: false, code: 400, message: `Unknown cpid: ${cpid}` }
+  }
 
   const summonerRes = await fetchWithRetry(`https://${platform}.api.riotgames.com/lol/summoner/v4/summoners/me`, {
     headers: { Authorization: `Bearer ${riotToken}` },
   })
+
   if (!summonerRes.ok) {
-    return <ErrorMessage code={summonerRes.status} message="Failed to fetch summoner from Riot." />
+    return { ok: false, code: summonerRes.status, message: "Failed to fetch summoner from Riot." }
   }
+
   const summoner = await summonerRes.json()
   const puuid: string | undefined = summoner?.puuid
-  if (!puuid) return <ErrorMessage code={500} message="No puuid returned from summoner/me." />
 
-  if (safeSubstring(puuid, 0, 20) !== pid) {
-    return <ErrorMessage code={400} message="Your connected Riot account does not match the profile you are trying to claim." />
+  if (!puuid) {
+    return { ok: false, code: 500, message: "No puuid returned from summoner/me." }
   }
+
+  return {
+    ok: true,
+    puuid,
+    userId: user.id,
+    client,
+  }
+}
+
+export async function claimProfileByPuuid(args: {
+  puuid: string
+  userId: string
+  client: Awaited<ReturnType<typeof clerkClient>>
+}): Promise<ClaimProfileResult> {
+  const { puuid, userId, client } = args
 
   const player = await db.query.players.findFirst({
     where: and(eq(players.puuid, puuid), isNull(players.authId)),
   })
 
   if (!player) {
-    return <ErrorMessage code={404} message="Player not found or already claimed." />
+    return { ok: false, code: 404, message: "Player not found or already claimed." }
   }
 
-  await db.update(players).set({ authId: user.id }).where(eq(players.id, player.id))
+  await db.update(players).set({ authId: userId }).where(eq(players.id, player.id))
 
-  await client.users.updateUserMetadata(user.id, {
+  await client.users.updateUserMetadata(userId, {
     privateMetadata: {
       puuid,
     },
   })
+
+  return { ok: true, puuid }
+}
+
+export async function claimCurrentUsersProfile(): Promise<ClaimProfileResult> {
+  const identity = await getCurrentRiotIdentity()
+  if (!identity.ok) return identity
+
+  return claimProfileByPuuid(identity)
+}
+
+export async function claimProfileByPid(pid: string): Promise<ClaimProfileResult> {
+  const identity = await getCurrentRiotIdentity()
+  if (!identity.ok) return identity
+
+  if (safeSubstring(identity.puuid, 0, 20) !== pid) {
+    return {
+      ok: false,
+      code: 400,
+      message: "Your connected Riot account does not match the profile you are trying to claim.",
+    }
+  }
+
+  return claimProfileByPuuid(identity)
+}
+
+export default async function ClaimProfile({ params }: { params: Promise<{ pid: string }> }) {
+  const { pid } = await params
+  const result = await claimProfileByPid(pid)
+
+  if (!result.ok) {
+    return <ErrorMessage code={result.code} message={result.message} />
+  }
 
   return (
     <div className="flex flex-col items-center gap-2">

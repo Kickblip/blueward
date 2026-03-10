@@ -39,7 +39,7 @@ export default async function PlayerProfile({ params }: { params: Promise<{ pid:
         <Card className="p-0">
           <div className="relative">
             <Image
-              src={`/banners/${playerProfile?.bannerId ?? 0}_compressed.webp`}
+              src={`/banners/webp/${playerProfile?.bannerId ?? 0}.webp`}
               alt="player background"
               width={1000}
               height={1000}

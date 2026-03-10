@@ -29,7 +29,7 @@ export default async function Image({ params }: { params: Promise<{ pid: string 
   const profilePictureUrl = await fetchProfilePictureByAuthId(playerProfile?.authId)
 
   const bannerId = playerProfile?.bannerId ?? 0
-  const bannerUrl = `${process.env.NEXT_PUBLIC_BASE}/banners/${bannerId}.jpg`
+  const bannerUrl = `${process.env.NEXT_PUBLIC_BASE}/banners/jpg/${bannerId}.jpg`
 
   const barH = 140
   const avatarSize = 250

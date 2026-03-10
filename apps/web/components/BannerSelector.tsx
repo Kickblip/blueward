@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { FaPencilAlt, FaLock } from "react-icons/fa"
+import { FaPencilAlt } from "react-icons/fa"
 import { AnimatePresence, motion } from "framer-motion"
 import Image from "next/image"
 import { BANNER_CONFIG } from "@repo/ui/config"
@@ -14,13 +14,17 @@ export default function BannerSelector({ playerBanners, puuid }: { playerBanners
   const router = useRouter()
 
   const banners = useMemo(() => {
-    const owned = new Set(playerBanners)
-    return Object.entries(BANNER_CONFIG)
-      .map(([id, banner]) => {
-        const bannerId = Number(id)
-        return { id: bannerId, name: banner.name, owned: owned.has(bannerId), description: banner.description }
+    return playerBanners
+      .map((id) => {
+        const banner = BANNER_CONFIG[id as keyof typeof BANNER_CONFIG]
+        if (!banner) return null
+        return {
+          id,
+          name: banner.name,
+          description: banner.description,
+        }
       })
-      .sort((a, b) => Number(b.owned) - Number(a.owned) || a.id - b.id)
+      .filter((banner): banner is NonNullable<typeof banner> => banner !== null)
   }, [playerBanners])
 
   async function selectBanner(bannerId: number) {
@@ -42,11 +46,13 @@ export default function BannerSelector({ playerBanners, puuid }: { playerBanners
     }
   }
 
+  if (!banners.length) return null
+
   return (
     <>
       <button
         onClick={() => setOpen(true)}
-        className="absolute top-2 right-2 bg-zinc-900 p-2 rounded border border-zinc-800 cursor-pointer hover:bg-zinc-800 transition-colors duration-200"
+        className="absolute top-2 right-2 rounded border border-zinc-800 bg-zinc-900 p-2 hover:bg-zinc-800"
       >
         <FaPencilAlt className="text-zinc-200" />
       </button>
@@ -64,7 +70,7 @@ export default function BannerSelector({ playerBanners, puuid }: { playerBanners
             <button className="absolute inset-0 bg-black/70" onClick={() => setOpen(false)} aria-label="Close modal" />
 
             <motion.div
-              className="relative w-full max-w-6xl rounded-lg border border-zinc-800 bg-zinc-900 p-4 grid grid-cols-3 gap-4"
+              className="relative grid w-full max-w-6xl grid-cols-3 gap-4 rounded-lg border border-zinc-800 bg-zinc-900 p-4"
               initial={{ opacity: 0, scale: 0.98, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.98, y: 8 }}
@@ -72,51 +78,37 @@ export default function BannerSelector({ playerBanners, puuid }: { playerBanners
               onClick={(e) => e.stopPropagation()}
             >
               {banners.map((banner) => {
-                const disabled = !banner.owned || savingId !== null
                 const isSaving = savingId === banner.id
 
                 return (
                   <button
                     key={banner.id}
-                    className="group relative overflow-hidden rounded aspect-[2/1] cursor-pointer disabled:cursor-not-allowed"
-                    disabled={disabled}
-                    onClick={() => banner.owned && selectBanner(banner.id)}
-                    title={!banner.owned ? "Locked" : "Select banner"}
+                    className="group relative aspect-[2/1] overflow-hidden rounded"
+                    disabled={savingId !== null}
+                    onClick={() => selectBanner(banner.id)}
                   >
                     <Image
-                      src={`/banners/${banner.id}.webp`}
+                      src={`/banners/webp/${banner.id}.webp`}
                       alt={banner.name}
                       fill
-                      className={[
-                        "object-cover transition-transform duration-200",
-                        banner.owned ? "group-hover:scale-105" : "brightness-50",
-                        isSaving ? "brightness-75" : "",
-                      ].join(" ")}
+                      className={`object-cover transition-transform duration-200 group-hover:scale-105 ${
+                        isSaving ? "brightness-75" : ""
+                      }`}
                       sizes="(max-width: 1024px) 33vw, 420px"
                     />
 
-                    <div className="absolute inset-x-0 bottom-0 pb-2">
-                      <div className="w-full bg-black/60 px-2 py-1">
-                        {isSaving ? (
-                          <div className="flex items-center justify-center p-0.5">
-                            <Loading size="small" />
-                          </div>
-                        ) : (
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium text-zinc-100">{banner.name}</p>
-                            {banner.description ? <p className="text-xs text-zinc-300">{banner.description}</p> : null}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {!banner.owned && (
-                      <div className="absolute top-2 right-2 flex items-center justify-center">
-                        <div className="rounded-lg bg-black/50 p-3">
-                          <FaLock className="text-zinc-100" />
+                    <div className="absolute inset-x-0 bottom-0 bg-black/60 px-2 py-1">
+                      {isSaving ? (
+                        <div className="flex justify-center p-0.5">
+                          <Loading size="small" />
                         </div>
-                      </div>
-                    )}
+                      ) : (
+                        <>
+                          <p className="text-sm font-medium text-zinc-100">{banner.name}</p>
+                          {banner.description ? <p className="text-xs text-zinc-300">{banner.description}</p> : null}
+                        </>
+                      )}
+                    </div>
                   </button>
                 )
               })}
