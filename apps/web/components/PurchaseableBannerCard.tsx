@@ -64,7 +64,7 @@ export default function PurchaseableBannerCard({ bannerId }: { bannerId: number 
             disabled={isPurchasing}
             className="absolute inset-0 z-0 text-left disabled:cursor-not-allowed disabled:opacity-70"
           >
-            <Image src={`/banners/webp/${bannerId}.webp`} alt={banner.name} fill className="object-cover" />
+            <Image src={`/banners/compressed/${bannerId}.webp`} alt={banner.name} fill className="object-cover" />
 
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/15 to-transparent" />
 

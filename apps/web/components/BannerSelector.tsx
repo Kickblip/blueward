@@ -88,7 +88,7 @@ export default function BannerSelector({ playerBanners, puuid }: { playerBanners
                     onClick={() => selectBanner(banner.id)}
                   >
                     <Image
-                      src={`/banners/webp/${banner.id}.webp`}
+                      src={`/banners/compressed/${banner.id}.webp`}
                       alt={banner.name}
                       fill
                       className={`object-cover transition-transform duration-200 group-hover:scale-105 ${

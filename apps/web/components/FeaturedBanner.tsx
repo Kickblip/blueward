@@ -120,7 +120,7 @@ export default function FeaturedBanner() {
                                 </div>
                               ) : (
                                 <Image
-                                  src={`/banners/webp/${banner.id}.webp`}
+                                  src={`/banners/compressed/${banner.id}.webp`}
                                   alt={banner.name}
                                   fill
                                   className="object-cover transition-transform duration-300"
