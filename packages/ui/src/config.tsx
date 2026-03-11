@@ -20,6 +20,53 @@ export const SOCIAL_LINK_CONFIG = {
  * ultimate
  */
 
+export const ROLL_PRICE = 10000 as const
+
+export type Rarity = "common" | "rare" | "epic" | "legendary" | "ultimate"
+
+export const RARITY_COLORS = {
+  common: "#22c55e",
+  rare: "#3b82f6",
+  epic: "#a855f7",
+  legendary: "#f75555",
+  ultimate: "#f5f10b",
+} as const
+
+export const RARITY_PRICES = {
+  common: 10000,
+  rare: 20000,
+  epic: 35000,
+  legendary: 75000,
+  ultimate: 500000,
+} as const
+
+export const RARITY_RATES = {
+  common: 0.45,
+  rare: 0.3,
+  epic: 0.15,
+  legendary: 0.08,
+  ultimate: 0.02,
+} as const
+
+export const OWNERSHIP_RAKEBACK = {
+  common: 0.5,
+  rare: 0.6,
+  epic: 0.7,
+  legendary: 0.8,
+  ultimate: 1.0,
+} as const
+
+export const HORIZONS_SET_LIST = {
+  featured: 60,
+  rollable: [34, 56, 105, 60, 117, 24, 94, 84, 8, 44, 48, 89, 91, 46, 11, 14, 15, 18, 106, 62, 65, 69, 80, 113, 20],
+  buyable: [39, 16, 23, 40, 61, 81],
+  ultimate: [34],
+  legendary: [56, 105, 60],
+  epic: [117, 24, 94, 84],
+  rare: [8, 44, 48, 89, 91, 46],
+  common: [11, 14, 15, 18, 106, 62, 65, 69, 80, 113, 20],
+} as const
+
 export const BANNER_CONFIG = {
   // ================= DEFAULT =================
   0: { name: "New Horizons", description: "", rarity: "common" },
@@ -38,7 +85,7 @@ export const BANNER_CONFIG = {
 
   // ================= SET 1 ROLLABLE =================
 
-  34: { name: "Soft Avalanche", description: "", rarity: "ultimate" },
+  34: { name: "Look Out Below", description: "", rarity: "ultimate" },
 
   56: { name: "A Grand Agendum", description: "", rarity: "legendary" },
   105: { name: "Lux Illuminated", description: "", rarity: "legendary" },
@@ -70,10 +117,11 @@ export const BANNER_CONFIG = {
 
   // ================= SET 1 PURCHASEABLE =================
   39: { name: "The Order of Shadows", description: "", rarity: "legendary" },
-  16: { name: "Lux Discovery", description: "", rarity: "epic" },
-  23: { name: "Braum is Here", description: "", rarity: "epic" },
+  16: { name: "Lux Discovery", description: "", rarity: "legendary" },
+  23: { name: "Braum is Here", description: "", rarity: "legendary" },
   40: { name: "Wanderer", description: "", rarity: "epic" },
   61: { name: "Together Forever", description: "", rarity: "epic" },
+  81: { name: "Voluntary Participant", description: "", rarity: "epic" },
 
   /**
    *

@@ -4,9 +4,9 @@ import PodiumRow from "@repo/ui/PodiumRow"
 import LeaderboardRow from "@repo/ui/LeaderboardRow"
 import { fetchRecentGames, fetchTopLadderPlayers, fetchPlayerBannersByPuuids } from "./actions"
 import { SEASON_END_DATE } from "@repo/ui/config"
-// import Card from "@repo/ui/Card"
-// import Image from "next/image"
-// import Link from "next/link"
+import Card from "@repo/ui/Card"
+import Image from "next/image"
+import Link from "next/link"
 
 export default async function Home() {
   const games = await fetchRecentGames()
@@ -55,6 +55,18 @@ export default async function Home() {
               </div>
             </Card>
           </Link> */}
+
+          <Link href="/shop">
+            <Card className="flex-row items-center justify-center gap-2 bg-yellow-950 border-yellow-400 hover:border-yellow-300 transition-colors duration-200 cursor-pointer">
+              <Image src="/horizons.png" alt="Horizons set logo" width={150} height={80} />
+              <div className="flex flex-col gap-1 text-center">
+                <h3 className="text-xl font-semibold font-oswald uppercase">New Banner Collection</h3>
+                <p className="text-zinc-300 text-xs">
+                  Check out Horizons: the first collection of limited-edition season banners!
+                </p>
+              </div>
+            </Card>
+          </Link>
 
           {games.map((g) => (
             <RecentGame key={g.matchId} players={g.players} gameEndTimestamp={g.gameEndTimestamp} />

@@ -70,7 +70,7 @@ export default function BannerSelector({ playerBanners, puuid }: { playerBanners
             <button className="absolute inset-0 bg-black/70" onClick={() => setOpen(false)} aria-label="Close modal" />
 
             <motion.div
-              className="relative grid w-full max-w-6xl grid-cols-3 gap-4 rounded-lg border border-zinc-800 bg-zinc-900 p-4"
+              className="relative grid max-h-[90vh] overflow-y-auto w-full max-w-6xl grid-cols-3 gap-4 rounded-lg border border-zinc-800 bg-zinc-900 p-4"
               initial={{ opacity: 0, scale: 0.98, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.98, y: 8 }}
