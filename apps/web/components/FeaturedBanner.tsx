@@ -15,7 +15,7 @@ export default function FeaturedBanner() {
     <>
       <div
         onClick={() => setIsOpen(true)}
-        className="relative col-span-2 aspect-[2/1] w-full overflow-hidden
+        className="relative col-span-1 md:col-span-2 aspect-[2/1] w-full overflow-hidden
                    rounded-md border border-red-300
                    cursor-pointer
                    shadow-[0_0_30px_rgba(239,68,68,0.5)]
@@ -39,7 +39,7 @@ export default function FeaturedBanner() {
           <h2 className="text-7xl font-semibold font-oswald text-white uppercase">{banner.name}</h2>
         </div>
 
-        <div className="absolute bottom-2 right-2 z-10">
+        <div className="invisible md:visible absolute bottom-2 right-2 z-10">
           <Image src="/horizons.png" alt="Horizons set logo" width={200} height={80} />
         </div>
       </div>

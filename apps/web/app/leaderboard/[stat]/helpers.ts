@@ -7,6 +7,8 @@ export const statList = {
   deaths: "Deaths",
   assists: "Assists",
   cs: "CS",
+  kda: "KDA",
+  damagedealt: "Damage Dealt to Champions",
   visionscore: "Vision Score",
   missingpings: "Missing Pings",
   crit: "Largest Critical Strikes",
@@ -69,11 +71,43 @@ export async function getTopPlayersForStat(stat: StatKey, limit = 15): Promise<L
       SELECT
         puuid,
         riot_id_game_name AS "riotIdGameName",
-        total_minions_killed AS value,
+        (total_minions_killed + neutral_minions_killed) AS value,
         created_at AS "createdAt",
         champion_name AS "championName"
       FROM player_performances
-      ORDER BY total_minions_killed DESC, created_at DESC
+      ORDER BY (total_minions_killed + neutral_minions_killed) DESC, created_at DESC
+      LIMIT ${limit};
+    `,
+
+    kda: (limit) => sql`
+      SELECT
+        puuid,
+        riot_id_game_name AS "riotIdGameName",
+        ROUND(((kills + assists)::numeric / GREATEST(deaths, 1)), 2) AS value,
+        created_at AS "createdAt",
+        champion_name AS "championName"
+      FROM player_performances
+      ORDER BY ((kills + assists)::numeric / GREATEST(deaths, 1)) DESC, created_at DESC
+      LIMIT ${limit};
+    `,
+
+    damagedealt: (limit) => sql`
+      SELECT
+        puuid,
+        riot_id_game_name AS "riotIdGameName",
+        (
+          magic_damage_dealt_to_champions +
+          physical_damage_dealt_to_champions +
+          true_damage_dealt_to_champions
+        ) AS value,
+        created_at AS "createdAt",
+        champion_name AS "championName"
+      FROM player_performances
+      ORDER BY (
+        magic_damage_dealt_to_champions +
+        physical_damage_dealt_to_champions +
+        true_damage_dealt_to_champions
+      ) DESC, created_at DESC
       LIMIT ${limit};
     `,
 

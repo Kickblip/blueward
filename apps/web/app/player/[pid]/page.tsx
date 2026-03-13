@@ -34,7 +34,7 @@ export default async function PlayerProfile({ params }: { params: Promise<{ pid:
   const winrateByChampion = calcWinrateByChampion(matches)
 
   return (
-    <div className="grid grid-cols-3 gap-4 min-h-screen">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 min-h-screen">
       <div className="col-span-1 flex flex-col gap-4">
         <Card className="p-0">
           <div className="relative">

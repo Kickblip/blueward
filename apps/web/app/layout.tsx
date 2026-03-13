@@ -12,7 +12,7 @@ import { SearchButton } from "@/components/Search"
 import { currentUser } from "@clerk/nextjs/server"
 import { Analytics } from "@vercel/analytics/next"
 import { FaUserGroup } from "react-icons/fa6"
-import { IoSparkles } from "react-icons/io5"
+import { IoSparkles, IoMenu } from "react-icons/io5"
 import { claimCurrentUsersProfile } from "@/app/player/[pid]/claim/page"
 import UserBalance from "@/components/UserBalance"
 
@@ -79,21 +79,47 @@ export default function RootLayout({
   )
 }
 
+const navItems = [
+  {
+    href: "/leaderboard/kills",
+    label: "Leaderboards",
+    icon: <PiCrownSimpleFill className="inline-block rotate-35 text-blue-500" size={14} />,
+  },
+  {
+    href: "/shop",
+    label: "Shop",
+    icon: <IoSparkles className="inline-block text-blue-500" size={12} />,
+  },
+]
+
 function Navbar() {
   return (
     <NavbarLayout signInButtons={<SignInButtons />}>
-      <NavbarLink
-        href="/leaderboard/kills"
-        icon={<PiCrownSimpleFill className="inline-block text-blue-500 rotate-35" size={14} />}
-      >
-        Leaderboards
-      </NavbarLink>
+      <div className="hidden items-center gap-8 md:flex">
+        {navItems.map((item) => (
+          <NavbarLink key={item.href} href={item.href} icon={item.icon}>
+            {item.label}
+          </NavbarLink>
+        ))}
+      </div>
 
-      <NavbarLink href="/shop" icon={<IoSparkles className="inline-block text-blue-500" size={12} />}>
-        Shop
-      </NavbarLink>
+      {/* mobile */}
+      <details className="relative md:hidden">
+        <summary className="flex p-2 cursor-pointer list-none items-center justify-center rounded-lg border border-zinc-700 bg-zinc-800/60">
+          <span className="sr-only">Open navigation menu</span>
+          <IoMenu size={16} />
+        </summary>
 
-      {/* <LightningButton href="/fightclub">Fight Club</LightningButton> */}
+        <div className="absolute left-0 top-full z-50 mt-3 min-w-56 rounded-md border border-zinc-800 bg-zinc-950 p-3">
+          <div className="flex flex-col gap-2">
+            {navItems.map((item) => (
+              <div key={item.href} className="block">
+                <NavbarLink href={item.href}>{item.label}</NavbarLink>
+              </div>
+            ))}
+          </div>
+        </div>
+      </details>
     </NavbarLayout>
   )
 }
@@ -127,7 +153,9 @@ async function SignInButtons() {
         </SignUpButton>
       </SignedOut>
 
-      <SearchButton />
+      <div className="hidden md:flex">
+        <SearchButton />
+      </div>
 
       <SignedIn>
         {hasRiotAccountConnected && puuid && <UserBalance />}

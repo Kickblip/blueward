@@ -7,7 +7,7 @@ export const SOCIAL_LINK_CONFIG = {
   wyattwebsite: "https://www.wyatthansen.dev",
   pixels: "https://pixels.longhornlol.com",
   docs: "https://docs.longhornlol.com",
-  changelog: "https://docs.longhornlol.com",
+  changelog: "https://github.com/Kickblip/blueward/releases",
   repo: "https://github.com/Kickblip/blueward",
   clubsite: "https://www.longhornlol.com",
 } as const

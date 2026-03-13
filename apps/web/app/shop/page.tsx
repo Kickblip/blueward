@@ -12,10 +12,10 @@ export default function Shop() {
         exchangable for and in any way with real money. They can only be earned through gameplay.
       </p>
 
-      <div className="grid grid-cols-3 gap-4 pb-12">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-12">
         <FeaturedBanner />
         <BannerRoll />
-        <div className="flex items-center col-span-3 py-4 gap-8">
+        <div className="flex flex-col md:flex-row items-center col-span-1 md:col-span-3 py-4 gap-8">
           <Image src="/shop.svg" alt="Blueward Shop" width={400} height={80} />
 
           <p className="text-3xl font-semibold font-oswald uppercase">Purchase without rolling</p>

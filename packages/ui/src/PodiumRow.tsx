@@ -25,8 +25,8 @@ export default function PodiumRow({
       <Card className="flex-col gap-2 bg-cover" style={{ backgroundImage: `url(${backgroundImage})` }}>
         <div
           className={`flex flex-col justify-between
-                      ${size === "large" ? "h-60" : ""}
-                      ${size === "small" ? "h-42" : ""}`}
+                      ${size === "large" ? "h-42 md:h-60" : ""}
+                      ${size === "small" ? "h-32 md:h-42" : ""}`}
         >
           <div className={`grid ${numColumnsMap[Object.keys(stats).length]}`}>
             {Object.entries(stats).map(([statName, statValue]) => (
@@ -34,8 +34,8 @@ export default function PodiumRow({
                 <h3 className="text-xs font-semibold uppercase">{statName}</h3>
                 <p
                   className={`font-oswald font-semibold tabular-nums
-                          ${size === "large" ? "text-5xl" : ""}
-                          ${size === "small" ? "text-3xl" : ""}`}
+                          ${size === "large" ? "text-3xl md:text-5xl" : ""}
+                          ${size === "small" ? "text-2xl md:text-3xl" : ""}`}
                 >
                   {statValue}
                 </p>
@@ -46,16 +46,16 @@ export default function PodiumRow({
           <div className="flex items-center justify-between mb-5">
             <p
               className={`font-oswald scale-y-150 font-semibold tabular-nums 
-                      ${size === "large" ? "text-7xl" : ""}
-                      ${size === "small" ? "text-5xl" : ""}`}
+                      ${size === "large" ? "text-5xl md:text-7xl" : ""}
+                      ${size === "small" ? "text-3xl md:text-5xl" : ""}`}
             >
               {name}
             </p>
 
             <p
               className={`font-oswald font-semibold opacity-80
-                      ${size === "large" ? "text-7xl" : ""}
-                      ${size === "small" ? "text-5xl" : ""}`}
+                      ${size === "large" ? "text-5xl md:text-7xl" : ""}
+                      ${size === "small" ? "text-3xl md:text-5xl" : ""}`}
             >
               #{ranking}
             </p>

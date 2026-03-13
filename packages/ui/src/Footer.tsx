@@ -33,7 +33,7 @@ export default function Footer() {
           <div className="flex flex-col gap-2">
             <h3 className="text-zinc-200 font-semibold">Resources</h3>
             <FooterLink href={SOCIAL_LINK_CONFIG.repo}>Open Source</FooterLink>
-            <FooterLink href={SOCIAL_LINK_CONFIG.docs}>Documentation</FooterLink>
+            {/* <FooterLink href={SOCIAL_LINK_CONFIG.docs}>Documentation</FooterLink> */}
             <FooterLink href={SOCIAL_LINK_CONFIG.changelog}>Changelog</FooterLink>
           </div>
 
