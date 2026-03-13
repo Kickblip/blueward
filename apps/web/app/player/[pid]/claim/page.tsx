@@ -3,7 +3,7 @@ import ErrorMessage from "@repo/ui/ErrorMessage"
 import { fetchWithRetry } from "@/app/import/helpers"
 import { db } from "@/lib/db"
 import { players } from "@/lib/schema"
-import { eq, isNull, and } from "drizzle-orm"
+import { eq } from "drizzle-orm"
 import { safeSubstring } from "@repo/ui/helpers"
 
 const CPID_TO_PLATFORM: Record<string, string> = {
@@ -25,12 +25,35 @@ const CPID_TO_PLATFORM: Record<string, string> = {
   VN2: "vn2",
 }
 
+const CPID_TO_ACCOUNT_REGION: Record<string, "americas" | "europe" | "asia"> = {
+  NA1: "americas",
+  BR1: "americas",
+  LA1: "americas",
+  LA2: "americas",
+
+  EUW1: "europe",
+  EUN1: "europe",
+  RU: "europe",
+  TR1: "europe",
+
+  KR: "asia",
+  JP1: "asia",
+  OC1: "asia",
+  PH2: "asia",
+  SG2: "asia",
+  TH2: "asia",
+  TW2: "asia",
+  VN2: "asia",
+}
+
 type ErrorResult = { ok: false; code: number; message: string }
 
 type RiotIdentityResult =
   | {
       ok: true
       puuid: string
+      riotIdGameName: string
+      riotIdTagline: string
       userId: string
       client: Awaited<ReturnType<typeof clerkClient>>
     }
@@ -76,24 +99,37 @@ export async function getCurrentRiotIdentity(): Promise<RiotIdentityResult> {
     return { ok: false, code: 400, message: `Unknown cpid: ${cpid}` }
   }
 
-  const summonerRes = await fetchWithRetry(`https://${platform}.api.riotgames.com/lol/summoner/v4/summoners/me`, {
+  const accountRegion = CPID_TO_ACCOUNT_REGION[cpid]
+  if (!accountRegion) {
+    return { ok: false, code: 400, message: `Unknown account region for cpid: ${cpid}` }
+  }
+
+  const accountRes = await fetchWithRetry(`https://${accountRegion}.api.riotgames.com/riot/account/v1/accounts/me`, {
     headers: { Authorization: `Bearer ${riotToken}` },
   })
 
-  if (!summonerRes.ok) {
-    return { ok: false, code: summonerRes.status, message: "Failed to fetch summoner from Riot." }
+  if (!accountRes.ok) {
+    return { ok: false, code: accountRes.status, message: "Failed to fetch Riot account." }
   }
 
-  const summoner = await summonerRes.json()
-  const puuid: string | undefined = summoner?.puuid
+  const account = await accountRes.json()
+  const puuid: string | undefined = account?.puuid
+  const riotIdGameName: string | undefined = account?.gameName
+  const riotIdTagline: string | undefined = account?.tagLine
 
   if (!puuid) {
-    return { ok: false, code: 500, message: "No puuid returned from summoner/me." }
+    return { ok: false, code: 500, message: "No puuid returned from Riot account endpoint." }
+  }
+
+  if (!riotIdGameName || !riotIdTagline) {
+    return { ok: false, code: 500, message: "Missing Riot ID game name or tagline." }
   }
 
   return {
     ok: true,
     puuid,
+    riotIdGameName,
+    riotIdTagline,
     userId: user.id,
     client,
   }
@@ -101,20 +137,48 @@ export async function getCurrentRiotIdentity(): Promise<RiotIdentityResult> {
 
 export async function claimProfileByPuuid(args: {
   puuid: string
+  riotIdGameName: string
+  riotIdTagline: string
   userId: string
   client: Awaited<ReturnType<typeof clerkClient>>
 }): Promise<ClaimProfileResult> {
-  const { puuid, userId, client } = args
+  const { puuid, riotIdGameName, riotIdTagline, userId, client } = args
 
   const player = await db.query.players.findFirst({
-    where: and(eq(players.puuid, puuid), isNull(players.authId)),
+    where: eq(players.puuid, puuid),
   })
 
   if (!player) {
-    return { ok: false, code: 404, message: "Player not found or already claimed." }
+    await db.insert(players).values({
+      authId: userId,
+      bannerId: 0,
+      banners: [0, 1, 2, 3],
+      puuid,
+      riotIdGameName,
+      riotIdTagline,
+    })
+
+    await client.users.updateUserMetadata(userId, {
+      privateMetadata: {
+        puuid,
+      },
+    })
+
+    return { ok: true, puuid }
   }
 
-  await db.update(players).set({ authId: userId }).where(eq(players.id, player.id))
+  if (player.authId && player.authId !== userId) {
+    return { ok: false, code: 409, message: "Player already claimed." }
+  }
+
+  await db
+    .update(players)
+    .set({
+      authId: userId,
+      riotIdGameName,
+      riotIdTagline,
+    })
+    .where(eq(players.id, player.id))
 
   await client.users.updateUserMetadata(userId, {
     privateMetadata: {

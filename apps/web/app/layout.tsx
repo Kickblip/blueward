@@ -13,7 +13,7 @@ import { currentUser } from "@clerk/nextjs/server"
 import { Analytics } from "@vercel/analytics/next"
 import { FaUserGroup } from "react-icons/fa6"
 import { IoSparkles } from "react-icons/io5"
-// import { claimCurrentUsersProfile } from "@/app/player/[pid]/claim/page"
+import { claimCurrentUsersProfile } from "@/app/player/[pid]/claim/page"
 import UserBalance from "@/components/UserBalance"
 
 const oswald = Oswald({
@@ -104,17 +104,17 @@ async function SignInButtons() {
   const hasRiotAccountConnected = user && user.externalAccounts.some((account) => account.provider === "oauth_custom_riot_games")
   const isAdmin = user && user.privateMetadata.role === "admin"
 
-  // if (hasRiotAccountConnected && !puuid) {
-  //   // The user must have just connected their Riot account so we attempt to claim their Blueward profile automatically
-  //   const result = await claimCurrentUsersProfile()
+  if (hasRiotAccountConnected && !puuid) {
+    // The user must have just connected their Riot account so we attempt to claim their Blueward profile automatically
+    const result = await claimCurrentUsersProfile()
 
-  //   if (!result.ok) {
-  //     console.error("Failed to claim profile:", result.message)
-  //     return
-  //   }
+    if (!result.ok) {
+      console.error("Failed to claim profile:", result.message)
+      return
+    }
 
-  //   console.log("Claimed puuid:", result.puuid)
-  // }
+    console.log("Claimed puuid:", result.puuid)
+  }
 
   return (
     <div className="flex items-center gap-4">
