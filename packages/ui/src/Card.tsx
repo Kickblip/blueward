@@ -5,11 +5,13 @@ export default function Card({
   title,
   subtitle,
   className,
+  style,
 }: {
   children: React.ReactNode
   title?: string
   subtitle?: string
   className?: string
+  style?: React.CSSProperties
 }) {
   return (
     <div
@@ -18,6 +20,7 @@ export default function Card({
                 bg-zinc-900 border border-zinc-800 rounded-md`,
         className ? className : "",
       )}
+      style={style}
     >
       {title || subtitle ? (
         <div className="flex items-center justify-between font-oswald">

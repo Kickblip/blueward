@@ -1,7 +1,7 @@
 import Link from "next/link"
-import GlowingCard from "./GlowingCard"
 import { numColumnsMap } from "./LeaderboardRow"
 import { safeSubstring } from "./helpers"
+import Card from "./Card"
 
 export default function PodiumRow({
   ranking,
@@ -10,7 +10,6 @@ export default function PodiumRow({
   puuid,
   backgroundImage,
   size,
-  glow = "light",
 }: {
   ranking: number
   stats: {
@@ -18,13 +17,12 @@ export default function PodiumRow({
   }
   name: string
   puuid: string
-  backgroundImage?: string
+  backgroundImage: string
   size: "large" | "small"
-  glow?: "light" | "heavy" | "none"
 }) {
   return (
     <Link href={`/player/${safeSubstring(puuid, 0, 20)}`}>
-      <GlowingCard backgroundImage={backgroundImage} glow={glow}>
+      <Card className="flex-col gap-2 bg-cover" style={{ backgroundImage: `url(${backgroundImage})` }}>
         <div
           className={`flex flex-col justify-between
                       ${size === "large" ? "h-60" : ""}
@@ -63,7 +61,7 @@ export default function PodiumRow({
             </p>
           </div>
         </div>
-      </GlowingCard>
+      </Card>
     </Link>
   )
 }

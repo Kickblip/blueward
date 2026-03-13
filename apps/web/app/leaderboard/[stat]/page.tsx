@@ -55,7 +55,6 @@ export default async function Leaderboard({ params }: { params: Promise<{ stat: 
         {podium.map((player, index) => (
           <PodiumRow
             key={player.puuid + player.createdAt}
-            glow="none"
             size="large"
             ranking={index + 1}
             stats={buildStatsProp(player.value, player.createdAt)}

@@ -83,11 +83,11 @@ export default function FeaturedBanner() {
                       <div
                         className={[
                           "h-3 w-3 rounded-full",
-                          rarity === "ultimate" && "bg-yellow-300 shadow-[0_0_16px_rgba(253,224,71,0.7)]",
-                          rarity === "legendary" && "bg-red-400 shadow-[0_0_16px_rgba(248,113,113,0.65)]",
-                          rarity === "epic" && "bg-purple-400 shadow-[0_0_16px_rgba(192,132,252,0.65)]",
-                          rarity === "rare" && "bg-sky-400 shadow-[0_0_16px_rgba(56,189,248,0.65)]",
-                          rarity === "common" && "bg-lime-500 shadow-[0_0_16px_rgba(0,255,135,0.65)]",
+                          rarity === "ultimate" && "bg-yellow-300",
+                          rarity === "legendary" && "bg-red-400",
+                          rarity === "epic" && "bg-purple-400",
+                          rarity === "rare" && "bg-sky-400",
+                          rarity === "common" && "bg-lime-500",
                         ]
                           .filter(Boolean)
                           .join(" ")}

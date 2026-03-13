@@ -28,7 +28,6 @@ export default async function Home() {
               stats={{ mmr: player.mmr, played: player.gamesPlayed, winrate: (player.winrate * 100).toFixed(0) + "%" }}
               name={player.riotIdGameName}
               puuid={player.puuid}
-              glow={"none"}
               backgroundImage={`/banners/webp/${banners[player.puuid] ?? 0}.webp`}
             />
           ))}
