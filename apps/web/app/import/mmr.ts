@@ -1,3 +1,5 @@
+import { FAVORED_ROLE_MMR_DEBUFF } from "@repo/ui/config"
+
 export function calculateMMR(participant: any): number {
   let points = 0
 
@@ -127,5 +129,13 @@ export function calculateMMR(participant: any): number {
   points += clamp(highlightPoints, 0, 4)
 
   /* ------------------------------ result ------------------------------- */
+
+  // For junglers and supports, we debuff MMR
+  const role = participant.teamPosition
+
+  if (role === "JUNGLE" || role === "UTILITY") {
+    points *= FAVORED_ROLE_MMR_DEBUFF
+  }
+
   return Math.round(points)
 }

@@ -2,6 +2,7 @@ import { db } from "@/lib/db"
 import { matches, playerPerformances, teamObjectives, players, transactions } from "@/lib/schema"
 import { calculateMMR } from "./mmr"
 import { sql, eq } from "drizzle-orm"
+import { SUPPORT_PAYOUT_MULTIPLIER } from "@repo/ui/config"
 
 export async function fetchWithRetry(url: string, opts: RequestInit, retries = 3) {
   for (let i = 0; i < retries; i++) {
@@ -63,10 +64,17 @@ export async function importMatchJson(m: any) {
     // Insert transaction rows (10 rows)
     await tx.execute(sql`
       insert into ${transactions} (player_id, type, match_row_id, amount)
-      select ${players.id},
-            'MATCH_EARN'::transaction_type,
-            ${matchRowId},
-            ${playerPerformances.goldEarned}
+      select
+        ${players.id},
+        'MATCH_EARN'::transaction_type,
+        ${matchRowId},
+        (
+          case
+            when ${playerPerformances.role} = 'UTILITY'::role
+              then round(${playerPerformances.goldEarned} * (${SUPPORT_PAYOUT_MULTIPLIER}::numeric))
+            else ${playerPerformances.goldEarned}::numeric
+          end
+        )::int
       from ${playerPerformances}
       join ${players} on ${players.puuid} = ${playerPerformances.puuid}
       where ${playerPerformances.matchRowId} = ${matchRowId}

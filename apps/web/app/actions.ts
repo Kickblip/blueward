@@ -1,8 +1,9 @@
 import { db } from "@/lib/db"
 import { type RecentGameProps } from "@repo/ui/RecentGame"
-import { desc, sql, inArray } from "drizzle-orm"
+import { desc, sql, inArray, eq } from "drizzle-orm"
 import { playerPerformances, players } from "@/lib/schema"
 import { unstable_cache } from "next/cache"
+import { MMR_LEADERBOARD_GAME_WINDOW } from "@repo/ui/config"
 
 export const fetchRecentGames = unstable_cache(
   async (limit = 3) => {
@@ -76,27 +77,55 @@ export type TopLadderPlayer = {
   mmr: number
   winrate: number
 }
-
 export const fetchTopLadderPlayers = unstable_cache(
   async (limit = 15): Promise<TopLadderPlayer[]> => {
     "use server"
 
-    const gamesPlayed = sql<number>`count(*)::int`
-    const totalMmr = sql<number>`coalesce(sum(${playerPerformances.mmr}), 0)::int`
-    const winrate = sql<number>`avg((${playerPerformances.win})::int)::float`
-    const riotIdGameName = sql<string>`min(${playerPerformances.riotIdGameName})`
+    const ranked = db.$with("ranked").as(
+      db
+        .select({
+          puuid: playerPerformances.puuid,
+          riotIdGameName: playerPerformances.riotIdGameName,
+          mmr: playerPerformances.mmr,
+          win: playerPerformances.win,
+          rn: sql<number>`
+            row_number() over (
+              partition by ${playerPerformances.puuid}
+              order by ${playerPerformances.createdAt} desc
+            )::int
+          `.as("rn"),
+        })
+        .from(playerPerformances),
+    )
+
+    const totals = db.$with("totals").as(
+      db
+        .select({
+          puuid: playerPerformances.puuid,
+          gamesPlayed: sql<number>`count(*)::int`.as("games_played"),
+        })
+        .from(playerPerformances)
+        .groupBy(playerPerformances.puuid),
+    )
+
+    const rollingMmr = sql<number>`coalesce(sum(${ranked.mmr}), 0)::int`
+    const rollingWinrate = sql<number>`avg((${ranked.win})::int)::float`
+    const riotIdGameName = sql<string>`min(${ranked.riotIdGameName})`
 
     const rows = await db
+      .with(ranked, totals)
       .select({
-        puuid: playerPerformances.puuid,
+        puuid: ranked.puuid,
         riotIdGameName,
-        gamesPlayed,
-        mmr: totalMmr,
-        winrate,
+        gamesPlayed: totals.gamesPlayed,
+        mmr: rollingMmr,
+        winrate: rollingWinrate,
       })
-      .from(playerPerformances)
-      .groupBy(playerPerformances.puuid)
-      .orderBy(desc(totalMmr))
+      .from(ranked)
+      .innerJoin(totals, eq(totals.puuid, ranked.puuid))
+      .where(sql`${ranked.rn} <= ${MMR_LEADERBOARD_GAME_WINDOW}`)
+      .groupBy(ranked.puuid, totals.gamesPlayed)
+      .orderBy(desc(rollingMmr))
       .limit(limit)
 
     return rows.map((r) => ({

@@ -12,6 +12,12 @@ export const SOCIAL_LINK_CONFIG = {
   clubsite: "https://www.longhornlol.com",
 } as const
 
+export const SUPPORT_PAYOUT_MULTIPLIER = 1.2 as const
+
+export const FAVORED_ROLE_MMR_DEBUFF = 0.9 as const
+
+export const MMR_LEADERBOARD_GAME_WINDOW = 10 as const
+
 /**
  * common
  * rare
