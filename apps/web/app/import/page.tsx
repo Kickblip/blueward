@@ -48,6 +48,12 @@ export default async function RecentGames() {
     <div className="flex flex-col gap-4">
       <h1 className="text-2xl font-semibold font-oswald">Recently Played (Click to import)</h1>
 
+      <h1 className="text-2xl text-orange-500 font-semibold font-oswald">
+        IMPORTANT: THESE ARE NOT ONLY CUSTOM GAMES they are all recently played games
+      </h1>
+      <h1 className="text-2xl text-orange-500 font-semibold font-oswald">IMPORTANT: ONLY IMPORT INHOUSES - not clol</h1>
+      <h1 className="text-2xl text-red-500 font-semibold font-oswald">BE CAREFUL WHAT YOU IMPORT</h1>
+
       <div className="grid grid-cols-3 gap-4">
         {rawMatches.map((m, idx) => (
           <Link href={`/import/${m.metadata.matchId}`} key={idx}>
