@@ -15,6 +15,7 @@ import { FaUserGroup } from "react-icons/fa6"
 import { IoSparkles, IoMenu } from "react-icons/io5"
 import { claimCurrentUsersProfile } from "@/app/player/[pid]/claim/page"
 import UserBalance from "@/components/UserBalance"
+import { RiSwordFill } from "react-icons/ri"
 
 const oswald = Oswald({
   variable: "--font-oswald",
@@ -88,7 +89,12 @@ const navItems = [
   {
     href: "/shop",
     label: "Shop",
-    icon: <IoSparkles className="inline-block text-blue-500" size={12} />,
+    icon: <IoSparkles className="inline-block rotate-15 text-blue-500" size={12} />,
+  },
+  {
+    href: "/predictions",
+    label: "Predictions",
+    icon: <RiSwordFill className="inline-block -rotate-35 text-blue-500" size={13} />,
   },
 ]
 

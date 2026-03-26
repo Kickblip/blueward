@@ -44,15 +44,15 @@ export default async function Home() {
       <div className="col-span-1 invisible md:visible flex flex-col gap-4">
         <Countdown date={SEASON_END_DATE} />
 
-        {/* <Link href="/predictions">
-            <Card className="flex-row items-center justify-center gap-2 bg-blue-950 border-blue-400 hover:border-blue-300 transition-colors duration-200 cursor-pointer">
-              <Image src="/stonks.webp" alt="" width={96} height={96} />
-              <div className="flex flex-col gap-1 text-center pr-8">
-                <h3 className="text-5xl font-semibold font-oswald uppercase">Predictions</h3>
-                <p className="text-zinc-300 text-xs">Guess the outcomes of upcoming matches and win points!</p>
-              </div>
-            </Card>
-          </Link> */}
+        <Link href="/predictions">
+          <Card className="flex-row items-center justify-center gap-2 bg-blue-950 border-blue-400 hover:border-blue-300 transition-colors duration-200 cursor-pointer">
+            <Image src="/stonks.webp" alt="" width={96} height={96} />
+            <div className="flex flex-col gap-1 text-center pr-8">
+              <h3 className="text-5xl font-semibold font-oswald uppercase">Predictions</h3>
+              <p className="text-zinc-300 text-xs">Guess the outcomes of upcoming matches and win points!</p>
+            </div>
+          </Card>
+        </Link>
 
         <Link href="/shop">
           <Card className="flex-row items-center justify-center gap-2 bg-yellow-950 border-yellow-400 hover:border-yellow-300 transition-colors duration-200 cursor-pointer">
