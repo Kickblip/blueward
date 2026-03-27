@@ -18,13 +18,26 @@ export const FAVORED_ROLE_MMR_DEBUFF = 0.9 as const
 
 export const MMR_LEADERBOARD_GAME_WINDOW = 10 as const
 
-/**
- * common
- * rare
- * epic
- * legendary
- * ultimate
- */
+export const MINUTES_MARKET_IS_OPEN_BEFORE_LOCK = 10 as const
+
+// export const SCHOOLS = {
+//   UT_AUSTIN: {
+//     label: "UT Austin",
+//     logo: "/schools/logos/utaustin.png",
+//     imageWidth: 26,
+//     imageHeight: 26,
+//     borderClass: "border-orange-600/90",
+//     bgClass: "bg-orange-900",
+//   },
+//   UT_DALLAS: {
+//     label: "UT Dallas",
+//     logo: "/schools/logos/ut-dallas.webp",
+//     imageWidth: 22,
+//     imageHeight: 22,
+//     borderClass: "border-emerald-700",
+//     bgClass: "bg-emerald-900",
+//   },
+// } as const
 
 export const ROLL_PRICE = 15000 as const
 

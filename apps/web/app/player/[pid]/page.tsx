@@ -9,6 +9,7 @@ import { BsPersonFillAdd } from "react-icons/bs"
 import Link from "next/link"
 import { currentUser } from "@clerk/nextjs/server"
 import BannerSelector from "@/components/BannerSelector"
+import { notFound } from "next/navigation"
 
 export default async function PlayerProfile({ params }: { params: Promise<{ pid: string }> }) {
   const { pid } = await params
@@ -33,20 +34,24 @@ export default async function PlayerProfile({ params }: { params: Promise<{ pid:
   const winrate = calcWinrate(matches)
   const winrateByChampion = calcWinrateByChampion(matches)
 
+  if (!playerProfile) {
+    notFound()
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 min-h-screen">
       <div className="col-span-1 flex flex-col gap-4">
         <Card className="p-0">
           <div className="relative">
             <Image
-              src={`/banners/webp/${playerProfile?.bannerId ?? 0}.webp`}
+              src={`/banners/webp/${playerProfile.bannerId ?? 0}.webp`}
               alt="player background"
               width={1000}
               height={1000}
               className="aspect-[2/1] w-full rounded-t-md object-cover object-center"
             />
 
-            {userOwnsProfile && <BannerSelector puuid={pid} playerBanners={playerProfile?.banners ?? []} />}
+            {userOwnsProfile && <BannerSelector puuid={pid} playerBanners={playerProfile.banners ?? []} />}
 
             <div className="absolute -bottom-8 left-4 h-32 w-32 rounded-full border-4 border-zinc-900 overflow-hidden">
               <Image
@@ -60,8 +65,8 @@ export default async function PlayerProfile({ params }: { params: Promise<{ pid:
           </div>
 
           <div className="flex gap-1 px-4 pt-10 mb-2 items-end">
-            <p className="font-oswald scale-y-150 font-semibold text-4xl">{playerProfile?.riotIdGameName}</p>
-            <p className="text-sm text-zinc-400">#{playerProfile?.riotIdTagline}</p>
+            <p className="font-oswald scale-y-150 font-semibold text-4xl">{playerProfile.riotIdGameName}</p>
+            <p className="text-sm text-zinc-400">#{playerProfile.riotIdTagline}</p>
           </div>
 
           <div className="flex flex-col p-4 gap-4">
@@ -117,7 +122,7 @@ export default async function PlayerProfile({ params }: { params: Promise<{ pid:
           </div>
         </Card>
 
-        {!playerProfile?.authId && (
+        {!playerProfile.authId && (
           <Link href={`/player/${pid}/claim`}>
             <Card className="hover:bg-zinc-800 transition-colors duration-200">
               <div className="flex items-center justify-center gap-2">

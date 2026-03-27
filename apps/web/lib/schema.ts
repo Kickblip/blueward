@@ -211,7 +211,14 @@ export const players = pgTable("players", {
   riotIdTagline: varchar({ length: 8 }).notNull(),
 })
 
-export const transactionTypeEnum = pgEnum("transaction_type", ["MATCH_EARN", "ADMIN_ADJUST", "SPEND", "WAGER"])
+export const transactionTypeEnum = pgEnum("transaction_type", [
+  "MATCH_EARN",
+  "ADMIN_ADJUST",
+  "SPEND",
+  "MARKET_STAKE",
+  "MARKET_PAYOUT",
+  "MARKET_REFUND",
+])
 
 export const transactions = pgTable(
   "transactions",
@@ -225,13 +232,112 @@ export const transactions = pgTable(
     type: transactionTypeEnum("type").notNull(),
 
     matchRowId: integer().references(() => matches.id, { onDelete: "set null" }),
+
+    marketId: integer().references(() => markets.id, { onDelete: "set null" }),
+    marketSelectionId: integer().references(() => marketSelections.id, { onDelete: "set null" }),
+
     amount: integer().notNull(),
   },
   (table) => [
-    uniqueIndex("transactions_player_match_type_unique").on(table.playerId, table.matchRowId, table.type),
     index("transactions_player_id_index").on(table.playerId),
+    index("transactions_market_id_index").on(table.marketId),
+    index("transactions_match_row_id_index").on(table.matchRowId),
+    index("transactions_market_selection_id_index").on(table.marketSelectionId),
   ],
 )
+
+export const marketStatusEnum = pgEnum("market_status", ["OPEN", "LOCKED", "RESOLVED", "CANCELLED"])
+
+export const marketOutcomeEnum = pgEnum("market_outcome", ["OUTCOME_1", "OUTCOME_2"])
+
+export const markets = pgTable(
+  "markets",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+
+    title: varchar({ length: 255 }).notNull(),
+    status: marketStatusEnum("status").notNull().default("OPEN"),
+
+    locksAt: timestamp({ withTimezone: true }),
+    resolvedAt: timestamp({ withTimezone: true }),
+
+    outcome1Title: varchar({ length: 255 }).notNull(),
+    outcome2Title: varchar({ length: 255 }).notNull(),
+
+    resolvedOutcome: marketOutcomeEnum("resolved_outcome"),
+  },
+  (table) => [index("markets_status_index").on(table.status), index("markets_created_at_index").on(table.createdAt)],
+)
+
+export const marketOrderStatusEnum = pgEnum("market_order_status", ["PLACED", "SETTLED", "REFUNDED", "CANCELLED"])
+
+export const marketSelections = pgTable(
+  "market_selections",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+
+    marketId: integer()
+      .notNull()
+      .references(() => markets.id, { onDelete: "cascade" }),
+
+    playerId: integer()
+      .notNull()
+      .references(() => players.id, { onDelete: "cascade" }),
+
+    outcome: marketOutcomeEnum("outcome").notNull(),
+
+    amount: integer().notNull(),
+
+    status: marketOrderStatusEnum("status").notNull().default("PLACED"),
+
+    payoutAmount: integer(),
+    settledAt: timestamp({ withTimezone: true }),
+  },
+  (table) => [
+    index("market_selections_market_id_index").on(table.marketId),
+    index("market_selections_player_id_index").on(table.playerId),
+    index("market_selections_market_player_index").on(table.marketId, table.playerId),
+    index("market_selections_market_outcome_index").on(table.marketId, table.outcome),
+  ],
+)
+
+export const marketsRelations = relations(markets, ({ many }) => ({
+  selections: many(marketSelections),
+  transactions: many(transactions),
+}))
+
+export const playersRelations = relations(players, ({ many }) => ({
+  selections: many(marketSelections),
+  transactions: many(transactions),
+}))
+
+export const marketSelectionsRelations = relations(marketSelections, ({ one }) => ({
+  market: one(markets, {
+    fields: [marketSelections.marketId],
+    references: [markets.id],
+  }),
+  player: one(players, {
+    fields: [marketSelections.playerId],
+    references: [players.id],
+  }),
+}))
+
+export const transactionsRelations = relations(transactions, ({ one }) => ({
+  player: one(players, {
+    fields: [transactions.playerId],
+    references: [players.id],
+  }),
+  market: one(markets, {
+    fields: [transactions.marketId],
+    references: [markets.id],
+  }),
+  match: one(matches, {
+    fields: [transactions.matchRowId],
+    references: [matches.id],
+  }),
+}))
 
 export const matchesRelations = relations(matches, ({ many }) => ({
   objectives: many(teamObjectives),

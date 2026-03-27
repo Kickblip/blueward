@@ -49,7 +49,7 @@ export default async function Home() {
             <Image src="/stonks.webp" alt="" width={96} height={96} />
             <div className="flex flex-col gap-1 text-center pr-8">
               <h3 className="text-5xl font-semibold font-oswald uppercase">Predictions</h3>
-              <p className="text-zinc-300 text-xs">Guess the outcomes of upcoming matches and win points!</p>
+              <p className="text-zinc-300 text-xs">Guess the outcomes of upcoming matches and win crystals!</p>
             </div>
           </Card>
         </Link>

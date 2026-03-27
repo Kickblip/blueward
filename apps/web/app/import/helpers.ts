@@ -78,7 +78,13 @@ export async function importMatchJson(m: any) {
       from ${playerPerformances}
       join ${players} on ${players.puuid} = ${playerPerformances.puuid}
       where ${playerPerformances.matchRowId} = ${matchRowId}
-      on conflict (player_id, match_row_id, type) do nothing
+      and not exists (
+      select 1
+      from ${transactions} t
+      where t.player_id = ${players.id}
+        and t.match_row_id = ${matchRowId}
+        and t.type = 'MATCH_EARN'::transaction_type
+      )
     `)
 
     return matchRowId
