@@ -3,14 +3,14 @@
 import Card from "@repo/ui/Card"
 import Loading from "@repo/ui/Loading"
 import MarketCard from "@repo/ui/MarketCard"
-import { toNumberWithCommas as fmt } from "@repo/ui/helpers"
+import { toNumberWithCommas } from "@repo/ui/helpers"
 import { CrystalIcon } from "@repo/ui/icons"
 import { AnimatePresence, motion } from "framer-motion"
 import { useEffect, useState } from "react"
 import { FaLongArrowAltRight } from "react-icons/fa"
 import { LuX } from "react-icons/lu"
 import { mutate } from "swr"
-import Image from "next/image"
+import ErrorMessage from "@repo/ui/ErrorMessage"
 
 type MarketOrder = { name: string; amount: number }
 type MarketOutcome = { title: string; popularity: number; volume: number; orders: MarketOrder[] }
@@ -95,8 +95,7 @@ export default function PredictionsClient() {
   if (!selectedMarket)
     return (
       <div className="flex flex-col items-center justify-center p-4 gap-4">
-        <Image src="/notstonks.webp" alt="No markets found" width={150} height={150} />
-        <p className="font-oswald font-semibold uppercase text-xl">No active markets found</p>
+        <ErrorMessage code={"No active markets found"} message="Check back later" />
       </div>
     )
 
@@ -179,7 +178,7 @@ export default function PredictionsClient() {
 
             <h5 className="flex items-center gap-1 text-sm text-zinc-600">
               <CrystalIcon className="mt-0.5 text-zinc-600" />
-              {fmt(leftOutcome.volume + rightOutcome.volume)} Vol
+              {toNumberWithCommas(leftOutcome.volume + rightOutcome.volume)} Vol
             </h5>
           </div>
 
@@ -287,6 +286,7 @@ function OutcomeColumn({
           amount={order.amount}
           highestBet={highestBet}
           orientation={left ? "ltr" : "rtl"}
+          multiplier={Math.max((1 / Math.max(outcome.popularity, 0.01)) * 0.85, 1)}
         />
       ))}
     </div>
@@ -315,7 +315,7 @@ export function PurchaseVolumeInput({
       <CrystalIcon size={16} />
       <input
         type="text"
-        value={fmt(amount)}
+        value={toNumberWithCommas(amount)}
         onChange={({ target: { value } }) => setAmount(Number(value.replace(/\D/g, "")) || 0)}
         className="flex-1 px-3 py-1.5 text-sm font-oswald font-semibold uppercase outline-none"
       />
@@ -338,19 +338,31 @@ export function PurchaseVolumeInput({
   )
 }
 
-export function MultiplierDisplay({ initial, multiplier }: { initial: number; multiplier: number }) {
+export function MultiplierDisplay({
+  initial,
+  multiplier,
+  orientation = "ltr",
+  size = "medium",
+}: {
+  initial: number
+  multiplier: number
+  orientation?: "ltr" | "rtl"
+  size?: "small" | "medium"
+}) {
   const value = Math.max(100, Math.min(10000000000, initial))
 
   return (
-    <div className="flex items-center justify-center gap-4">
+    <div className={["flex items-center justify-center", size === "small" ? "gap-1.5" : "gap-4"].join(" ")}>
       <div className="flex items-center gap-1">
-        <CrystalIcon size={20} />
-        <span className="text-xl font-oswald font-semibold">{fmt(value)}</span>
+        <CrystalIcon size={size === "small" ? 12 : 20} />
+        <span className={size === "small" ? "text-sm" : "text-xl font-oswald font-semibold"}>{toNumberWithCommas(value)}</span>
       </div>
       <FaLongArrowAltRight className="text-zinc-500" />
       <div className="flex items-center gap-1">
-        <CrystalIcon size={20} />
-        <span className="text-xl font-oswald font-semibold text-lime-400">{fmt(Number((value * multiplier).toFixed(0)))}</span>
+        <CrystalIcon size={size === "small" ? 12 : 20} />
+        <span className={`text-lime-400 ${size === "small" ? "text-sm" : "text-xl font-oswald font-semibold"} `}>
+          {toNumberWithCommas(Number((value * multiplier).toFixed(0)))}
+        </span>
       </div>
     </div>
   )
@@ -361,11 +373,13 @@ export function BuyerRow({
   amount,
   highestBet,
   orientation,
+  multiplier,
 }: {
   name: string
   amount: number
   highestBet: number
   orientation: "ltr" | "rtl"
+  multiplier: number
 }) {
   const rtl = orientation === "rtl"
   const width = highestBet > 0 ? Math.min((amount / highestBet) * 70, 70) : 0
@@ -378,10 +392,13 @@ export function BuyerRow({
       />
       <div className={`relative z-10 flex items-center justify-between px-3 py-1 text-xs ${rtl ? "flex-row-reverse" : ""}`}>
         <p className="truncate font-semibold">{name}</p>
-        <p className="flex items-center gap-1 font-semibold">
-          <CrystalIcon />
-          {fmt(amount)}
-        </p>
+        <div className="flex items-center gap-1 font-semibold">
+          {/* <CrystalIcon />
+
+          {toNumberWithCommas(amount)} */}
+
+          <MultiplierDisplay initial={amount} multiplier={multiplier} orientation={orientation} size={"small"} />
+        </div>
       </div>
     </div>
   )

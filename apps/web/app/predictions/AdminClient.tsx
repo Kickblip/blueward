@@ -135,13 +135,13 @@ export default function AdminClient() {
   }
 
   return (
-    <div className="grid gap-3 rounded-md border border-blue-500 bg-blue-600 p-2">
+    <div className="grid gap-3 rounded-md border border-zinc-700 bg-zinc-900 p-2">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold uppercase">Admin Tools</h2>
         <button
           type="button"
           onClick={() => setIsCollapsed((v) => !v)}
-          className="rounded-md px-2 py-1 text-xs font-semibold uppercase transition-colors duration-200 hover:bg-blue-500/40"
+          className="rounded-md px-2 py-1 text-xs font-semibold uppercase hover:text-zinc-400 transition-colors duration-200"
         >
           {isCollapsed ? "Open" : "Close"}
         </button>
@@ -168,7 +168,7 @@ export default function AdminClient() {
               type="button"
               onClick={() => void createMarket()}
               disabled={isCreating}
-              className="rounded-md px-3 py-2 text-sm transition-colors duration-200 hover:bg-blue-500 disabled:opacity-50"
+              className="rounded-md px-3 py-2 text-sm transition-colors duration-200 bg-blue-600 hover:bg-blue-500 disabled:opacity-50"
             >
               {isCreating ? "Creating..." : "Create"}
             </button>
