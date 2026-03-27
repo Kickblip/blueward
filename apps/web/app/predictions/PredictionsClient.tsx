@@ -11,6 +11,7 @@ import { FaLongArrowAltRight } from "react-icons/fa"
 import { LuX } from "react-icons/lu"
 import { mutate } from "swr"
 import ErrorMessage from "@repo/ui/ErrorMessage"
+import { getProjectedPredictionMultiplier } from "@repo/ui/config"
 
 type MarketOrder = { name: string; amount: number }
 type MarketOutcome = { title: string; popularity: number; volume: number; orders: MarketOrder[] }
@@ -243,7 +244,7 @@ function OutcomeColumn({
 
   return (
     <div className="grid content-start gap-1">
-      <MultiplierDisplay initial={betAmount} multiplier={Math.max((1 / Math.max(outcome.popularity, 0.01)) * 0.85, 1)} />
+      <MultiplierDisplay initial={betAmount} multiplier={getProjectedPredictionMultiplier(outcome.popularity)} />
 
       <div className="mb-4 mt-2 h-10">
         <AnimatePresence mode="wait" initial={false}>
@@ -286,7 +287,7 @@ function OutcomeColumn({
           amount={order.amount}
           highestBet={highestBet}
           orientation={left ? "ltr" : "rtl"}
-          multiplier={Math.max((1 / Math.max(outcome.popularity, 0.01)) * 0.85, 1)}
+          multiplier={getProjectedPredictionMultiplier(outcome.popularity)}
         />
       ))}
     </div>

@@ -3,6 +3,7 @@ import { and, eq, inArray } from "drizzle-orm"
 import { z } from "zod"
 import { currentUser } from "@clerk/nextjs/server"
 import { db } from "@/lib/db"
+import { MIN_PREDICTION_PAYOUT_MULTIPLIER } from "@repo/ui/config"
 import { markets, marketSelections, transactions } from "@/lib/schema"
 
 const resolveMarketSchema = z.object({
@@ -113,13 +114,18 @@ export async function POST(req: Request, { params }: { params: Promise<{ marketI
         }
       }
 
-      // Compute payouts for winners
-      // floor each payout, then give any remainder to the largest winner
-      // so the total paid matches the pool exactly
-      const winnerPayouts = winningSelections.map((selection) => ({
-        selection,
-        rawPayout: (selection.amount / totalWinningAmount) * totalPool,
-      }))
+      // Compute payouts for winners.
+      // Winners receive the better of the market payout or the configured minimum multiplier.
+      // We then floor and distribute the remaining whole units by largest fractional part.
+      const winnerPayouts = winningSelections.map((selection) => {
+        const marketPayout = (selection.amount / totalWinningAmount) * totalPool
+        const minimumPayout = selection.amount * MIN_PREDICTION_PAYOUT_MULTIPLIER
+
+        return {
+          selection,
+          rawPayout: Math.max(marketPayout, minimumPayout),
+        }
+      })
 
       const floored = winnerPayouts.map((entry) => ({
         selection: entry.selection,
@@ -127,8 +133,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ marketI
         fractionalPart: entry.rawPayout - Math.floor(entry.rawPayout),
       }))
 
-      let distributed = floored.reduce((sum, entry) => sum + entry.payoutAmount, 0)
-      let remainder = totalPool - distributed
+      const totalPayoutTarget = floored.reduce((sum, entry) => sum + entry.payoutAmount, 0)
+      let remainder = Math.ceil(winnerPayouts.reduce((sum, entry) => sum + entry.rawPayout, 0) - totalPayoutTarget)
 
       floored.sort((a, b) => b.fractionalPart - a.fractionalPart)
 
