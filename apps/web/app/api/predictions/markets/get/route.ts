@@ -63,12 +63,12 @@ export async function GET() {
       const outcome2Volume = outcome2Selections.reduce((sum, selection) => sum + selection.amount, 0)
       const totalVolume = outcome1Volume + outcome2Volume
 
-      const outcome1Orders = outcome1Selections.slice(0, 8).map((selection) => ({
+      const outcome1Orders = outcome1Selections.map((selection) => ({
         name: playerNameById.get(selection.playerId) ?? `Player ${selection.playerId}`,
         amount: selection.amount,
       }))
 
-      const outcome2Orders = outcome2Selections.slice(0, 8).map((selection) => ({
+      const outcome2Orders = outcome2Selections.map((selection) => ({
         name: playerNameById.get(selection.playerId) ?? `Player ${selection.playerId}`,
         amount: selection.amount,
       }))

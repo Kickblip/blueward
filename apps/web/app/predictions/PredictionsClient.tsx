@@ -50,7 +50,7 @@ export default function PredictionsClient() {
   const [markets, setMarkets] = useState<Market[]>([])
   const [selected, setSelected] = useState(0)
   const [buying, setBuying] = useState<Record<1 | 2, boolean>>({ 1: false, 2: false })
-  const [betAmount, setBetAmount] = useState(1000)
+  const [betAmount, setBetAmount] = useState(0)
   const [now, setNow] = useState(Date.now())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
