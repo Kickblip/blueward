@@ -137,22 +137,40 @@ export async function POST(req: Request, { params }: { params: Promise<{ marketI
         }
       }
 
-      const openSelectionsForOutcome = await tx
+      const openSelections = await tx
         .select()
         .from(marketSelections)
         .where(
           and(
             eq(marketSelections.marketId, parsedMarketId),
             eq(marketSelections.playerId, player.id),
-            eq(marketSelections.outcome, outcomeEnum),
             eq(marketSelections.status, "PLACED"),
           ),
         )
         .orderBy(asc(marketSelections.createdAt), asc(marketSelections.id))
 
+      const openSelectionsForOutcome = openSelections.filter((selection) => selection.outcome === outcomeEnum)
+      const openSelectionsForOtherOutcome = openSelections.filter((selection) => selection.outcome !== outcomeEnum)
+
       const currentOpenAmount = openSelectionsForOutcome.reduce((sum, selection) => sum + selection.amount, 0)
+      const currentOpenAmountOnOtherOutcome = openSelectionsForOtherOutcome.reduce(
+        (sum, selection) => sum + selection.amount,
+        0,
+      )
 
       if (action === "PLACED") {
+        if (currentOpenAmountOnOtherOutcome > 0) {
+          return {
+            kind: "error" as const,
+            status: 409,
+            body: {
+              error: "You can only bet on one side per market",
+              currentOpenAmount,
+              currentOpenAmountOnOtherOutcome,
+            },
+          }
+        }
+
         const balance = await getPlayerBalance(tx, player.id)
 
         if (balance < amount) {
@@ -225,7 +243,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ marketI
       await closeSelectionAmount(tx, openSelectionsForOutcome, amount, parsedMarketId, player.id, now)
 
       const balance = await getPlayerBalance(tx, player.id)
-      const newBalance = balance + amount
 
       return {
         kind: "ok" as const,
@@ -234,7 +251,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ marketI
           action,
           outcome,
           delta: amount,
-          balance: newBalance,
+          balance,
           currentOpenAmount: currentOpenAmount - amount,
         },
       }

@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server"
 import { desc, eq, inArray } from "drizzle-orm"
+import { currentUser } from "@clerk/nextjs/server"
 
 import { db } from "@/lib/db"
 import { markets, marketSelections, players } from "@/lib/schema"
 
 export async function GET() {
   try {
+    const user = await currentUser()
     const marketRows = await db.select().from(markets).orderBy(desc(markets.createdAt))
 
     if (marketRows.length === 0) {
@@ -27,6 +29,12 @@ export async function GET() {
       .from(marketSelections)
       .where(inArray(marketSelections.marketId, marketIds))
       .orderBy(desc(marketSelections.createdAt))
+
+    const currentPlayer = user
+      ? await db.query.players.findFirst({
+          where: eq(players.authId, user.id),
+        })
+      : null
 
     const playerIds = [...new Set(selectionRows.map((selection) => selection.playerId))]
     const playerRows =
@@ -62,6 +70,16 @@ export async function GET() {
       const outcome1Volume = outcome1Selections.reduce((sum, selection) => sum + selection.amount, 0)
       const outcome2Volume = outcome2Selections.reduce((sum, selection) => sum + selection.amount, 0)
       const totalVolume = outcome1Volume + outcome2Volume
+      const myOutcome1Amount = currentPlayer
+        ? outcome1Selections
+            .filter((selection) => selection.playerId === currentPlayer.id)
+            .reduce((sum, selection) => sum + selection.amount, 0)
+        : 0
+      const myOutcome2Amount = currentPlayer
+        ? outcome2Selections
+            .filter((selection) => selection.playerId === currentPlayer.id)
+            .reduce((sum, selection) => sum + selection.amount, 0)
+        : 0
 
       const outcome1Orders = outcome1Selections.map((selection) => ({
         name: playerNameById.get(selection.playerId) ?? `Player ${selection.playerId}`,
@@ -80,6 +98,10 @@ export async function GET() {
         locksAt: market.locksAt?.toISOString() ?? null,
         resolvedAt: market.resolvedAt?.toISOString() ?? null,
         resolvedOutcome: market.resolvedOutcome ?? null,
+        myPosition: {
+          outcome1Amount: myOutcome1Amount,
+          outcome2Amount: myOutcome2Amount,
+        },
         outcomes: [
           {
             key: 1,

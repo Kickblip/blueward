@@ -15,11 +15,13 @@ import { getProjectedPredictionMultiplier } from "@repo/ui/config"
 
 type MarketOrder = { name: string; amount: number }
 type MarketOutcome = { title: string; popularity: number; volume: number; orders: MarketOrder[] }
+type MarketPosition = { outcome1Amount: number; outcome2Amount: number }
 type Market = {
   id: number
   title: string
   status: "OPEN" | "LOCKED" | "RESOLVED" | "CANCELLED"
   locksAt: string | null
+  myPosition: MarketPosition
   outcomes: [MarketOutcome, MarketOutcome]
 }
 
@@ -47,6 +49,8 @@ const combineOrders = (orders: MarketOrder[]) =>
     ),
   )
 
+const syncBalance = (balance: number) => mutate("/api/shop/balance", { balance }, false)
+
 export default function PredictionsClient() {
   const [markets, setMarkets] = useState<Market[]>([])
   const [selected, setSelected] = useState(0)
@@ -55,7 +59,7 @@ export default function PredictionsClient() {
   const [now, setNow] = useState(Date.now())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [submitting, setSubmitting] = useState<1 | 2 | null>(null)
+  const [submitting, setSubmitting] = useState<`buy-${1 | 2}` | `remove-${1 | 2}` | null>(null)
 
   const closeBuys = () => setBuying({ 1: false, 2: false })
   const setSideBuying = (id: 1 | 2, value: boolean) => setBuying((b) => ({ ...b, [id]: value }) as Record<1 | 2, boolean>)
@@ -106,13 +110,15 @@ export default function PredictionsClient() {
   const displayStatus = getDisplayStatus(selectedMarket, now)
   const msRemaining = selectedMarket.locksAt ? new Date(selectedMarket.locksAt).getTime() - now : 0
   const highestBet = Math.max(0, ...[...leftOrders, ...rightOrders].map(({ amount }) => amount))
+  const leftMyAmount = selectedMarket.myPosition.outcome1Amount
+  const rightMyAmount = selectedMarket.myPosition.outcome2Amount
 
   const placeBet = async (outcome: 1 | 2) => {
     if (getDisplayStatus(selectedMarket, Date.now()) !== "OPEN") return setError("This market is no longer open")
     if (!Number.isInteger(betAmount) || betAmount <= 0) return setError("Enter a valid amount")
 
     try {
-      setSubmitting(outcome)
+      setSubmitting(`buy-${outcome}`)
       setError(null)
 
       const res = await fetch(`/api/predictions/markets/${selectedMarket.id}/position`, {
@@ -124,12 +130,41 @@ export default function PredictionsClient() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? "Failed to place bet")
 
-      await mutate("/api/shop/balance", { balance: data.balance }, false)
+      await syncBalance(data.balance)
       closeBuys()
       await loadMarkets()
     } catch (err) {
       console.error(err)
       setError(err instanceof Error ? err.message : "Failed to place bet")
+    } finally {
+      setSubmitting(null)
+    }
+  }
+
+  const removeBet = async (outcome: 1 | 2, amount: number) => {
+    if (getDisplayStatus(selectedMarket, Date.now()) !== "OPEN") return setError("This market is no longer open")
+    if (!Number.isInteger(amount) || amount <= 0) return setError("No open bet to remove")
+
+    try {
+      setSubmitting(`remove-${outcome}`)
+      setError(null)
+
+      const res = await fetch(`/api/predictions/markets/${selectedMarket.id}/position`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "CLOSED", outcome, amount }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? "Failed to remove bet")
+
+      await syncBalance(data.balance)
+      closeBuys()
+      setBetAmount(0)
+      await loadMarkets()
+    } catch (err) {
+      console.error(err)
+      setError(err instanceof Error ? err.message : "Failed to remove bet")
     } finally {
       setSubmitting(null)
     }
@@ -195,13 +230,17 @@ export default function PredictionsClient() {
                 side={side}
                 outcome={outcome}
                 orders={orders}
+                myOpenAmount={id === 1 ? leftMyAmount : rightMyAmount}
+                oppositeOpenAmount={id === 1 ? rightMyAmount : leftMyAmount}
                 betAmount={betAmount}
                 setBetAmount={setBetAmount}
                 isBuying={buying[id]}
                 setIsBuying={(value) => setSideBuying(id, value)}
                 displayStatus={displayStatus}
                 onSubmit={() => placeBet(id)}
-                isSubmitting={submitting === id}
+                onRemove={() => removeBet(id, id === 1 ? leftMyAmount : rightMyAmount)}
+                isSubmittingBuy={submitting === `buy-${id}`}
+                isSubmittingRemove={submitting === `remove-${id}`}
                 highestBet={highestBet}
                 marketId={selectedMarket.id}
               />
@@ -217,36 +256,47 @@ function OutcomeColumn({
   side,
   outcome,
   orders,
+  myOpenAmount,
+  oppositeOpenAmount,
   betAmount,
   setBetAmount,
   isBuying,
   setIsBuying,
   displayStatus,
   onSubmit,
-  isSubmitting,
+  onRemove,
+  isSubmittingBuy,
+  isSubmittingRemove,
   highestBet,
   marketId,
 }: {
   side: "left" | "right"
   outcome: MarketOutcome
   orders: MarketOrder[]
+  myOpenAmount: number
+  oppositeOpenAmount: number
   betAmount: number
   setBetAmount: (amount: number) => void
   isBuying: boolean
   setIsBuying: (value: boolean) => void
   displayStatus: "OPEN" | "LOCKED"
   onSubmit: () => void
-  isSubmitting: boolean
+  onRemove: () => void
+  isSubmittingBuy: boolean
+  isSubmittingRemove: boolean
   highestBet: number
   marketId: number
 }) {
   const left = side === "left"
+  const canBuy = displayStatus === "OPEN" && (myOpenAmount > 0 || oppositeOpenAmount === 0)
+  const blockedByOtherSide = oppositeOpenAmount > 0 && myOpenAmount === 0
+  const isSelling = myOpenAmount > 0
 
   return (
     <div className="grid content-start gap-1">
       <MultiplierDisplay initial={betAmount} multiplier={getProjectedPredictionMultiplier(outcome.popularity)} />
 
-      <div className="mb-4 mt-2 h-10">
+      <div className="mb-4 mt-2 min-h-10">
         <AnimatePresence mode="wait" initial={false}>
           {isBuying ? (
             <motion.div key={`${side}-input`} {...anim} className="h-full">
@@ -256,22 +306,22 @@ function OutcomeColumn({
                 setAmount={setBetAmount}
                 side={side}
                 onSubmit={onSubmit}
-                isSubmitting={isSubmitting}
+                isSubmitting={isSubmittingBuy}
               />
             </motion.div>
           ) : (
-            <motion.button
-              key={`${side}-buy`}
-              type="button"
-              onClick={() => setIsBuying(true)}
-              disabled={displayStatus !== "OPEN"}
-              {...anim}
-              className={`flex h-full w-full items-center justify-center rounded-md px-3 py-1 text-xl font-oswald font-semibold uppercase transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50 ${
-                left ? "bg-blue-500/70 hover:bg-blue-500" : "bg-rose-500/70 hover:bg-rose-500"
-              }`}
-            >
-              Buy {outcome.title}
-            </motion.button>
+            <motion.div key={`${side}-actions`} {...anim} className="grid gap-2">
+              <button
+                type="button"
+                onClick={() => (isSelling ? onRemove() : setIsBuying(true))}
+                disabled={!canBuy}
+                className={`flex h-10 w-full items-center justify-center rounded-md px-3 py-1 text-xl font-oswald font-semibold uppercase transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50 ${
+                  left ? "bg-blue-500/70 hover:bg-blue-500" : "bg-rose-500/70 hover:bg-rose-500"
+                }`}
+              >
+                {isSelling ? (isSubmittingRemove ? "Selling..." : `Sell ${outcome.title}`) : `Buy ${outcome.title}`}
+              </button>
+            </motion.div>
           )}
         </AnimatePresence>
       </div>
