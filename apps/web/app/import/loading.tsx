@@ -1,9 +1,0 @@
-import Loading from "@repo/ui/Loading"
-
-export default function LoadingRecentGames() {
-  return (
-    <div className="flex justify-center items-center">
-      <Loading />
-    </div>
-  )
-}
