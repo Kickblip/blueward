@@ -15,7 +15,7 @@ import {
 import { Logo } from "./logo"
 import { UserButton } from "@clerk/nextjs"
 import { SignInButton } from "@clerk/nextjs"
-import { Show } from "@clerk/nextjs";
+import { Show } from "@clerk/nextjs"
 
 import { RiRobot3Fill } from "react-icons/ri"
 import { HiMiniSparkles } from "react-icons/hi2"
@@ -46,8 +46,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild size="lg" tooltip="Predictions">
-                  <Link href="/predictions">
+                <SidebarMenuButton asChild size="lg" tooltip="Leaderboards">
+                  <Link href="/leaderboard/kills">
                     <IoPodium className="size-6! text-chart-3 dark:text-chart-1" />
                     <span className="pl-1 font-oswald text-lg font-semibold uppercase group-data-[collapsible=icon]:sr-only">
                       Leaderboards
@@ -57,8 +57,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               </SidebarMenuItem>
 
               <SidebarMenuItem>
-                <SidebarMenuButton asChild size="lg" tooltip="Predictions">
-                  <Link href="/predictions">
+                <SidebarMenuButton asChild size="lg" tooltip="Shop">
+                  <Link href="/shop">
                     <FaShoppingCart className="size-6! text-chart-3 dark:text-chart-1" />
                     <span className="pl-1 font-oswald text-lg font-semibold uppercase group-data-[collapsible=icon]:sr-only">
                       Shop
@@ -79,8 +79,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               </SidebarMenuItem>
 
               <SidebarMenuItem>
-                <SidebarMenuButton asChild size="lg" tooltip="Predictions">
-                  <Link href="/predictions">
+                <SidebarMenuButton asChild size="lg" tooltip="Clubs">
+                  <Link href="/clubs">
                     <FaUsers className="size-6! text-chart-3 dark:text-chart-1" />
                     <span className="pl-1 font-oswald text-lg font-semibold uppercase group-data-[collapsible=icon]:sr-only">
                       Clubs
@@ -90,8 +90,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               </SidebarMenuItem>
 
               <SidebarMenuItem>
-                <SidebarMenuButton asChild size="lg" tooltip="Predictions">
-                  <Link href="/predictions">
+                <SidebarMenuButton asChild size="lg" tooltip="Autobalancer">
+                  <Link href="/autobalancer">
                     <RiRobot3Fill className="size-6! text-chart-3 dark:text-chart-1" />
                     <span className="pl-1 font-oswald text-lg font-semibold uppercase group-data-[collapsible=icon]:sr-only">
                       Autobalancer
@@ -134,5 +134,5 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
-  );
+  )
 }

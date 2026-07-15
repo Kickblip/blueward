@@ -1,7 +1,6 @@
 import { Card } from "@/components/ui/card"
 import { ProfileMatch } from "@/components/profile-match"
 import Image from "next/image"
-import { DonutChart } from "@/components/donut-chart"
 import { BasicStatFormat } from "@/components/match-history-widgets"
 import {
   fetchRecentMatchesByPuuid,
@@ -14,6 +13,8 @@ import Link from "next/link"
 import { currentUser } from "@clerk/nextjs/server"
 import { BannerSelector } from "@/components/banner-selector"
 import { notFound } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { DonutChart } from "@/components/donut-chart"
 
 export default async function PlayerProfile({
   params,
@@ -42,7 +43,7 @@ export default async function PlayerProfile({
     userOwnsProfile = playerProfile.authId === user.id
   }
   const avgKDA = calcAverageKDA(matches)
-  const winrate = calcWinrate(matches)
+  const { wins, losses, total, winrate } = calcWinrate(matches)
   const winrateByChampion = calcWinrateByChampion(matches)
 
   if (!playerProfile) {
@@ -51,6 +52,12 @@ export default async function PlayerProfile({
 
   return (
     <div className="grid min-h-screen grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="col-span-2 flex flex-col gap-4">
+        {matches.map((match, index) => (
+          <ProfileMatch key={index} match={match} />
+        ))}
+      </div>
+
       <div className="col-span-1 flex flex-col gap-4">
         <Card className="p-0">
           <div className="relative">
@@ -69,7 +76,7 @@ export default async function PlayerProfile({
               />
             )}
 
-            <div className="absolute -bottom-8 left-4 h-32 w-32 overflow-hidden rounded-full border-4 border-zinc-900">
+            <div className="absolute -bottom-8 left-4 h-32 w-32 overflow-hidden rounded-full border-4 border-secondary">
               <Image
                 src={profilePictureUrl || "/defaultpfp.webp"}
                 alt="Player avatar"
@@ -84,21 +91,22 @@ export default async function PlayerProfile({
             <p className="scale-y-150 font-oswald text-4xl font-semibold">
               {playerProfile.riotIdGameName}
             </p>
-            <p className="text-sm text-zinc-400">
+            <p className="text-sm text-muted-foreground">
               #{playerProfile.riotIdTagline}
             </p>
           </div>
 
           <div className="flex flex-col gap-4 p-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <DonutChart value={winrate.winrate} size={70} thickness={14} />
-                <div className="flex flex-col">
-                  <p className="text-lg font-semibold text-zinc-200">
-                    {(winrate.winrate * 100).toFixed(0)}% WR
+              <div className="flex items-center">
+                <DonutChart wins={wins} losses={losses} />
+
+                <div className="flex flex-col gap-1">
+                  <p className="text-lg font-semibold">
+                    {(winrate * 100).toFixed(0)}% WR
                   </p>
-                  <div className="text-sm text-zinc-400">
-                    {winrate.total} Played
+                  <div className="text-sm text-muted-foreground">
+                    {total} Played
                   </div>
                 </div>
               </div>
@@ -109,7 +117,7 @@ export default async function PlayerProfile({
               />
             </div>
 
-            <div className="grid grid-cols-4 items-center gap-2 bg-zinc-800 py-2 text-center text-xs text-zinc-300">
+            <div className="grid grid-cols-4 items-center gap-2 bg-background/50 py-3 text-center text-xs font-semibold">
               <p>Champion</p>
               <p>Played</p>
               <p>W-L</p>
@@ -120,7 +128,7 @@ export default async function PlayerProfile({
               {winrateByChampion.map((c, index) => (
                 <div
                   key={index}
-                  className="grid grid-cols-4 items-center justify-items-center gap-2 text-center text-sm font-semibold text-zinc-200"
+                  className="grid grid-cols-4 items-center justify-items-center gap-2 text-center text-sm font-semibold"
                 >
                   <Image
                     src={`${process.env.NEXT_PUBLIC_CDN_BASE}/img/champion/tiles/${c.name}_0.jpg`}
@@ -143,21 +151,15 @@ export default async function PlayerProfile({
         </Card>
 
         {!playerProfile.authId && (
-          <Link href={`/player/${pid}/claim`}>
-            <Card className="transition-colors duration-200 hover:bg-zinc-800">
-              <div className="flex items-center justify-center gap-2">
-                <BsPersonFillAdd size={18} />
-                <p className="text-sm">Claim Account</p>
-              </div>
-            </Card>
-          </Link>
+          <Button className="w-full" size="lg" asChild>
+            <Link href={`/player/${pid}/claim`}>
+              <BsPersonFillAdd size={18} />
+              <p className="font-oswald text-sm font-semibold uppercase">
+                Claim Account
+              </p>
+            </Link>
+          </Button>
         )}
-      </div>
-
-      <div className="col-span-2 flex flex-col gap-4">
-        {matches.map((match, index) => (
-          <ProfileMatch key={index} match={match} />
-        ))}
       </div>
     </div>
   )

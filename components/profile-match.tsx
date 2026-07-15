@@ -95,11 +95,11 @@ export function ProfileMatch({ match }: { match: RecentMatchRow }) {
     match.item0,
     match.item1,
     match.item2,
-    match.item6,
     match.item3,
     match.item4,
     match.item5,
     match.roleBoundItem,
+    match.item6,
   ]
 
   const onToggleExpanded = useCallback(async () => {
@@ -133,7 +133,7 @@ export function ProfileMatch({ match }: { match: RecentMatchRow }) {
   return (
     <Card className="p-0">
       <div
-        className="grid cursor-pointer grid-cols-6 items-center gap-4 p-2.5 pr-6 pl-2"
+        className="flex cursor-pointer items-center justify-between gap-4 p-2.5 px-6"
         onClick={onToggleExpanded}
       >
         <MatchMetadata
@@ -144,23 +144,12 @@ export function ProfileMatch({ match }: { match: RecentMatchRow }) {
           mmr={match.mmr}
         />
 
-        <div className="flex items-center gap-1">
-          <ChampionIconAndLevel
-            src={`${process.env.NEXT_PUBLIC_CDN_BASE}/img/champion/tiles/${match.championName}_0.jpg`}
-            championLevel={match.champLevel}
-            championName={match.championName}
-            size={45}
-          />
-          <SummonerSpells
-            spells={[match.summoner1Id, match.summoner2Id]}
-            size={21.5}
-          />
-          <Runes
-            primaryTrait={match.perkPrimary1Id}
-            secondaryTrait={match.perkSecondaryStyleId}
-            size={21.5}
-          />
-        </div>
+        <ChampionIconAndLevel
+          src={`${process.env.NEXT_PUBLIC_CDN_BASE}/img/champion/tiles/${match.championName}_0.jpg`}
+          championLevel={match.champLevel}
+          championName={match.championName}
+          size={45}
+        />
 
         <BasicStatFormat
           title={`${match.kills} / ${match.deaths} / ${match.assists}`}
@@ -177,14 +166,24 @@ export function ProfileMatch({ match }: { match: RecentMatchRow }) {
           subtitle={`${(totalDamage / (match.gameDuration / 60)).toFixed(1)}/min`}
         />
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2 rounded-sm bg-foreground p-1.5 dark:bg-background">
+          <SummonerSpells
+            spells={[match.summoner1Id, match.summoner2Id]}
+            size={21.5}
+          />
+          <Runes
+            primaryTrait={match.perkPrimary1Id}
+            secondaryTrait={match.perkSecondaryStyleId}
+            size={21.5}
+          />
+          <div className="h-8 w-px bg-muted-foreground" />
           <Items
             srcs={items.map((item) =>
               item === 0
                 ? "/"
                 : `${process.env.NEXT_PUBLIC_CDN_BASE}/${process.env.NEXT_PUBLIC_PATCH_VERSION}/img/item/${item}.png`
             )}
-            size={30}
+            size={20}
           />
         </div>
       </div>
@@ -226,7 +225,7 @@ export function ExpandedMatchDetails({
     <div className="flex flex-col gap-4 px-4 pb-4">
       <div className="grid grid-cols-2 items-center">
         <button
-          className={`flex cursor-pointer items-center justify-center gap-2 rounded-md py-3 ${activeView === "general" ? "bg-zinc-800" : "bg-zinc-900"}`}
+          className={`flex cursor-pointer items-center justify-center gap-2 rounded-md py-3 ${activeView === "general" ? "bg-foreground text-background dark:bg-background dark:text-foreground" : "bg-secondary"}`}
           onClick={() => setActiveView("general")}
         >
           <LuLayoutList size={18} />
@@ -235,7 +234,7 @@ export function ExpandedMatchDetails({
           </span>
         </button>
         <button
-          className={`flex cursor-pointer items-center justify-center gap-2 rounded-md py-3 ${activeView === "details" ? "bg-zinc-800" : "bg-zinc-900"}`}
+          className={`flex cursor-pointer items-center justify-center gap-2 rounded-md py-3 ${activeView === "details" ? "bg-foreground text-background dark:bg-background dark:text-foreground" : "bg-secondary"}`}
           onClick={() => setActiveView("details")}
         >
           <LuChartPie size={18} />
@@ -263,14 +262,16 @@ export function GeneralView({
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <div className="grid grid-cols-7 items-center gap-2 bg-zinc-800 py-2 text-center text-xs text-zinc-300">
+      <div className="grid grid-cols-7 items-center gap-2 py-2 text-center text-xs text-muted-foreground">
         <p className="col-span-2 flex items-center gap-2 pl-4 text-left">
           <span
             className={`text-sm font-semibold ${participants[0]?.win ? "text-blue-500" : "text-rose-500"}`}
           >
             {participants[0]?.win ? "Victory" : "Defeat"}
           </span>
-          <span className="text-xs font-normal text-zinc-200">(Blue Team)</span>
+          <span className="text-xs font-normal text-muted-foreground">
+            (Blue Team)
+          </span>
         </p>
         <p>KDA</p>
         <p>Damage</p>
@@ -289,14 +290,16 @@ export function GeneralView({
         ))}
       </div>
 
-      <div className="grid grid-cols-7 items-center gap-2 bg-zinc-800 py-2 text-center text-xs text-zinc-300">
+      <div className="grid grid-cols-7 items-center gap-2 py-2 text-center text-xs text-muted-foreground">
         <p className="col-span-2 flex items-center gap-2 pl-4 text-left">
           <span
             className={`text-sm font-semibold ${participants[5]?.win ? "text-blue-500" : "text-rose-500"}`}
           >
             {participants[5]?.win ? "Victory" : "Defeat"}
           </span>
-          <span className="text-xs font-normal text-zinc-200">(Red Team)</span>
+          <span className="text-xs font-normal text-muted-foreground">
+            (Red Team)
+          </span>
         </p>
         <p>KDA</p>
         <p>Damage</p>
@@ -345,8 +348,8 @@ export function DetailsView({
           return (
             <button
               key={idx}
-              className={`flex cursor-pointer items-center justify-center rounded-md p-1 px-3 transition-colors duration-200 hover:bg-zinc-800 ${
-                playerIdx === idx ? "bg-zinc-800" : ""
+              className={`flex cursor-pointer items-center justify-center rounded-md p-1 px-3 transition-colors duration-200 hover:bg-border ${
+                playerIdx === idx ? "bg-border" : ""
               }`}
               onClick={() => {
                 setPlayerIdx(idx)
@@ -368,7 +371,10 @@ export function DetailsView({
       <div className="grid grid-cols-3 gap-4">
         <Card className="gap-4">
           <div className="flex items-center gap-2">
-            <SwordIcon size={20} className="text-lime-200" />
+            <SwordIcon
+              size={20}
+              className="text-emerald-600 dark:text-lime-200"
+            />
             <span className="font-oswald font-semibold uppercase">
               Multikills
             </span>
@@ -400,7 +406,10 @@ export function DetailsView({
 
         <Card className="gap-4">
           <div className="flex items-center gap-2">
-            <WardIcon size={20} className="text-yellow-200" />
+            <WardIcon
+              size={20}
+              className="text-amber-500 dark:text-yellow-200"
+            />
             <span className="font-oswald font-semibold uppercase">Wards</span>
           </div>
 
@@ -430,7 +439,10 @@ export function DetailsView({
 
         <Card className="gap-4">
           <div className="flex items-center gap-2">
-            <HelmetIcon size={20} className="text-cyan-200" />
+            <HelmetIcon
+              size={20}
+              className="text-blue-500 dark:text-cyan-200"
+            />
             <span className="font-oswald font-semibold uppercase">Damage</span>
           </div>
 
@@ -461,7 +473,7 @@ export function DetailsView({
       <div className="grid grid-cols-2 gap-4">
         <Card>
           <div className="flex items-center gap-2">
-            <BsFire size={20} className="text-red-300" />
+            <BsFire size={20} className="text-red-600 dark:text-red-300" />
             <span className="font-oswald font-semibold uppercase">
               Spells Casted
             </span>
@@ -523,7 +535,10 @@ export function DetailsView({
 
         <Card>
           <div className="flex items-center gap-2">
-            <BiSolidBellRing size={20} className="text-orange-200" />
+            <BiSolidBellRing
+              size={20}
+              className="text-orange-600 dark:text-orange-200"
+            />
             <span className="font-oswald font-semibold uppercase">Pings</span>
           </div>
 

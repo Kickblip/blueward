@@ -16,7 +16,7 @@ export function Card({
   return (
     <div
       className={cn(
-        `flex flex-col gap-2 rounded-md border border-zinc-800 bg-zinc-900 p-3`,
+        `flex flex-col gap-2 rounded-md border bg-secondary p-3`,
         className ? className : ""
       )}
       style={style}

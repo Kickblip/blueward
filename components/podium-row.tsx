@@ -27,7 +27,7 @@ export function PodiumRow({
         style={{ backgroundImage: `url(${backgroundImage})` }}
       >
         <div
-          className={`flex flex-col justify-between ${size === "large" ? "h-42 md:h-60" : ""} ${size === "small" ? "h-32 md:h-42" : ""}`}
+          className={`flex flex-col justify-between text-white ${size === "large" ? "h-42 md:h-60" : ""} ${size === "small" ? "h-32 md:h-42" : ""}`}
         >
           <div className={`grid ${numColumnsMap[Object.keys(stats).length]}`}>
             {Object.entries(stats).map(([statName, statValue]) => (

@@ -11,9 +11,14 @@ export function BasicStatFormat({
   className?: string
 }) {
   return (
-    <div className={cn("flex flex-col items-center gap-1", className || "")}>
+    <div
+      className={cn(
+        "flex flex-col items-center gap-1 font-semibold",
+        className || ""
+      )}
+    >
       <p>{title}</p>
-      <p className="text-xs font-normal text-zinc-400">{subtitle}</p>
+      <p className="text-xs font-normal text-muted-foreground">{subtitle}</p>
     </div>
   )
 }
@@ -38,7 +43,7 @@ export function ImageWithLabel({
         height={size || 45}
         className="rounded"
       />
-      <div className="absolute bottom-0 left-0 -mb-1 -ml-1 rounded-sm bg-zinc-950 p-0.5 text-xs">
+      <div className="absolute bottom-0 left-0 -mb-1 -ml-1 rounded-xs bg-foreground p-0.5 text-xs font-bold text-background dark:bg-background dark:text-foreground">
         {label}
       </div>
     </div>
@@ -60,20 +65,20 @@ export function MatchMetadata({
 }) {
   return (
     <div className="flex flex-col items-center gap-0.5 text-sm">
-      <div className="flex items-center gap-1 text-zinc-200">
+      <div className="flex items-center gap-1">
         <span
-          className={`font-semibold uppercase ${win ? "text-blue-500" : "text-red-500"}`}
+          className={`font-bold uppercase ${win ? "text-blue-500" : "text-red-500"}`}
         >
           {win ? "Win" : "Loss"}
         </span>
 
-        <span>
+        <span className="font-semibold">
           {Math.floor(gameDuration / 60)}:
           {(gameDuration % 60).toString().padStart(2, "0")}
         </span>
       </div>
 
-      <p className="text-xs text-zinc-400">
+      <p className="text-xs text-muted-foreground">
         {epochToRelativeTime(gameEndTimestamp)}
       </p>
 
@@ -83,7 +88,7 @@ export function MatchMetadata({
         <span>{toNumberWithCommas(payout)}</span>
       </div> */}
 
-      <p className="mt-0.5 text-xs">{mmr} MMR</p>
+      <p className="mt-0.5 text-xs font-medium">{mmr} MMR</p>
     </div>
   )
 }
@@ -118,7 +123,7 @@ export function ChampionIconAndLevel({
         height={size}
         className="rounded"
       />
-      <div className="absolute bottom-0 left-0 -mb-1 -ml-1 rounded-sm bg-zinc-950 p-0.5 text-xs">
+      <div className="absolute bottom-0 left-0 -mb-1 -ml-1 rounded-xs bg-foreground p-0.5 text-xs font-bold text-background dark:bg-background dark:text-foreground">
         {championLevel}
       </div>
     </div>
@@ -192,25 +197,51 @@ export function Runes({
 
 export function Items({ srcs, size = 30 }: { srcs: string[]; size?: number }) {
   return (
-    <div className="grid grid-cols-4">
-      {srcs.map((src, index) =>
-        src === "/" ? (
-          <div
-            key={index}
-            className="aspect-square rounded border border-zinc-800 bg-zinc-950"
-            style={{ width: size, height: size }}
-          ></div>
-        ) : (
-          <Image
-            key={index}
-            src={src}
-            alt=""
-            width={size}
-            height={size}
-            className="aspect-square rounded"
-          />
-        )
-      )}
+    <div className="flex items-center gap-1.5">
+      <div className="grid grid-cols-3 gap-0.5">
+        {srcs
+          .slice(0, 6)
+          .map((src, index) =>
+            src === "/" ? (
+              <div
+                key={index}
+                className="aspect-square rounded border"
+                style={{ width: size, height: size }}
+              ></div>
+            ) : (
+              <Image
+                key={index}
+                src={src}
+                alt=""
+                width={size}
+                height={size}
+                className="aspect-square rounded-xs"
+              />
+            )
+          )}
+      </div>
+      <div className="grid grid-cols-1 gap-0.5">
+        {srcs
+          .slice(6, 8)
+          .map((src, index) =>
+            src === "/" ? (
+              <div
+                key={index}
+                className="aspect-square rounded border"
+                style={{ width: size, height: size }}
+              ></div>
+            ) : (
+              <Image
+                key={index}
+                src={src}
+                alt=""
+                width={size}
+                height={size}
+                className="aspect-square rounded-xs"
+              />
+            )
+          )}
+      </div>
     </div>
   )
 }
