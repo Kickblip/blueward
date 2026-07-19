@@ -182,14 +182,14 @@ export function Runes({
         alt=""
         width={size}
         height={size}
-        className={cn("", className || "")}
+        className={cn("rounded border", className)}
       />
       <Image
         src={runePaths[secondaryTrait] ?? SECONDARY_FALLBACK}
         alt=""
         width={size}
         height={size}
-        className={cn("p-0.5", className || "")}
+        className={cn("rounded border p-0.5", className)}
       />
     </div>
   )

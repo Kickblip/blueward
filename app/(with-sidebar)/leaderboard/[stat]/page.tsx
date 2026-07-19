@@ -4,6 +4,7 @@ import { statList, getTopPlayersForStat, StatKey } from "./helpers"
 import Link from "next/link"
 import { Card } from "@/components/ui/card"
 import { timestampToRelativeTime, toNumberWithCommas } from "@/lib/utils"
+import { IoPodium } from "react-icons/io5"
 
 export async function generateStaticParams() {
   return Object.keys(statList).map((stat) => ({ stat }))
@@ -41,14 +42,19 @@ export default async function Leaderboard({
     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
       <div className="col-span-1 flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <Card title="Leaderboards" subtitle="Select a leaderboard to view">
-            <></>
-          </Card>
+          <h1 className="flex items-center gap-2 font-oswald text-2xl font-semibold uppercase">
+            <IoPodium className="size-6 text-chart-3 dark:text-chart-1" />
+            <span>Leaderboards</span>
+          </h1>
+
+          <p className="max-w-sm text-sm text-muted-foreground">
+            Top {limit} players for {statList[stat]} updated live
+          </p>
           {Object.entries(statList).map(([slug, label]) => (
             <Link
               href={`/leaderboard/${slug}`}
               key={slug}
-              className={`text-md font-semibold ${slug === stat ? "text-blue-400" : "transition-colors duration-200 hover:text-blue-400"} `}
+              className={`text-md font-semibold ${slug === stat ? "text-chart-3 dark:text-chart-1" : "transition-colors duration-200 hover:text-chart-3 dark:hover:text-chart-1"} `}
             >
               <Card className="p-2">{label}</Card>
             </Link>

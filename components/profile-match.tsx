@@ -133,7 +133,7 @@ export function ProfileMatch({ match }: { match: RecentMatchRow }) {
   return (
     <Card className="p-0">
       <div
-        className="flex cursor-pointer items-center justify-between gap-4 p-2.5 px-6"
+        className="grid cursor-pointer grid-cols-[minmax(7rem,1fr)_auto_repeat(3,minmax(5.5rem,1fr))_auto] items-center justify-items-center gap-x-4 px-6 py-2.5"
         onClick={onToggleExpanded}
       >
         <MatchMetadata
@@ -144,12 +144,23 @@ export function ProfileMatch({ match }: { match: RecentMatchRow }) {
           mmr={match.mmr}
         />
 
-        <ChampionIconAndLevel
-          src={`${process.env.NEXT_PUBLIC_CDN_BASE}/img/champion/tiles/${match.championName}_0.jpg`}
-          championLevel={match.champLevel}
-          championName={match.championName}
-          size={45}
-        />
+        <div className="flex items-center gap-1">
+          <ChampionIconAndLevel
+            src={`${process.env.NEXT_PUBLIC_CDN_BASE}/img/champion/tiles/${match.championName}_0.jpg`}
+            championLevel={match.champLevel}
+            championName={match.championName}
+            size={45}
+          />
+          <SummonerSpells
+            spells={[match.summoner1Id, match.summoner2Id]}
+            size={21.5}
+          />
+          <Runes
+            primaryTrait={match.perkPrimary1Id}
+            secondaryTrait={match.perkSecondaryStyleId}
+            size={21.5}
+          />
+        </div>
 
         <BasicStatFormat
           title={`${match.kills} / ${match.deaths} / ${match.assists}`}
@@ -166,17 +177,7 @@ export function ProfileMatch({ match }: { match: RecentMatchRow }) {
           subtitle={`${(totalDamage / (match.gameDuration / 60)).toFixed(1)}/min`}
         />
 
-        <div className="flex items-center gap-2 rounded-sm bg-foreground p-1.5 dark:bg-background">
-          <SummonerSpells
-            spells={[match.summoner1Id, match.summoner2Id]}
-            size={21.5}
-          />
-          <Runes
-            primaryTrait={match.perkPrimary1Id}
-            secondaryTrait={match.perkSecondaryStyleId}
-            size={21.5}
-          />
-          <div className="h-8 w-px bg-muted-foreground" />
+        <div className="rounded-md border-2 bg-foreground/90 p-1.5 dark:bg-background">
           <Items
             srcs={items.map((item) =>
               item === 0
@@ -225,7 +226,7 @@ export function ExpandedMatchDetails({
     <div className="flex flex-col gap-4 px-4 pb-4">
       <div className="grid grid-cols-2 items-center">
         <button
-          className={`flex cursor-pointer items-center justify-center gap-2 rounded-md py-3 ${activeView === "general" ? "bg-foreground text-background dark:bg-background dark:text-foreground" : "bg-secondary"}`}
+          className={`flex cursor-pointer items-center justify-center gap-2 rounded-md py-3 ${activeView === "general" ? "bg-border" : ""}`}
           onClick={() => setActiveView("general")}
         >
           <LuLayoutList size={18} />
@@ -234,7 +235,7 @@ export function ExpandedMatchDetails({
           </span>
         </button>
         <button
-          className={`flex cursor-pointer items-center justify-center gap-2 rounded-md py-3 ${activeView === "details" ? "bg-foreground text-background dark:bg-background dark:text-foreground" : "bg-secondary"}`}
+          className={`flex cursor-pointer items-center justify-center gap-2 rounded-md py-3 ${activeView === "details" ? "bg-border" : ""}`}
           onClick={() => setActiveView("details")}
         >
           <LuChartPie size={18} />

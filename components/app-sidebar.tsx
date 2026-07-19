@@ -17,7 +17,6 @@ import { UserButton } from "@clerk/nextjs"
 import { SignInButton } from "@clerk/nextjs"
 import { Show } from "@clerk/nextjs"
 
-import { RiRobot3Fill } from "react-icons/ri"
 import { HiMiniSparkles } from "react-icons/hi2"
 import { FaShoppingCart } from "react-icons/fa"
 import { FaUsers } from "react-icons/fa"
@@ -90,24 +89,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               </SidebarMenuItem>
 
               <SidebarMenuItem>
-                <SidebarMenuButton asChild size="lg" tooltip="Autobalancer">
-                  <Link href="/autobalancer">
-                    <RiRobot3Fill className="size-6! text-chart-3 dark:text-chart-1" />
-                    <span className="pl-1 font-oswald text-lg font-semibold uppercase group-data-[collapsible=icon]:sr-only">
-                      Autobalancer
-                    </span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
                   size="lg"
                   tooltip="Create a lobby"
                   className="bg-primary text-primary-foreground hover:bg-primary/80"
                 >
-                  <Link href="/predictions">
+                  <Link href="/lobby">
                     <PlusIcon className="size-6!" />
                     <span className="pl-1 font-oswald text-lg font-semibold uppercase group-data-[collapsible=icon]:sr-only">
                       Create a lobby
