@@ -15,6 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { HiMiniArchiveBox } from "react-icons/hi2"
 
 export function FeaturedBanner() {
   const [isOpen, setIsOpen] = useState(false)
@@ -25,23 +26,30 @@ export function FeaturedBanner() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <div className="relative col-span-1 aspect-[2/1] w-full cursor-pointer overflow-hidden rounded-md border border-red-300 shadow-[0_0_30px_rgba(239,68,68,0.5)] transition-transform duration-200 hover:scale-[1.02] md:col-span-2">
-          <Image
+        <div className="relative col-span-2 aspect-[2/1] w-full cursor-pointer overflow-hidden rounded-md border border-chart-1 shadow-lg shadow-chart-1">
+          {/* <Image
             src={`/banners/webp/${HORIZONS_SET_LIST.featured}.webp`}
             alt=""
             fill
             className="object-cover"
+          /> */}
+          <video
+            src={`/testing.mp4`}
+            autoPlay
+            muted
+            loop
+            playsInline
+            aria-hidden="true"
+            className="absolute inset-0 size-full object-cover"
           />
 
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/15 to-transparent" />
 
           <div className="absolute top-0 left-0 z-10 flex flex-col gap-1 p-4">
-            <div className="flex items-center gap-1 rounded-md border bg-background px-2 py-1">
-              <p className="text-xs font-semibold uppercase">One roll</p>
-              <div className="mx-2 h-3 w-0.5 rounded-full bg-border" />
-              <CrystalIcon size={14} />
-              <p className="font-oswald text-xs font-semibold uppercase">
-                {toNumberWithCommas(ROLL_PRICE)}
+            <div className="flex items-center gap-1.5 rounded-md border bg-background px-2 py-1">
+              <HiMiniArchiveBox className="size-4 text-chart-3 dark:text-chart-1" />
+              <p className="font-oswald text-sm font-semibold uppercase">
+                View Set list
               </p>
             </div>
           </div>
@@ -54,43 +62,17 @@ export function FeaturedBanner() {
               {banner.name}
             </h2>
           </div>
-
-          <div className="invisible absolute right-2 bottom-2 z-10 md:visible">
-            <Image
-              src="/horizons.png"
-              alt="Horizons set logo"
-              width={200}
-              height={80}
-            />
-          </div>
         </div>
       </DialogTrigger>
 
-      <DialogContent className="max-w-6xl">
-        <div className="relative border-b border-zinc-800 px-6 py-5">
-          <button
-            type="button"
-            onClick={() => setIsOpen(false)}
-            className="absolute top-4 right-4 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm font-medium text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-white"
-          >
-            Close
-          </button>
+      <DialogContent className="max-h-[calc(100dvh-2rem)] sm:max-w-7xl">
+        <DialogHeader>
+          <DialogTitle className="font-oswald text-4xl font-semibold uppercase">
+            Available Banners
+          </DialogTitle>
+        </DialogHeader>
 
-          <div className="flex items-center gap-4">
-            <h3 className="font-oswald text-4xl font-semibold text-white uppercase">
-              Available Banners
-            </h3>
-            <div className="h-12 w-0.5 rounded-full bg-zinc-600" />
-            <Image
-              src="/horizons.png"
-              alt="Horizons set logo"
-              width={130}
-              height={80}
-            />
-          </div>
-        </div>
-
-        <div className="overflow-y-auto px-6 py-6">
+        <div className="min-h-0 overflow-y-auto px-6 py-6">
           {(["ultimate", "legendary", "epic", "rare", "common"] as const).map(
             (rarity) => {
               const banners = Array.from(
@@ -122,13 +104,10 @@ export function FeaturedBanner() {
                         .filter(Boolean)
                         .join(" ")}
                     />
-                    <h4 className="font-oswald text-2xl font-semibold text-white uppercase">
+                    <h4 className="font-oswald text-2xl font-semibold uppercase">
                       {rarity}
                     </h4>
-                    <div className="h-px flex-1 bg-zinc-800" />
-                    <p className="text-xs font-semibold tracking-wide text-zinc-500 uppercase">
-                      {banners.length} Banner{banners.length === 1 ? "" : "s"}
-                    </p>
+                    <div className="h-px flex-1 bg-border" />
                   </div>
 
                   <div className="grid grid-cols-3 gap-4">

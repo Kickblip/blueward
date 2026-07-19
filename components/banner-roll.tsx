@@ -14,6 +14,7 @@ import {
 import { CrystalIcon } from "@/lib/icons"
 import { mutate } from "swr"
 import { BannerOwnershipPopup } from "./banner-ownership-popup"
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
 
 type RollResponse = {
   rarity: Rarity
@@ -152,7 +153,7 @@ export function BannerRoll() {
   }
 
   return (
-    <Card className="border-sky-300 shadow-[0_0_30px_rgba(10,225,250,0.5)]">
+    <Card className="border-chart-1 shadow-lg shadow-chart-1">
       <div className="flex items-center justify-center pt-8">
         <div className="relative flex h-72 w-72 items-center justify-center">
           <div className="pointer-events-none absolute top-1 left-1/2 z-20 h-0 w-0 -translate-x-1/2 rotate-180 border-t-0 border-r-[12px] border-b-[18px] border-l-[12px] border-r-transparent border-b-white border-l-transparent drop-shadow-[0_0_10px_rgba(255,255,255,0.45)]" />
@@ -190,22 +191,46 @@ export function BannerRoll() {
                   "radial-gradient(circle at 30% 25%, rgba(255,255,255,0.18), transparent 38%)",
               }}
             />
-            <div className="absolute inset-[22%] rounded-full bg-zinc-950 ring-1 ring-white/10" />
+            <div className="absolute inset-[22%] rounded-full bg-background ring-1 ring-border" />
           </motion.div>
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={handleRoll}
-        disabled={isRolling}
-        className="mx-auto flex items-center justify-center gap-2 rounded-md border border-sky-300 bg-sky-500 px-6 py-2 shadow-[0_0_30px_rgba(10,225,250,0.5)] transition-colors duration-200 hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        <CrystalIcon size={25} className="text-white" />
-        <p className="font-oswald text-xl font-semibold text-white uppercase">
-          {isRolling ? "Rolling..." : `${toNumberWithCommas(ROLL_PRICE)} ROLL`}
-        </p>
-      </button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            onClick={handleRoll}
+            disabled={isRolling}
+            className="mx-auto flex items-center justify-center gap-2 rounded-md border border-sky-300 bg-sky-500 px-6 py-2 shadow-[0_0_30px_rgba(10,225,250,0.5)] transition-colors duration-200 hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <CrystalIcon size={25} className="text-white" />
+            <p className="font-oswald text-xl font-semibold text-white uppercase">
+              {isRolling
+                ? "Rolling..."
+                : `${toNumberWithCommas(ROLL_PRICE)} ROLL`}
+            </p>
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <div className="flex items-center justify-between gap-8">
+            <div className="flex flex-col gap-1">
+              <p>Ultimate</p>
+              <p>Legendary</p>
+              <p>Epic</p>
+              <p>Rare</p>
+              <p>Common</p>
+            </div>
+            <div className="flex flex-col gap-1 text-right">
+              <p>{RARITY_RATES.ultimate * 100}%</p>
+              <p>{RARITY_RATES.legendary * 100}%</p>
+              <p>{RARITY_RATES.epic * 100}%</p>
+              <p>{RARITY_RATES.rare * 100}%</p>
+              <p>{Math.floor(RARITY_RATES.common * 100)}%</p>
+            </div>
+          </div>
+        </TooltipContent>
+      </Tooltip>
 
       {errorMessage && (
         <div className="px-4 py-2 text-sm text-red-200">{errorMessage}</div>
