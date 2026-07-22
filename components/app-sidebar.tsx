@@ -1,5 +1,3 @@
-"use client"
-
 import Link from "next/link"
 import {
   Sidebar,
@@ -13,20 +11,36 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { Logo } from "./logo"
-import { UserButton } from "@clerk/nextjs"
-import { SignInButton } from "@clerk/nextjs"
 import { Show } from "@clerk/nextjs"
-
 import { HiMiniSparkles } from "react-icons/hi2"
-import { FaShoppingCart } from "react-icons/fa"
-import { FaUsers, FaUser } from "react-icons/fa"
+import {
+  FaUsers,
+  FaUser,
+  FaSignOutAlt,
+  FaExternalLinkSquareAlt,
+  FaShoppingCart,
+} from "react-icons/fa"
 import { IoPodium } from "react-icons/io5"
 import { PlusIcon } from "lucide-react"
-import { buttonVariants } from "./ui/button"
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog"
 import { SignIn } from "./sign-in"
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
+import { currentUser } from "@clerk/nextjs/server"
+import { Skeleton } from "./ui/skeleton"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu"
+import { IoMdSettings } from "react-icons/io"
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export async function AppSidebar({
+  ...props
+}: React.ComponentProps<typeof Sidebar>) {
+  const user = await currentUser()
+
   return (
     <Sidebar collapsible="icon" variant="inset" {...props}>
       <SidebarHeader>
@@ -114,7 +128,43 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <Show when="signed-in">
-              <UserButton />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuButton size="lg" tooltip="Profile">
+                    <Avatar className="size-8!">
+                      <AvatarImage src={user?.imageUrl} />
+                      <AvatarFallback>
+                        <Skeleton className="h-full w-full rounded-full" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="pl-1 font-oswald text-lg font-semibold uppercase group-data-[collapsible=icon]:sr-only">
+                      Profile
+                    </span>
+                  </SidebarMenuButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 p-2">
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem className="cursor-pointer gap-4">
+                      <FaExternalLinkSquareAlt className="text-chart-3 dark:text-chart-1" />
+                      <span className="font-oswald text-sm font-semibold uppercase">
+                        My Profile
+                      </span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer gap-4">
+                      <IoMdSettings className="text-chart-3 dark:text-chart-1" />
+                      <span className="font-oswald text-sm font-semibold uppercase">
+                        Settings
+                      </span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer gap-4">
+                      <FaSignOutAlt className="text-chart-3 dark:text-chart-1" />
+                      <span className="font-oswald text-sm font-semibold uppercase">
+                        Sign out
+                      </span>
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </Show>
             <Show when="signed-out">
               <Dialog>

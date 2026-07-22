@@ -1,5 +1,3 @@
-![Blueward Banner](/assets/take-down-dither-blue.jpg)
-
 ## OP.GG for Custom Games
 
 Blueward is a stat-tracking website built to boost engagement in and competition between university League of Legends clubs through custom games (“inhouses”).

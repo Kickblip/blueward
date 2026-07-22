@@ -1,7 +1,7 @@
 import { Section, TextLink } from "../terms/page"
 import { SOCIAL_LINK_CONFIG } from "@/lib/config"
 
-export default function Privacy() {
+export default function Page() {
   return (
     <main className="min-h-screen px-6 py-12">
       <div className="mx-auto w-full max-w-3xl">

@@ -2,11 +2,7 @@
 
 import { useEffect, useState } from "react"
 
-export default function RevalidateAfterImport({
-  matchId,
-}: {
-  matchId: string
-}) {
+export default function Page({ matchId }: { matchId: string }) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {

@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/sidebar"
 import { SearchButton } from "@/components/search"
 
-export default function RootLayout({
+export default function Layout({
   children,
 }: Readonly<{
   children: React.ReactNode

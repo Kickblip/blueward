@@ -4,7 +4,7 @@ import { FeaturedBanner } from "@/components/featured-banner"
 import { PurchaseableBannerCard } from "@/components/purchaseable-banner-card"
 import { ShopTitleSvg } from "@/lib/icons"
 
-export default function Shop() {
+export default function Page() {
   return (
     <div className="flex w-full flex-col">
       <p className="z-30 mb-4 text-center text-xs">
