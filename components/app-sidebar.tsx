@@ -19,9 +19,12 @@ import { Show } from "@clerk/nextjs"
 
 import { HiMiniSparkles } from "react-icons/hi2"
 import { FaShoppingCart } from "react-icons/fa"
-import { FaUsers } from "react-icons/fa"
+import { FaUsers, FaUser } from "react-icons/fa"
 import { IoPodium } from "react-icons/io5"
 import { PlusIcon } from "lucide-react"
+import { buttonVariants } from "./ui/button"
+import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog"
+import { SignIn } from "./sign-in"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -114,9 +117,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <UserButton />
             </Show>
             <Show when="signed-out">
-              <SidebarMenuButton asChild size="lg">
-                <SignInButton>Sign in</SignInButton>
-              </SidebarMenuButton>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <SidebarMenuButton size="lg" tooltip="Sign in">
+                    <FaUser className="size-6! text-chart-3 dark:text-chart-1" />
+                    <span className="pl-1 font-oswald text-lg font-semibold uppercase group-data-[collapsible=icon]:sr-only">
+                      Sign in
+                    </span>
+                  </SidebarMenuButton>
+                </DialogTrigger>
+                <DialogContent>
+                  <SignIn />
+                </DialogContent>
+              </Dialog>
             </Show>
           </SidebarMenuItem>
         </SidebarMenu>
