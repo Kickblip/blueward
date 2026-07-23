@@ -12,7 +12,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
-import { PlayerCard } from "@/app/api/player/[puuid]/card/route"
 import {
   Avatar,
   AvatarFallback,
@@ -20,8 +19,11 @@ import {
   AvatarGroupCount,
   AvatarImage,
 } from "@/components/ui/avatar"
+import { useRoom } from "./room-context"
 
-export function Toolbar({ activePlayers }: { activePlayers: PlayerCard[] }) {
+export function Toolbar() {
+  const { presentPlayers, activeLobby } = useRoom()
+
   return (
     <header className="flex items-center justify-between gap-4 p-2">
       <div className="flex items-center gap-4">
@@ -83,7 +85,7 @@ export function Toolbar({ activePlayers }: { activePlayers: PlayerCard[] }) {
 
       <div className="flex items-center gap-4">
         <AvatarGroup>
-          {activePlayers.slice(0, 3).map((player) => (
+          {presentPlayers.slice(0, 3).map((player) => (
             <Tooltip key={player.id}>
               <TooltipTrigger asChild>
                 <Avatar tabIndex={0}>
@@ -103,8 +105,8 @@ export function Toolbar({ activePlayers }: { activePlayers: PlayerCard[] }) {
             </Tooltip>
           ))}
 
-          {activePlayers.length > 3 && (
-            <AvatarGroupCount>+{activePlayers.length - 3}</AvatarGroupCount>
+          {presentPlayers.length > 3 && (
+            <AvatarGroupCount>+{presentPlayers.length - 3}</AvatarGroupCount>
           )}
         </AvatarGroup>
         <div

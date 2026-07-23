@@ -5,21 +5,21 @@ import { PlayerCard as PlayerCardType } from "@/app/api/player/[puuid]/card/rout
 import { Toolbar } from "./toolbar"
 import { Footer } from "./footer"
 import { Realtime } from "ably"
-import {
-  AblyProvider,
-  usePresence,
-  usePresenceListener,
-  ChannelProvider,
-} from "ably/react"
+import { AblyProvider, ChannelProvider } from "ably/react"
 import { useEffect, useState } from "react"
+import { RoomSnapshot } from "@/lib/room-state"
+import { RoomProvider, useRoom } from "./room-context"
 
 export function RoomClient({
-  roomId,
+  initialSnapshot,
+  viewerAuthId,
   player,
 }: {
-  roomId: string
+  initialSnapshot: RoomSnapshot
+  viewerAuthId: string
   player: PlayerCardType
 }) {
+  const roomId = initialSnapshot.roomId
   const channel = `room:${roomId}`
   const [client, setClient] = useState<Realtime | null>(null)
 
@@ -37,24 +37,24 @@ export function RoomClient({
   return (
     <AblyProvider client={client}>
       <ChannelProvider channelName={channel}>
-        <RoomContents player={player} />
+        <RoomProvider
+          initialSnapshot={initialSnapshot}
+          currentPlayer={player}
+          viewerAuthId={viewerAuthId}
+        >
+          <RoomContents />
+        </RoomProvider>
       </ChannelProvider>
     </AblyProvider>
   )
 }
 
-function RoomContents({ player }: { player: PlayerCardType }) {
-  usePresence<PlayerCardType>(undefined, player)
-
-  const { presenceData } = usePresenceListener<PlayerCardType>()
-
-  const activePlayers = Array.from(
-    new Map(presenceData.map(({ clientId, data }) => [clientId, data])).values()
-  )
+function RoomContents() {
+  const { activeLobby, playerPool } = useRoom()
 
   return (
     <main className="grid h-dvh grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden">
-      <Toolbar activePlayers={activePlayers} />
+      <Toolbar />
 
       <section className="min-h-0 overflow-y-auto">
         <div className="max-w-9xl mx-auto grid h-full min-h-0 w-full grid-cols-[7fr_7fr_6fr] gap-4 p-4">

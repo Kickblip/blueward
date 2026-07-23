@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto"
 import { auth } from "@clerk/nextjs/server"
 import { redirect } from "next/navigation"
 import { db } from "@/lib/db"
-import { rooms } from "@/lib/schema"
+import { lobbies, rooms } from "@/lib/schema"
 
 export async function createRoom() {
   const { userId } = await auth()
@@ -13,12 +13,20 @@ export async function createRoom() {
     redirect("/signin")
   }
 
-  const id = randomUUID()
+  const roomId = randomUUID()
 
-  await db.insert(rooms).values({
-    id,
-    createdByAuthId: userId,
+  await db.transaction(async (tx) => {
+    await tx.insert(rooms).values({
+      id: roomId,
+      ownerAuthId: userId,
+    })
+
+    await tx.insert(lobbies).values({
+      id: randomUUID(),
+      roomId,
+      ordinal: 1,
+    })
   })
 
-  redirect(`/room/${id}`)
+  redirect(`/room/${roomId}`)
 }

@@ -10,6 +10,8 @@ import {
   smallint,
   index,
   uniqueIndex,
+  check,
+  primaryKey,
 } from "drizzle-orm/pg-core"
 import { relations, sql } from "drizzle-orm"
 
@@ -344,9 +346,64 @@ export const marketSelections = pgTable(
 
 export const rooms = pgTable("rooms", {
   id: varchar({ length: 36 }).primaryKey(),
-  createdByAuthId: varchar({ length: 128 }).notNull(),
+  ownerAuthId: varchar({ length: 128 }).notNull(),
   createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
 })
+
+export const lobbyPhaseEnum = pgEnum("lobby_phase", [
+  "OPEN",
+  "DRAFTING",
+  "READY",
+  "CLOSED",
+])
+
+export const lobbies = pgTable(
+  "lobbies",
+  {
+    id: varchar({ length: 36 }).primaryKey(),
+
+    roomId: varchar({ length: 36 })
+      .notNull()
+      .references(() => rooms.id, { onDelete: "cascade" }),
+
+    ordinal: smallint().notNull(),
+    phase: lobbyPhaseEnum().notNull().default("OPEN"),
+    draftPickIndex: smallint().notNull().default(0),
+
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("lobbies_room_ordinal_unique").on(table.roomId, table.ordinal),
+  ]
+)
+
+export const lobbyPlayers = pgTable(
+  "lobby_players",
+  {
+    roomId: varchar({ length: 36 })
+      .notNull()
+      .references(() => rooms.id, { onDelete: "cascade" }),
+    lobbyId: varchar({ length: 36 })
+      .notNull()
+      .references(() => lobbies.id, { onDelete: "cascade" }),
+
+    playerId: integer()
+      .notNull()
+      .references(() => players.id, { onDelete: "cascade" }),
+
+    teamId: smallint().notNull(),
+    isCaptain: boolean().notNull().default(false),
+  },
+  (table) => [
+    primaryKey({ columns: [table.roomId, table.playerId] }),
+
+    check("lobby_players_team_check", sql`${table.teamId} in (0, 1)`),
+
+    uniqueIndex("lobby_players_captain_unique")
+      .on(table.lobbyId, table.teamId)
+      .where(sql`${table.isCaptain}`),
+  ]
+)
 
 export const marketsRelations = relations(markets, ({ many }) => ({
   selections: many(marketSelections),
