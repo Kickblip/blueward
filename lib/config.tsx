@@ -46,6 +46,15 @@ export function getProjectedPredictionMultiplier(popularity: number) {
 //   },
 // } as const
 
+export const levelBadges = [
+  [500, "/6.webp"],
+  [250, "/5.webp"],
+  [120, "/4.webp"],
+  [70, "/3.webp"],
+  [30, "/2.png"],
+  [10, "/1.png"],
+] as const
+
 export const ROLL_PRICE = 15000 as const
 
 export type Rarity = "common" | "rare" | "epic" | "legendary" | "ultimate"
@@ -85,8 +94,8 @@ export const OWNERSHIP_RAKEBACK = {
 export const HORIZONS_SET_LIST = {
   featured: 60,
   rollable: [
-    34, 7, 56, 105, 60, 85, 112, 117, 111, 24, 118, 116, 94, 84, 8, 44, 48, 91, 46, 37, 89, 62, 65, 69, 80, 113, 20, 11, 14, 15,
-    18, 106,
+    34, 7, 56, 105, 60, 85, 112, 117, 111, 24, 118, 116, 94, 84, 8, 44, 48, 91,
+    46, 37, 89, 62, 65, 69, 80, 113, 20, 11, 14, 15, 18, 106,
   ],
   buyable: [39, 16, 23, 40, 61, 81],
   ultimate: [34, 7],
@@ -104,8 +113,16 @@ export const BANNER_CONFIG = {
   3: { name: "Stacked Deck", description: "", rarity: "common" },
 
   // ================= LAUNCH EVENT =================
-  5: { name: "Beta Tester", description: "Submit feedback or a bug report during the beta period", rarity: "epic" },
-  6: { name: "Souls Collide", description: "Participate in the Blueward launch event", rarity: "epic" },
+  5: {
+    name: "Beta Tester",
+    description: "Submit feedback or a bug report during the beta period",
+    rarity: "epic",
+  },
+  6: {
+    name: "Souls Collide",
+    description: "Participate in the Blueward launch event",
+    rarity: "epic",
+  },
   13: {
     name: "Should Have Bought Anti-heal",
     description: "",
