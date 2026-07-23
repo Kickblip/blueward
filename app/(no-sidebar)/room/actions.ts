@@ -4,9 +4,9 @@ import { randomUUID } from "node:crypto"
 import { auth } from "@clerk/nextjs/server"
 import { redirect } from "next/navigation"
 import { db } from "@/lib/db"
-import { lobbies } from "@/lib/schema"
+import { rooms } from "@/lib/schema"
 
-export async function createLobby() {
+export async function createRoom() {
   const { userId } = await auth()
 
   if (!userId) {
@@ -15,10 +15,10 @@ export async function createLobby() {
 
   const id = randomUUID()
 
-  await db.insert(lobbies).values({
+  await db.insert(rooms).values({
     id,
     createdByAuthId: userId,
   })
 
-  redirect(`/lobby/${id}`)
+  redirect(`/room/${id}`)
 }

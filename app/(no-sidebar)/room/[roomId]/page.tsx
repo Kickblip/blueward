@@ -2,17 +2,17 @@ import { safeSubstring } from "@/lib/utils"
 import { currentUser } from "@clerk/nextjs/server"
 import { redirect } from "next/navigation"
 import { fetchPlayerCardByPuuid } from "@/app/api/player/[puuid]/card/route"
-import { LobbyClient } from "./lobby-client"
+import { RoomClient } from "./room-client"
 
 export default async function Page({
   params,
 }: {
-  params: Promise<{ lobbyId: string }>
+  params: Promise<{ roomId: string }>
 }) {
-  const [{ lobbyId }, user] = await Promise.all([params, currentUser()])
+  const [{ roomId }, user] = await Promise.all([params, currentUser()])
 
   if (!user)
-    redirect(`/signin?redirect_url=${encodeURIComponent(`/lobby/${lobbyId}`)}`)
+    redirect(`/signin?redirect_url=${encodeURIComponent(`/room/${roomId}`)}`)
 
   const playerCard = await fetchPlayerCardByPuuid(
     safeSubstring(user.privateMetadata.puuid, 0, 20)
@@ -23,8 +23,8 @@ export default async function Page({
   }
 
   return (
-    <LobbyClient
-      lobbyId={lobbyId}
+    <RoomClient
+      roomId={roomId}
       player={{
         ...playerCard,
         avatarUrl: user.imageUrl,

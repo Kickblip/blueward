@@ -13,37 +13,37 @@ import {
 } from "ably/react"
 import { useEffect, useState } from "react"
 
-export function LobbyClient({
-  lobbyId,
+export function RoomClient({
+  roomId,
   player,
 }: {
-  lobbyId: string
+  roomId: string
   player: PlayerCardType
 }) {
-  const channel = `lobby:${lobbyId}`
+  const channel = `room:${roomId}`
   const [client, setClient] = useState<Realtime | null>(null)
 
   useEffect(() => {
     const realtime = new Realtime({
-      authUrl: `/api/ably/token?lobbyId=${encodeURIComponent(lobbyId)}`,
+      authUrl: `/api/ably/token?roomId=${encodeURIComponent(roomId)}`,
     })
 
     setClient(realtime)
     return () => realtime.close()
-  }, [lobbyId])
+  }, [roomId])
 
   if (!client) return <aside>Connecting…</aside>
 
   return (
     <AblyProvider client={client}>
       <ChannelProvider channelName={channel}>
-        <LobbyContents player={player} />
+        <RoomContents player={player} />
       </ChannelProvider>
     </AblyProvider>
   )
 }
 
-function LobbyContents({ player }: { player: PlayerCardType }) {
+function RoomContents({ player }: { player: PlayerCardType }) {
   usePresence<PlayerCardType>(undefined, player)
 
   const { presenceData } = usePresenceListener<PlayerCardType>()
@@ -93,7 +93,7 @@ function LobbyContents({ player }: { player: PlayerCardType }) {
           </div>
 
           <div className="min-h-0 overflow-y-auto bg-secondary p-2">
-            {/* <LobbyPresence lobbyId={lobbyId} player={player} /> */}
+            {/* PLAYER POOL */}
           </div>
         </div>
       </section>

@@ -34,7 +34,7 @@ export function Toolbar({ activePlayers }: { activePlayers: PlayerCard[] }) {
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Exit lobby</p>
+            <p>Exit room</p>
           </TooltipContent>
         </Tooltip>
 

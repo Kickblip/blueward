@@ -342,7 +342,7 @@ export const marketSelections = pgTable(
   ]
 )
 
-export const lobbies = pgTable("lobbies", {
+export const rooms = pgTable("rooms", {
   id: varchar({ length: 36 }).primaryKey(),
   createdByAuthId: varchar({ length: 128 }).notNull(),
   createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),

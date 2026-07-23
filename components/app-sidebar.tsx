@@ -110,13 +110,13 @@ export async function AppSidebar({
                 <SidebarMenuButton
                   asChild
                   size="lg"
-                  tooltip="Create a lobby"
+                  tooltip="Create a room"
                   className="bg-primary text-primary-foreground hover:bg-primary/80"
                 >
-                  <Link href="/lobby">
+                  <Link href="/room">
                     <PlusIcon className="size-6!" />
                     <span className="pl-1 font-oswald text-lg font-semibold uppercase group-data-[collapsible=icon]:sr-only">
-                      Create a lobby
+                      Create a room
                     </span>
                   </Link>
                 </SidebarMenuButton>
