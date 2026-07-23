@@ -36,7 +36,14 @@ export const matches = pgTable("matches", {
   bluewardVersion: varchar({ length: 16 }).notNull(),
 })
 
-export const roleEnum = pgEnum("role", ["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "UTILITY", "FILL"])
+export const roleEnum = pgEnum("role", [
+  "TOP",
+  "JUNGLE",
+  "MIDDLE",
+  "BOTTOM",
+  "UTILITY",
+  "FILL",
+])
 
 export const playerPerformances = pgTable(
   "player_performances",
@@ -159,10 +166,13 @@ export const playerPerformances = pgTable(
     perkSecondary2Id: smallint().notNull(),
   },
   (table) => [
-    uniqueIndex("player_performances_match_player_unique").on(table.matchRowId, table.puuid),
+    uniqueIndex("player_performances_match_player_unique").on(
+      table.matchRowId,
+      table.puuid
+    ),
     index("player_performances_match_row_id_index").on(table.matchRowId),
     index("player_performances_puuid_index").on(table.puuid),
-  ],
+  ]
 )
 
 export const teamObjectives = pgTable(
@@ -191,9 +201,12 @@ export const teamObjectives = pgTable(
     towerKills: smallint().notNull(),
   },
   (table) => [
-    uniqueIndex("team_objectives_match_team_unique").on(table.matchRowId, table.teamId),
+    uniqueIndex("team_objectives_match_team_unique").on(
+      table.matchRowId,
+      table.teamId
+    ),
     index("team_objectives_match_row_id_index").on(table.matchRowId),
-  ],
+  ]
 )
 
 export const players = pgTable("players", {
@@ -231,10 +244,14 @@ export const transactions = pgTable(
 
     type: transactionTypeEnum("type").notNull(),
 
-    matchRowId: integer().references(() => matches.id, { onDelete: "set null" }),
+    matchRowId: integer().references(() => matches.id, {
+      onDelete: "set null",
+    }),
 
     marketId: integer().references(() => markets.id, { onDelete: "set null" }),
-    marketSelectionId: integer().references(() => marketSelections.id, { onDelete: "set null" }),
+    marketSelectionId: integer().references(() => marketSelections.id, {
+      onDelete: "set null",
+    }),
 
     amount: integer().notNull(),
   },
@@ -243,12 +260,20 @@ export const transactions = pgTable(
     index("transactions_market_id_index").on(table.marketId),
     index("transactions_match_row_id_index").on(table.matchRowId),
     index("transactions_market_selection_id_index").on(table.marketSelectionId),
-  ],
+  ]
 )
 
-export const marketStatusEnum = pgEnum("market_status", ["OPEN", "LOCKED", "RESOLVED", "CANCELLED"])
+export const marketStatusEnum = pgEnum("market_status", [
+  "OPEN",
+  "LOCKED",
+  "RESOLVED",
+  "CANCELLED",
+])
 
-export const marketOutcomeEnum = pgEnum("market_outcome", ["OUTCOME_1", "OUTCOME_2"])
+export const marketOutcomeEnum = pgEnum("market_outcome", [
+  "OUTCOME_1",
+  "OUTCOME_2",
+])
 
 export const markets = pgTable(
   "markets",
@@ -267,10 +292,18 @@ export const markets = pgTable(
 
     resolvedOutcome: marketOutcomeEnum("resolved_outcome"),
   },
-  (table) => [index("markets_status_index").on(table.status), index("markets_created_at_index").on(table.createdAt)],
+  (table) => [
+    index("markets_status_index").on(table.status),
+    index("markets_created_at_index").on(table.createdAt),
+  ]
 )
 
-export const marketOrderStatusEnum = pgEnum("market_order_status", ["PLACED", "SETTLED", "REFUNDED", "CANCELLED"])
+export const marketOrderStatusEnum = pgEnum("market_order_status", [
+  "PLACED",
+  "SETTLED",
+  "REFUNDED",
+  "CANCELLED",
+])
 
 export const marketSelections = pgTable(
   "market_selections",
@@ -298,10 +331,22 @@ export const marketSelections = pgTable(
   (table) => [
     index("market_selections_market_id_index").on(table.marketId),
     index("market_selections_player_id_index").on(table.playerId),
-    index("market_selections_market_player_index").on(table.marketId, table.playerId),
-    index("market_selections_market_outcome_index").on(table.marketId, table.outcome),
-  ],
+    index("market_selections_market_player_index").on(
+      table.marketId,
+      table.playerId
+    ),
+    index("market_selections_market_outcome_index").on(
+      table.marketId,
+      table.outcome
+    ),
+  ]
 )
+
+export const lobbies = pgTable("lobbies", {
+  id: varchar({ length: 36 }).primaryKey(),
+  createdByAuthId: varchar({ length: 128 }).notNull(),
+  createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+})
 
 export const marketsRelations = relations(markets, ({ many }) => ({
   selections: many(marketSelections),
@@ -313,16 +358,19 @@ export const playersRelations = relations(players, ({ many }) => ({
   transactions: many(transactions),
 }))
 
-export const marketSelectionsRelations = relations(marketSelections, ({ one }) => ({
-  market: one(markets, {
-    fields: [marketSelections.marketId],
-    references: [markets.id],
-  }),
-  player: one(players, {
-    fields: [marketSelections.playerId],
-    references: [players.id],
-  }),
-}))
+export const marketSelectionsRelations = relations(
+  marketSelections,
+  ({ one }) => ({
+    market: one(markets, {
+      fields: [marketSelections.marketId],
+      references: [markets.id],
+    }),
+    player: one(players, {
+      fields: [marketSelections.playerId],
+      references: [players.id],
+    }),
+  })
+)
 
 export const transactionsRelations = relations(transactions, ({ one }) => ({
   player: one(players, {
@@ -351,9 +399,12 @@ export const objectivesRelations = relations(teamObjectives, ({ one }) => ({
   }),
 }))
 
-export const playerPerformancesRelations = relations(playerPerformances, ({ one }) => ({
-  match: one(matches, {
-    fields: [playerPerformances.matchRowId],
-    references: [matches.id],
-  }),
-}))
+export const playerPerformancesRelations = relations(
+  playerPerformances,
+  ({ one }) => ({
+    match: one(matches, {
+      fields: [playerPerformances.matchRowId],
+      references: [matches.id],
+    }),
+  })
+)

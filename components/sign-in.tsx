@@ -4,14 +4,18 @@ import Link from "next/link"
 import { SiRiotgames } from "react-icons/si"
 import { Button } from "./ui/button"
 import { useSignIn } from "@clerk/nextjs"
+import { useSearchParams } from "next/navigation"
 
 export function SignIn() {
   const { signIn, fetchStatus } = useSignIn()
+  const searchParams = useSearchParams()
 
   const signInWithRiot = async () => {
+    const redirectUrl = searchParams.get("redirect_url") ?? "/"
+
     const { error } = await signIn.sso({
       strategy: "oauth_custom_riot_games",
-      redirectUrl: "/",
+      redirectUrl,
       redirectCallbackUrl: "/sso-callback",
     })
 
