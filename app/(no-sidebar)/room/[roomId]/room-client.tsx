@@ -9,6 +9,27 @@ import { AblyProvider, ChannelProvider } from "ably/react"
 import { useEffect, useState } from "react"
 import { RoomSnapshot } from "@/lib/room-state"
 import { RoomProvider, useRoom } from "./room-context"
+import Image from "next/image"
+import { LevelBadge } from "@/components/level-badge"
+import { Button } from "@/components/ui/button"
+import {
+  ArrowLeft,
+  ArrowRight,
+  CrownIcon,
+  EllipsisIcon,
+  HandIcon,
+  Trash2Icon,
+  UserIcon,
+} from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export function RoomClient({
   initialSnapshot,
@@ -50,7 +71,7 @@ export function RoomClient({
 }
 
 function RoomContents() {
-  const { activeLobby, playerPool } = useRoom()
+  const { activeLobby, playerPool, isOwner } = useRoom()
 
   return (
     <main className="grid h-dvh grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden">
@@ -93,13 +114,92 @@ function RoomContents() {
           </div>
 
           <div className="min-h-0 overflow-y-auto bg-secondary p-2">
-            {/* PLAYER POOL */}
+            {playerPool.map((player) => (
+              <PoolCard key={player.puuid} player={player} isOwner={isOwner} />
+            ))}
           </div>
         </div>
       </section>
 
       <Footer />
     </main>
+  )
+}
+
+export function PoolCard({
+  player,
+  isOwner,
+}: {
+  player: PlayerCardType
+  isOwner: boolean
+}) {
+  return (
+    <div
+      className={cn(
+        "relative min-h-0 flex-1 overflow-hidden rounded-md border"
+      )}
+    >
+      <Image
+        src={`/banners/webp/${player.bannerId}.webp`}
+        alt=""
+        fill
+        aria-hidden="true"
+        className="pointer-events-none object-cover"
+      />
+
+      <div className="relative z-10 flex h-full flex-col justify-between gap-2 p-2">
+        <div className="flex items-center justify-between gap-2">
+          <LevelBadge level={450} />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="secondary" size="icon-sm">
+                <EllipsisIcon />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-40" align="end">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Player</DropdownMenuLabel>
+                <DropdownMenuItem>
+                  <UserIcon />
+                  View Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <HandIcon />
+                  Draft Player
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Admin</DropdownMenuLabel>
+                <DropdownMenuItem>
+                  <ArrowLeft />
+                  Move to Team 1
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <ArrowRight />
+                  Move to Team 2
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Danger</DropdownMenuLabel>
+                <DropdownMenuItem variant="destructive">
+                  <CrownIcon />
+                  Make Owner
+                </DropdownMenuItem>
+                <DropdownMenuItem variant="destructive">
+                  <Trash2Icon />
+                  Kick Player
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        <h2 className="font-oswald text-4xl font-semibold text-white uppercase">
+          {player.riotIdGameName}
+        </h2>
+      </div>
+    </div>
   )
 }
 

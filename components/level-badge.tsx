@@ -13,7 +13,7 @@ export function LevelBadge({
     levelBadges.find(([threshold]) => level >= threshold)?.[1] ?? "/1.png"
 
   return (
-    <div className={cn("relative aspect-[9/4] w-10", className)}>
+    <div className={cn("relative aspect-[9/4] w-14", className)}>
       <Image
         src={badgeSrc}
         alt=""
@@ -22,7 +22,7 @@ export function LevelBadge({
         className="size-full"
       />
 
-      <span className="absolute inset-y-0 right-0 left-4 flex items-center justify-center font-oswald text-xs font-semibold text-white">
+      <span className="absolute inset-y-0 right-0 left-6 flex items-center justify-center font-oswald text-sm font-semibold text-white">
         {level}
       </span>
     </div>
