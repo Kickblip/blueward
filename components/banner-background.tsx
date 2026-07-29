@@ -12,7 +12,7 @@ export function BannerBackground({
     <Slot.Root
       className="bg-cover bg-center bg-no-repeat"
       style={{
-        backgroundImage: `url("/banners/compressed/${bannerId}.webp")`,
+        backgroundImage: `url("/banners/webp/${bannerId}.webp")`,
       }}
     >
       {children}

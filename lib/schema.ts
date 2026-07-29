@@ -12,6 +12,7 @@ import {
   uniqueIndex,
   check,
   primaryKey,
+  date,
 } from "drizzle-orm/pg-core"
 import { relations, sql } from "drizzle-orm"
 
@@ -220,6 +221,7 @@ export const players = pgTable("players", {
     .notNull()
     .default(sql`ARRAY[0,1,2,3]::int[]`),
   createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  lastDailyClaimDate: date(),
 
   puuid: varchar({ length: 128 }).notNull().unique(),
   riotIdGameName: varchar({ length: 32 }).notNull(),
@@ -233,6 +235,7 @@ export const transactionTypeEnum = pgEnum("transaction_type", [
   "MARKET_STAKE",
   "MARKET_PAYOUT",
   "MARKET_REFUND",
+  "DAILY_REWARD",
 ])
 
 export const transactions = pgTable(

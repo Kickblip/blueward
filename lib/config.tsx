@@ -27,25 +27,6 @@ export function getProjectedPredictionMultiplier(popularity: number) {
   return Math.max(marketMultiplier, MIN_PREDICTION_PAYOUT_MULTIPLIER)
 }
 
-// export const SCHOOLS = {
-//   UT_AUSTIN: {
-//     label: "UT Austin",
-//     logo: "/schools/logos/utaustin.png",
-//     imageWidth: 26,
-//     imageHeight: 26,
-//     borderClass: "border-orange-600/90",
-//     bgClass: "bg-orange-900",
-//   },
-//   UT_DALLAS: {
-//     label: "UT Dallas",
-//     logo: "/schools/logos/ut-dallas.webp",
-//     imageWidth: 22,
-//     imageHeight: 22,
-//     borderClass: "border-emerald-700",
-//     bgClass: "bg-emerald-900",
-//   },
-// } as const
-
 export const levelBadges = [
   [500, "/6.webp"],
   [250, "/5.webp"],
@@ -54,6 +35,8 @@ export const levelBadges = [
   [30, "/2.png"],
   [10, "/1.png"],
 ] as const
+
+export const DAILY_REWARD = 15000 as const
 
 export const ROLL_PRICE = 15000 as const
 

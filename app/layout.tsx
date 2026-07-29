@@ -5,6 +5,7 @@ import { ClerkProvider } from "@clerk/nextjs"
 import { cn } from "@/lib/utils"
 import { ThemeProvider } from "@/components/theme-provider"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { Toaster } from "@/components/ui/sonner"
 
 const oswald = Oswald({
   variable: "--font-oswald",
@@ -72,7 +73,10 @@ export default function RootLayout({
           }}
         >
           <ThemeProvider>
-            <TooltipProvider>{children}</TooltipProvider>
+            <TooltipProvider>
+              {children}
+              <Toaster />
+            </TooltipProvider>
           </ThemeProvider>
         </ClerkProvider>
       </body>

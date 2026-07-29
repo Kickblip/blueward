@@ -35,13 +35,13 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu"
 import { IoMdSettings } from "react-icons/io"
-import Image from "next/image"
 
 export async function AppSidebar({
+  user,
   ...props
-}: React.ComponentProps<typeof Sidebar>) {
-  const user = await currentUser()
-
+}: React.ComponentProps<typeof Sidebar> & {
+  user: Awaited<ReturnType<typeof currentUser>>
+}) {
   return (
     <Sidebar collapsible="icon" variant="inset" {...props}>
       <SidebarHeader>
