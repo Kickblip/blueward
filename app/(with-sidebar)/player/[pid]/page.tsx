@@ -15,6 +15,7 @@ import { BannerSelector } from "@/components/banner-selector"
 import { notFound } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { DonutChart } from "@/components/donut-chart"
+import { BannerBackground } from "@/components/banner-background"
 
 export default async function PlayerProfile({
   params,
@@ -60,32 +61,26 @@ export default async function PlayerProfile({
 
       <div className="col-span-1 flex flex-col gap-4">
         <Card className="p-0">
-          <div className="relative">
-            <Image
-              src={`/banners/webp/${playerProfile.bannerId ?? 0}.webp`}
-              alt="player background"
-              width={1000}
-              height={1000}
-              className="aspect-[2/1] w-full rounded-t-md object-cover object-center"
-            />
+          <BannerBackground bannerId={playerProfile.bannerId ?? 0}>
+            <div className="relative aspect-[2/1] w-full rounded-t-md">
+              {userOwnsProfile && (
+                <BannerSelector
+                  puuid={pid}
+                  playerBanners={playerProfile.banners ?? []}
+                />
+              )}
 
-            {userOwnsProfile && (
-              <BannerSelector
-                puuid={pid}
-                playerBanners={playerProfile.banners ?? []}
-              />
-            )}
-
-            <div className="absolute -bottom-8 left-4 h-32 w-32 overflow-hidden rounded-full border-4 border-secondary">
-              <Image
-                src={profilePictureUrl || "/defaultpfp.webp"}
-                alt="Player avatar"
-                width={512}
-                height={512}
-                className="h-full w-full object-cover"
-              />
+              <div className="absolute -bottom-8 left-4 h-32 w-32 overflow-hidden rounded-full border-4 border-secondary">
+                <Image
+                  src={profilePictureUrl || "/defaultpfp.webp"}
+                  alt="Player avatar"
+                  width={512}
+                  height={512}
+                  className="h-full w-full object-cover"
+                />
+              </div>
             </div>
-          </div>
+          </BannerBackground>
 
           <div className="mb-2 flex items-end gap-1 px-4 pt-10">
             <p className="scale-y-150 font-oswald text-4xl font-semibold">

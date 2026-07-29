@@ -9,8 +9,6 @@ import { AblyProvider, ChannelProvider } from "ably/react"
 import { useEffect, useState } from "react"
 import { RoomSnapshot } from "@/lib/room-state"
 import { RoomProvider, useRoom } from "./room-context"
-import Image from "next/image"
-import { LevelBadge } from "@/components/level-badge"
 import { Button } from "@/components/ui/button"
 import {
   ArrowLeft,
@@ -30,6 +28,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { BannerBackground } from "@/components/banner-background"
 
 export function RoomClient({
   initialSnapshot,
@@ -134,72 +133,63 @@ export function PoolCard({
   isOwner: boolean
 }) {
   return (
-    <div
-      className={cn(
-        "relative min-h-0 flex-1 overflow-hidden rounded-md border"
-      )}
-    >
-      <Image
-        src={`/banners/webp/${player.bannerId}.webp`}
-        alt=""
-        fill
-        aria-hidden="true"
-        className="pointer-events-none object-cover"
-      />
+    <BannerBackground bannerId={player.bannerId}>
+      <div className="min-h-0 flex-1 overflow-hidden rounded-md border">
+        <div className="flex h-full flex-col justify-between gap-2 p-2">
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-red-500">HELLO</div>
 
-      <div className="relative z-10 flex h-full flex-col justify-between gap-2 p-2">
-        <div className="flex items-center justify-between gap-2">
-          <LevelBadge level={450} />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="secondary" size="icon-sm">
-                <EllipsisIcon />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-40" align="end">
-              <DropdownMenuGroup>
-                <DropdownMenuLabel>Player</DropdownMenuLabel>
-                <DropdownMenuItem>
-                  <UserIcon />
-                  View Profile
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <HandIcon />
-                  Draft Player
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuLabel>Admin</DropdownMenuLabel>
-                <DropdownMenuItem>
-                  <ArrowLeft />
-                  Move to Team 1
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <ArrowRight />
-                  Move to Team 2
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuLabel>Danger</DropdownMenuLabel>
-                <DropdownMenuItem variant="destructive">
-                  <CrownIcon />
-                  Make Owner
-                </DropdownMenuItem>
-                <DropdownMenuItem variant="destructive">
-                  <Trash2Icon />
-                  Kick Player
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="secondary" size="icon-sm">
+                  <EllipsisIcon />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-40" align="end">
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>Player</DropdownMenuLabel>
+                  <DropdownMenuItem>
+                    <UserIcon />
+                    View Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <HandIcon />
+                    Draft Player
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>Admin</DropdownMenuLabel>
+                  <DropdownMenuItem>
+                    <ArrowLeft />
+                    Move to Team 1
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <ArrowRight />
+                    Move to Team 2
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>Danger</DropdownMenuLabel>
+                  <DropdownMenuItem variant="destructive">
+                    <CrownIcon />
+                    Make Owner
+                  </DropdownMenuItem>
+                  <DropdownMenuItem variant="destructive">
+                    <Trash2Icon />
+                    Kick Player
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <h2 className="font-oswald text-4xl font-semibold text-white uppercase">
+            {player.riotIdGameName}
+          </h2>
         </div>
-        <h2 className="font-oswald text-4xl font-semibold text-white uppercase">
-          {player.riotIdGameName}
-        </h2>
       </div>
-    </div>
+    </BannerBackground>
   )
 }
 

@@ -35,7 +35,7 @@ export default async function Home() {
             }}
             name={player.riotIdGameName}
             puuid={player.puuid}
-            backgroundImage={`/banners/webp/${banners[player.puuid] ?? 0}.webp`}
+            bannerId={banners[player.puuid]}
           />
         ))}
 

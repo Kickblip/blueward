@@ -121,14 +121,6 @@ export async function AppSidebar({
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-
-              <Image
-                src="/bonus.png"
-                alt="Login Bonus"
-                width={500}
-                height={200}
-                className="mt-4 cursor-pointer rounded-md transition-transform duration-200 hover:scale-102"
-              />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
