@@ -2,7 +2,7 @@
 
 import { auth } from "@clerk/nextjs/server"
 import { eq } from "drizzle-orm"
-import { revalidatePath } from "next/cache"
+import { revalidatePath, unstable_cache } from "next/cache"
 import { redirect } from "next/navigation"
 
 import { db } from "@/lib/db"
@@ -56,3 +56,9 @@ export async function createClub(formData: FormData) {
   revalidatePath("/clubs")
   redirect(`/clubs/${slug}`)
 }
+
+export const fetchClubs = unstable_cache(
+  async () => db.query.clubs.findMany(),
+  ["clubs"],
+  { tags: ["clubs"] }
+)

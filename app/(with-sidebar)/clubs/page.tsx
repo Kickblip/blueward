@@ -2,11 +2,6 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/ui/input-group"
 import { PlusIcon } from "lucide-react"
 import { FaUsers } from "react-icons/fa"
 import {
@@ -17,9 +12,12 @@ import {
   FieldLegend,
   FieldSet,
 } from "@/components/ui/field"
-import { createClub } from "./actions"
+import { createClub, fetchClubs } from "./actions"
+import Link from "next/link"
 
-export default function Page() {
+export default async function Page() {
+  const clubs = await fetchClubs()
+
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-3xl flex-col">
       <div className="flex items-center justify-between">
@@ -84,7 +82,17 @@ export default function Page() {
       </div>
 
       <Card>
-        <></>
+        {clubs.map((club) => (
+          <Link
+            key={club.id}
+            href={`/clubs/${club.slug}`}
+            className="hover:text-chart-3 dark:hover:text-chart-1"
+          >
+            <h2 className="font-oswald text-xl font-semibold uppercase">
+              {club.name}
+            </h2>
+          </Link>
+        ))}
       </Card>
     </div>
   )
