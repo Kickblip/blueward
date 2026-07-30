@@ -15,7 +15,7 @@ export function Footer() {
             </span>
           </div>
 
-          <p className="max-w-sm text-xs text-zinc-400">
+          <p className="max-w-sm text-xs text-muted-foreground">
             Blueward is not endorsed by Riot Games and does not reflect the
             views or opinions of Riot Games or anyone officially involved in
             producing or managing Riot Games properties. Riot Games and all
@@ -26,7 +26,7 @@ export function Footer() {
 
         <div className="flex gap-16">
           <div className="flex flex-col gap-2">
-            <h3 className="font-semibold text-zinc-200">Resources</h3>
+            <h3 className="font-semibold">Resources</h3>
             <FooterLink href={SOCIAL_LINK_CONFIG.repo}>Open Source</FooterLink>
             {/* <FooterLink href={SOCIAL_LINK_CONFIG.docs}>Documentation</FooterLink> */}
             <FooterLink href={SOCIAL_LINK_CONFIG.changelog}>
@@ -35,7 +35,7 @@ export function Footer() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <h3 className="font-semibold text-zinc-200">Related</h3>
+            <h3 className="font-semibold">Related</h3>
             <FooterLink href={SOCIAL_LINK_CONFIG.clubsite}>
               Longhorn LoL
             </FooterLink>
@@ -47,19 +47,19 @@ export function Footer() {
               <FooterLink href={SOCIAL_LINK_CONFIG.discord}>
                 <FaDiscord
                   size={18}
-                  className="text-zinc-400 transition-colors duration-200 hover:text-zinc-200"
+                  className="text-muted-foreground transition-colors duration-200 hover:text-foreground"
                 />
               </FooterLink>
               <FooterLink href={SOCIAL_LINK_CONFIG.instagram}>
                 <FaInstagram
                   size={18}
-                  className="text-zinc-400 transition-colors duration-200 hover:text-zinc-200"
+                  className="text-muted-foreground transition-colors duration-200 hover:text-foreground"
                 />
               </FooterLink>
               <FooterLink href={SOCIAL_LINK_CONFIG.twitch}>
                 <FaTwitch
                   size={18}
-                  className="text-zinc-400 transition-colors duration-200 hover:text-zinc-200"
+                  className="text-muted-foreground transition-colors duration-200 hover:text-foreground"
                 />
               </FooterLink>
             </div>
@@ -67,14 +67,14 @@ export function Footer() {
         </div>
       </div>
 
-      <hr className="border-t border-zinc-800" />
+      <hr className="border" />
 
       <div className="flex justify-between">
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-muted-foreground">
           &copy; {new Date().getFullYear()} Blueward. All rights reserved.
         </p>
 
-        <p className="text-xs text-zinc-400">
+        <p className="text-xs text-muted-foreground">
           Built by{" "}
           <FooterLink
             href={SOCIAL_LINK_CONFIG.wyattwebsite}
@@ -88,13 +88,13 @@ export function Footer() {
           <p className="text-xs">🐝</p>
           <Link
             href="/terms"
-            className="text-xs text-zinc-400 transition-colors duration-200 hover:text-zinc-200"
+            className="text-xs text-muted-foreground transition-colors duration-200 hover:text-foreground"
           >
             Terms of Service
           </Link>
           <Link
             href="/privacy"
-            className="text-xs text-zinc-400 transition-colors duration-200 hover:text-zinc-200"
+            className="text-xs text-muted-foreground transition-colors duration-200 hover:text-foreground"
           >
             Privacy Policy
           </Link>
@@ -116,7 +116,7 @@ function FooterLink({
   return (
     <Link
       href={href}
-      className={`text-xs text-zinc-400 transition-colors duration-200 hover:text-zinc-200 ${className}`}
+      className={`text-xs text-muted-foreground transition-colors duration-200 hover:text-foreground ${className}`}
       target="_blank"
     >
       {children}
