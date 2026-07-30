@@ -20,9 +20,12 @@ import {
   AvatarImage,
 } from "@/components/ui/avatar"
 import { useRoom } from "./room-context"
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
+import { useState } from "react"
 
 export function Toolbar() {
-  const { presentPlayers, activeLobby } = useRoom()
+  const { presentPlayers, playerPool } = useRoom()
+  const [randomPlayer, setRandomPlayer] = useState<string | null>(null)
 
   return (
     <header className="flex items-center justify-between gap-4 p-2">
@@ -54,19 +57,45 @@ export function Toolbar() {
           </TooltipContent>
         </Tooltip>
 
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="lg">
-              <MdOutlineShuffleOn className="size-6 text-chart-3 dark:text-chart-1" />
-              <span className="font-oswald text-lg font-semibold uppercase">
-                Random pick
-              </span>
+        <Dialog>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="lg">
+                  <MdOutlineShuffleOn className="size-6 text-chart-3 dark:text-chart-1" />
+                  <span className="font-oswald text-lg font-semibold uppercase">
+                    Random pick
+                  </span>
+                </Button>
+              </DialogTrigger>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Select a random player from the pool</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <DialogContent>
+            <p className="font-oswald text-lg font-semibold uppercase">
+              {randomPlayer || "No player yet"}
+            </p>
+
+            <Button
+              size="lg"
+              className="font-oswald font-semibold uppercase"
+              onClick={() => {
+                if (playerPool.length <= 0) return
+
+                const randomIndex = Math.floor(
+                  Math.random() * playerPool.length
+                )
+                const randomPlayer = playerPool[randomIndex]
+                setRandomPlayer(randomPlayer.riotIdGameName)
+              }}
+            >
+              Randomize
             </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Select a random player from the pool</p>
-          </TooltipContent>
-        </Tooltip>
+          </DialogContent>
+        </Dialog>
 
         <Tooltip>
           <TooltipTrigger asChild>

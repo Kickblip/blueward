@@ -4,6 +4,11 @@ import * as Ably from "ably"
 import { asc, eq } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { lobbies, lobbyPlayers, players, rooms } from "@/lib/schema"
+import {
+  fetchPlayerCardByPuuid,
+  type PlayerCard,
+} from "@/app/api/player/[puuid]/card/route"
+import { safeSubstring } from "./utils"
 
 export type RoomSnapshot = {
   roomId: string
@@ -14,13 +19,7 @@ export type RoomSnapshot = {
     phase: "OPEN" | "DRAFTING" | "READY" | "CLOSED"
     draftPickIndex: number
     players: {
-      player: {
-        id: number
-        bannerId: number
-        riotIdGameName: string
-        riotIdTagline: string
-        avatarUrl: string | null
-      }
+      player: PlayerCard
       teamId: 0 | 1
       isCaptain: boolean
     }[]
@@ -55,12 +54,7 @@ export async function getRoomSnapshot(
         lobbyId: lobbyPlayers.lobbyId,
         teamId: lobbyPlayers.teamId,
         isCaptain: lobbyPlayers.isCaptain,
-        player: {
-          id: players.id,
-          bannerId: players.bannerId,
-          riotIdGameName: players.riotIdGameName,
-          riotIdTagline: players.riotIdTagline,
-        },
+        playerPuuid: players.puuid,
       })
       .from(lobbyPlayers)
       .innerJoin(players, eq(lobbyPlayers.playerId, players.id))
@@ -69,18 +63,32 @@ export async function getRoomSnapshot(
 
   if (!room) return null
 
+  const hydratedAssignments = await Promise.all(
+    assignedPlayers.map(async ({ playerPuuid, ...assignment }) => {
+      const player = await fetchPlayerCardByPuuid(
+        safeSubstring(playerPuuid, 0, 20)
+      )
+
+      if (!player) {
+        throw new Error(`Assigned player ${playerPuuid} not found`)
+      }
+
+      return {
+        ...assignment,
+        player,
+      }
+    })
+  )
+
   return {
     roomId,
     ownerAuthId: room.ownerAuthId,
     lobbies: roomLobbies.map((lobby) => ({
       ...lobby,
-      players: assignedPlayers
-        .filter((assignment) => assignment.lobbyId === lobby.id)
+      players: hydratedAssignments
+        .filter(({ lobbyId }) => lobbyId === lobby.id)
         .map(({ player, teamId, isCaptain }) => ({
-          player: {
-            ...player,
-            avatarUrl: null,
-          },
+          player,
           teamId: teamId as 0 | 1,
           isCaptain,
         })),
