@@ -1,16 +1,8 @@
-"use client"
-
-import { useState } from "react"
 import Image from "next/image"
-import { BANNER_CONFIG, ROLL_PRICE, HORIZONS_SET_LIST } from "@/lib/config"
-import { CrystalIcon } from "@/lib/icons"
-import { toNumberWithCommas } from "@/lib/utils"
+import { BANNER_CONFIG, HORIZONS_SET_LIST } from "@/lib/config"
 import {
   Dialog,
-  DialogClose,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -18,8 +10,6 @@ import {
 import { HiMiniArchiveBox } from "react-icons/hi2"
 
 export function FeaturedBanner() {
-  const [isOpen, setIsOpen] = useState(false)
-
   const banner =
     BANNER_CONFIG[HORIZONS_SET_LIST.featured as keyof typeof BANNER_CONFIG]
 
@@ -65,7 +55,7 @@ export function FeaturedBanner() {
         </div>
       </DialogTrigger>
 
-      <DialogContent className="max-h-[calc(100dvh-2rem)] sm:max-w-7xl">
+      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-7xl">
         <DialogHeader>
           <DialogTitle className="font-oswald text-4xl font-semibold uppercase">
             Available Banners

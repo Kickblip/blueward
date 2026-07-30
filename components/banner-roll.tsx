@@ -7,7 +7,6 @@ import { toNumberWithCommas } from "@/lib/utils"
 import {
   ROLL_PRICE,
   RARITY_RATES,
-  BANNER_CONFIG,
   type Rarity,
   RARITY_COLORS,
 } from "@/lib/config"
@@ -15,6 +14,7 @@ import { CrystalIcon } from "@/lib/icons"
 import { mutate } from "swr"
 import { BannerOwnershipPopup } from "./banner-ownership-popup"
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
+import { Button } from "./ui/button"
 
 type RollResponse = {
   rarity: Rarity
@@ -198,11 +198,12 @@ export function BannerRoll() {
 
       <Tooltip>
         <TooltipTrigger asChild>
-          <button
+          <Button
             type="button"
             onClick={handleRoll}
             disabled={isRolling}
-            className="mx-auto flex items-center justify-center gap-2 rounded-md border border-sky-300 bg-sky-500 px-6 py-2 shadow-[0_0_30px_rgba(10,225,250,0.5)] transition-colors duration-200 hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-60"
+            size="lg"
+            className="z-20 h-14 rounded-lg"
           >
             <CrystalIcon size={25} className="text-white" />
             <p className="font-oswald text-xl font-semibold text-white uppercase">
@@ -210,7 +211,7 @@ export function BannerRoll() {
                 ? "Rolling..."
                 : `${toNumberWithCommas(ROLL_PRICE)} ROLL`}
             </p>
-          </button>
+          </Button>
         </TooltipTrigger>
         <TooltipContent>
           <div className="flex items-center justify-between gap-8">
