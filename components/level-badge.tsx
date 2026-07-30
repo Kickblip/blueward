@@ -6,17 +6,26 @@ import { calculateLevel } from "@/lib/level"
 export function LevelBadge({
   experience,
   className,
+  variant = "default",
 }: {
   experience: number
   className?: string
+  variant?: "default" | "sm"
 }) {
   const level = calculateLevel(experience)
 
   const badgeSrc =
     levelBadges.find(([threshold]) => level >= threshold)?.[1] ?? "/1.png"
 
+  const badgeVariants = {
+    default: "w-14",
+    sm: "w-10",
+  }
+
   return (
-    <div className={cn("relative aspect-[9/4] w-14", className)}>
+    <div
+      className={cn("relative aspect-[9/4]", badgeVariants[variant], className)}
+    >
       <Image
         src={badgeSrc}
         alt=""

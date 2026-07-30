@@ -31,12 +31,12 @@ export function getProjectedPredictionMultiplier(popularity: number) {
 }
 
 export const levelBadges = [
-  [500, "/6.webp"],
-  [250, "/5.webp"],
-  [120, "/4.webp"],
-  [70, "/3.webp"],
-  [30, "/2.png"],
-  [10, "/1.png"],
+  [500, "/badges/player/6.webp"],
+  [250, "/badges/player/5.webp"],
+  [120, "/badges/player/4.webp"],
+  [70, "/badges/player/3.webp"],
+  [30, "/badges/player/2.png"],
+  [10, "/badges/player/1.png"],
 ] as const
 
 export const DAILY_REWARD = 15000 as const

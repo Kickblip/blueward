@@ -16,6 +16,7 @@ import { notFound } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { DonutChart } from "@/components/donut-chart"
 import { BannerBackground } from "@/components/banner-background"
+import { LevelBadge } from "@/components/level-badge"
 
 export default async function PlayerProfile({
   params,
@@ -82,13 +83,16 @@ export default async function PlayerProfile({
             </div>
           </BannerBackground>
 
-          <div className="mb-2 flex items-end gap-1 px-4 pt-10">
-            <p className="scale-y-150 font-oswald text-4xl font-semibold">
-              {playerProfile.riotIdGameName}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              #{playerProfile.riotIdTagline}
-            </p>
+          <div className="mb-2 flex flex-col gap-4 px-4 pt-10">
+            <LevelBadge experience={playerProfile.experience} />
+            <div className="flex items-end gap-1">
+              <p className="scale-y-150 font-oswald text-4xl font-semibold">
+                {playerProfile.riotIdGameName}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                #{playerProfile.riotIdTagline}
+              </p>
+            </div>
           </div>
 
           <div className="flex flex-col gap-4 p-4">
