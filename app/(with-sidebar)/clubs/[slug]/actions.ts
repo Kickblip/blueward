@@ -67,3 +67,13 @@ export async function fetchClubMembersBySlug(slug: string) {
     })
   )
 }
+
+export async function fetchClubBySlug(slug: string) {
+  if (!slug) return null
+
+  const club = await db.query.clubs.findFirst({
+    where: eq(clubs.slug, slug),
+  })
+
+  return club ?? null
+}

@@ -418,6 +418,7 @@ export const clubs = pgTable("clubs", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar({ length: 64 }).notNull(),
   slug: varchar({ length: 64 }).notNull().unique(),
+  bio: varchar({ length: 512 }),
   createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
 })
 
