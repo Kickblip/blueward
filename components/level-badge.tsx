@@ -1,14 +1,17 @@
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { levelBadges } from "@/lib/config"
+import { calculateLevel } from "@/lib/level"
 
 export function LevelBadge({
-  level,
+  experience,
   className,
 }: {
-  level: number
+  experience: number
   className?: string
 }) {
+  const level = calculateLevel(experience)
+
   const badgeSrc =
     levelBadges.find(([threshold]) => level >= threshold)?.[1] ?? "/1.png"
 

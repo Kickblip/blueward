@@ -22,6 +22,9 @@ export const MINUTES_MARKET_IS_OPEN_BEFORE_LOCK = 10 as const
 
 export const MIN_PREDICTION_PAYOUT_MULTIPLIER = 1.1
 
+export const BASE_LEVEL_XP = 100
+export const LEVEL_GROWTH = 1.025
+
 export function getProjectedPredictionMultiplier(popularity: number) {
   const marketMultiplier = 1 / Math.max(popularity, 0.01)
   return Math.max(marketMultiplier, MIN_PREDICTION_PAYOUT_MULTIPLIER)

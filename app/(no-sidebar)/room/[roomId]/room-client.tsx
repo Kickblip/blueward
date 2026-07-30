@@ -29,6 +29,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { BannerBackground } from "@/components/banner-background"
+import { LevelBadge } from "@/components/level-badge"
 
 export function RoomClient({
   initialSnapshot,
@@ -137,7 +138,7 @@ export function PoolCard({
       <div className="min-h-0 flex-1 overflow-hidden rounded-md border">
         <div className="flex h-full flex-col justify-between gap-2 p-2">
           <div className="flex items-center justify-between gap-2">
-            <div className="text-red-500">HELLO</div>
+            <LevelBadge experience={player.experience} />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

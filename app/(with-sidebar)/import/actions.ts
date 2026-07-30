@@ -9,6 +9,7 @@ import {
 import { calculateMMR } from "./mmr"
 import { sql, eq } from "drizzle-orm"
 import { SUPPORT_PAYOUT_MULTIPLIER } from "@/lib/config"
+import { calculateMatchXp } from "@/lib/level"
 
 export async function fetchWithRetry(
   url: string,
@@ -60,12 +61,13 @@ export async function importMatchJson(m: any) {
     // Insert player performances (10 rows)
     const performanceRows = mapPerformanceRows(m, matchRowId)
 
-    await tx
+    const insertedPerformances = await tx
       .insert(playerPerformances)
       .values(performanceRows)
       .onConflictDoNothing({
         target: [playerPerformances.matchRowId, playerPerformances.puuid],
       })
+      .returning({ puuid: playerPerformances.puuid })
 
     // Insert team objectives (2 rows)
     const objectiveRows = mapObjectiveRows(m, matchRowId)
@@ -79,6 +81,26 @@ export async function importMatchJson(m: any) {
 
     // Update player profiles
     await upsertPlayersFromMatch(tx, m)
+
+    const insertedPuuids = new Set(
+      insertedPerformances.map(({ puuid }) => puuid)
+    )
+
+    for (const performance of performanceRows) {
+      if (!insertedPuuids.has(performance.puuid)) continue
+
+      const experience = calculateMatchXp(
+        matchRow.gameDuration,
+        performance.win
+      )
+
+      await tx
+        .update(players)
+        .set({
+          experience: sql`${players.experience} + ${experience}`,
+        })
+        .where(eq(players.puuid, performance.puuid))
+    }
 
     // Insert transaction rows (10 rows)
     await tx.execute(sql`
