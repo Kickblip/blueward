@@ -408,6 +408,44 @@ export const lobbyPlayers = pgTable(
   ]
 )
 
+export const clubMemberRoleEnum = pgEnum("club_member_role", [
+  "OWNER",
+  "ADMIN",
+  "MEMBER",
+])
+
+export const clubs = pgTable("clubs", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  name: varchar({ length: 64 }).notNull(),
+  slug: varchar({ length: 64 }).notNull().unique(),
+  createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+})
+
+export const clubMembers = pgTable(
+  "club_members",
+  {
+    clubId: integer()
+      .notNull()
+      .references(() => clubs.id, { onDelete: "cascade" }),
+
+    playerId: integer()
+      .notNull()
+      .references(() => players.id, { onDelete: "cascade" }),
+
+    role: clubMemberRoleEnum("role").notNull().default("MEMBER"),
+    joinedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.clubId, table.playerId] }),
+
+    index("club_members_player_id_index").on(table.playerId),
+
+    uniqueIndex("club_members_owner_unique")
+      .on(table.clubId)
+      .where(sql`${table.role} = 'OWNER'`),
+  ]
+)
+
 export const marketsRelations = relations(markets, ({ many }) => ({
   selections: many(marketSelections),
   transactions: many(transactions),
@@ -416,6 +454,7 @@ export const marketsRelations = relations(markets, ({ many }) => ({
 export const playersRelations = relations(players, ({ many }) => ({
   selections: many(marketSelections),
   transactions: many(transactions),
+  clubMemberships: many(clubMembers),
 }))
 
 export const marketSelectionsRelations = relations(
@@ -468,3 +507,18 @@ export const playerPerformancesRelations = relations(
     }),
   })
 )
+
+export const clubsRelations = relations(clubs, ({ many }) => ({
+  members: many(clubMembers),
+}))
+
+export const clubMembersRelations = relations(clubMembers, ({ one }) => ({
+  club: one(clubs, {
+    fields: [clubMembers.clubId],
+    references: [clubs.id],
+  }),
+  player: one(players, {
+    fields: [clubMembers.playerId],
+    references: [players.id],
+  }),
+}))
