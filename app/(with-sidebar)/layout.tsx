@@ -11,6 +11,7 @@ import { db } from "@/lib/db"
 import { eq } from "drizzle-orm"
 import { players } from "@/lib/schema"
 import { Footer } from "@/components/footer"
+import { AdSlot } from "@/components/ad-slot"
 
 export default async function Layout({
   children,
@@ -33,12 +34,12 @@ export default async function Layout({
   }
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={false}>
       <AppSidebar user={user} />
       <SidebarInset>
-        <header className="z-10 flex h-16 shrink-0 items-center justify-between gap-2">
+        <header className="z-20 flex h-16 shrink-0 items-center justify-between gap-2">
           <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
+            <SidebarTrigger className="-ml-1" variant="secondary" />
             {user && <DailyReward claimed={claimed} />}
           </div>
           <div className="flex items-center gap-2 px-4">
@@ -46,9 +47,21 @@ export default async function Layout({
           </div>
         </header>
 
-        <main className="z-10 mx-auto flex w-full max-w-7xl flex-col p-4">
-          {children}
-        </main>
+        <div className="z-10 flex w-full gap-4 p-4">
+          <AdSlot
+            name="left-rail"
+            className="hidden h-[600px] w-[160px] shrink-0 2xl:grid"
+          />
+
+          <main className="mx-auto flex w-full max-w-7xl min-w-0 flex-1 flex-col">
+            {children}
+          </main>
+
+          <AdSlot
+            name="right-rail"
+            className="hidden h-[600px] w-[160px] shrink-0 2xl:grid"
+          />
+        </div>
 
         <Footer />
       </SidebarInset>

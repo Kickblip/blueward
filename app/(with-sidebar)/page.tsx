@@ -21,81 +21,96 @@ export default async function Home() {
   )
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-      <div className="col-span-2 flex flex-col gap-4">
-        {podium.map((player, index) => (
-          <PodiumRow
-            key={player.riotIdGameName}
-            size={index === 0 ? "large" : "small"}
-            ranking={index + 1}
-            stats={{
-              mmr: player.mmr,
-              played: player.gamesPlayed,
-              winrate: (player.winrate * 100).toFixed(0) + "%",
-            }}
-            name={player.riotIdGameName}
-            puuid={player.puuid}
-            bannerId={banners[player.puuid]}
-          />
-        ))}
-
-        {players.slice(3).map((player, index) => (
-          <LeaderboardRow
-            key={player.riotIdGameName}
-            ranking={index + 4}
-            stats={{
-              mmr: player.mmr,
-              played: player.gamesPlayed,
-              winrate: (player.winrate * 100).toFixed(0) + "%",
-            }}
-            name={player.riotIdGameName}
-            puuid={player.puuid}
-          />
-        ))}
+    <>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 z-0 aspect-[1942/809] overflow-hidden md:rounded-t-xl"
+      >
+        <Image
+          src="/home-page-hero.webp"
+          alt=""
+          fill
+          sizes="100vw"
+          className="object-cover"
+        />
       </div>
-      <div className="invisible col-span-1 flex flex-col gap-4 md:visible">
-        <Link href="/predictions">
-          <Card className="cursor-pointer flex-row items-center justify-center gap-2 border-blue-400 bg-blue-950 transition-colors duration-200 hover:border-blue-300">
-            <Image src="/stonks.webp" alt="" width={96} height={96} />
-            <div className="flex flex-col gap-1 pr-8 text-center">
-              <h3 className="font-oswald text-5xl font-semibold uppercase">
-                Predictions
-              </h3>
-              <p className="text-xs text-zinc-300">
-                Guess the outcomes of upcoming matches and win crystals!
-              </p>
-            </div>
-          </Card>
-        </Link>
 
-        <Link href="/shop">
-          <Card className="cursor-pointer flex-row items-center justify-center gap-2 border-yellow-400 bg-yellow-950 transition-colors duration-200 hover:border-yellow-300">
-            <Image
-              src="/horizons.png"
-              alt="Horizons set logo"
-              width={150}
-              height={80}
+      <div className="relative z-10 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="col-span-2 flex flex-col gap-4">
+          {podium.map((player, index) => (
+            <PodiumRow
+              key={player.riotIdGameName}
+              size={index === 0 ? "large" : "small"}
+              ranking={index + 1}
+              stats={{
+                mmr: player.mmr,
+                played: player.gamesPlayed,
+                winrate: (player.winrate * 100).toFixed(0) + "%",
+              }}
+              name={player.riotIdGameName}
+              puuid={player.puuid}
+              bannerId={banners[player.puuid]}
             />
-            <div className="flex flex-col gap-1 text-center">
-              <h3 className="font-oswald text-xl font-semibold uppercase">
-                New Banner Collection
-              </h3>
-              <p className="text-xs text-zinc-300">
-                Check out Horizons: the first collection of limited-edition
-                season banners!
-              </p>
-            </div>
-          </Card>
-        </Link>
+          ))}
 
-        {games.map((g) => (
-          <RecentGame
-            key={g.matchId}
-            players={g.players}
-            gameEndTimestamp={g.gameEndTimestamp}
-          />
-        ))}
+          {players.slice(3).map((player, index) => (
+            <LeaderboardRow
+              key={player.riotIdGameName}
+              ranking={index + 4}
+              stats={{
+                mmr: player.mmr,
+                played: player.gamesPlayed,
+                winrate: (player.winrate * 100).toFixed(0) + "%",
+              }}
+              name={player.riotIdGameName}
+              puuid={player.puuid}
+            />
+          ))}
+        </div>
+        <div className="invisible col-span-1 flex flex-col gap-4 md:visible">
+          <Link href="/predictions">
+            <Card className="cursor-pointer flex-row items-center justify-center gap-2 border-blue-400 bg-blue-950 transition-colors duration-200 hover:border-blue-300">
+              <Image src="/stonks.webp" alt="" width={96} height={96} />
+              <div className="flex flex-col gap-1 pr-8 text-center">
+                <h3 className="font-oswald text-5xl font-semibold uppercase">
+                  Predictions
+                </h3>
+                <p className="text-xs text-zinc-300">
+                  Guess the outcomes of upcoming matches and win crystals!
+                </p>
+              </div>
+            </Card>
+          </Link>
+
+          <Link href="/shop">
+            <Card className="cursor-pointer flex-row items-center justify-center gap-2 border-yellow-400 bg-yellow-950 transition-colors duration-200 hover:border-yellow-300">
+              <Image
+                src="/horizons.png"
+                alt="Horizons set logo"
+                width={150}
+                height={80}
+              />
+              <div className="flex flex-col gap-1 text-center">
+                <h3 className="font-oswald text-xl font-semibold uppercase">
+                  New Banner Collection
+                </h3>
+                <p className="text-xs text-zinc-300">
+                  Check out Horizons: the first collection of limited-edition
+                  season banners!
+                </p>
+              </div>
+            </Card>
+          </Link>
+
+          {games.map((g) => (
+            <RecentGame
+              key={g.matchId}
+              players={g.players}
+              gameEndTimestamp={g.gameEndTimestamp}
+            />
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   )
 }
