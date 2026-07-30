@@ -4,7 +4,7 @@ export const SOCIAL_LINK_CONFIG = {
   discord: "https://discord.com/invite/s7W7Rg7AcW",
   instagram: "https://www.instagram.com/longhorn_lol",
   twitch: "https://www.twitch.tv/longhorn_lol",
-  wyattwebsite: "https://www.wyatthansen.dev",
+  wyattwebsite: "https://github.com/Kickblip",
   pixels: "https://pixels.longhornlol.com",
   docs: "https://docs.longhornlol.com",
   changelog: "https://github.com/Kickblip/blueward/releases",

@@ -10,6 +10,7 @@ import { currentUser } from "@clerk/nextjs/server"
 import { db } from "@/lib/db"
 import { eq } from "drizzle-orm"
 import { players } from "@/lib/schema"
+import { Footer } from "@/components/footer"
 
 export default async function Layout({
   children,
@@ -44,9 +45,12 @@ export default async function Layout({
             <SearchButton />
           </div>
         </header>
+
         <main className="z-10 mx-auto flex w-full max-w-7xl flex-col p-4">
           {children}
         </main>
+
+        <Footer />
       </SidebarInset>
     </SidebarProvider>
   )
