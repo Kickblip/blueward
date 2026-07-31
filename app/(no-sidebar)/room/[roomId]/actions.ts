@@ -1,10 +1,11 @@
 "use server"
 
-import { and, count, eq, ne } from "drizzle-orm"
+import { and, count, eq, max, ne } from "drizzle-orm"
 import { auth } from "@clerk/nextjs/server"
 import { db } from "@/lib/db"
 import { lobbies, lobbyPlayers, rooms } from "@/lib/schema"
 import { publishRoomSnapshot } from "@/lib/room-state"
+import { randomUUID } from "node:crypto"
 
 export async function movePlayerToTeam(
   lobbyId: string,
@@ -263,4 +264,47 @@ export async function startDraft(lobbyId: string) {
   }
 
   await publishRoomSnapshot(lobby.roomId)
+}
+
+export async function createLobby(roomId: string) {
+  const { userId } = await auth()
+
+  if (!userId) {
+    throw new Error("Unauthorized")
+  }
+
+  if (!roomId) {
+    throw new Error("Invalid room")
+  }
+
+  const lobbyId = randomUUID()
+
+  await db.transaction(async (tx) => {
+    // Serialize lobby creation within this room.
+    const [room] = await tx
+      .select({ id: rooms.id })
+      .from(rooms)
+      .where(and(eq(rooms.id, roomId), eq(rooms.ownerAuthId, userId)))
+      .limit(1)
+      .for("update")
+
+    if (!room) {
+      throw new Error("Room not found or unauthorized")
+    }
+
+    const [{ lastOrdinal }] = await tx
+      .select({ lastOrdinal: max(lobbies.ordinal) })
+      .from(lobbies)
+      .where(eq(lobbies.roomId, roomId))
+
+    await tx.insert(lobbies).values({
+      id: lobbyId,
+      roomId,
+      ordinal: (lastOrdinal ?? 0) + 1,
+    })
+  })
+
+  await publishRoomSnapshot(roomId)
+
+  return lobbyId
 }
