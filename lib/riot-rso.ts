@@ -1,5 +1,6 @@
+"use server"
+
 import { currentUser, clerkClient } from "@clerk/nextjs/server"
-import { ErrorMessage } from "@/components/error-message"
 import { fetchWithRetry } from "@/app/(with-sidebar)/import/actions"
 import { db } from "@/lib/db"
 import { players } from "@/lib/schema"
@@ -246,25 +247,4 @@ export async function claimProfileByPid(
   }
 
   return claimProfileByPuuid(identity)
-}
-
-export default async function ClaimProfile({
-  params,
-}: {
-  params: Promise<{ pid: string }>
-}) {
-  const { pid } = await params
-  const result = await claimProfileByPid(pid)
-
-  if (!result.ok) {
-    return <ErrorMessage code={result.code} message={result.message} />
-  }
-
-  return (
-    <div className="flex flex-col items-center gap-2">
-      <h1 className="font-oswald text-xl font-semibold">
-        Successfully claimed this account
-      </h1>
-    </div>
-  )
 }

@@ -33,11 +33,15 @@ export function SSOSettingsForm() {
   const { isLoaded, user } = useUser()
   const [pending, setPending] = useState<string | null>(null)
 
-  const createExternalAccount = useReverification((strategy: OAuthStrategy) =>
-    user?.createExternalAccount({
-      strategy,
-      redirectUrl: "/settings",
-    })
+  const createExternalAccount = useReverification(
+    (connection: (typeof connections)[number]) =>
+      user?.createExternalAccount({
+        strategy: connection.strategy,
+        redirectUrl:
+          connection.provider === "custom_riot_games"
+            ? "/claim-riot?next=/settings"
+            : "/settings",
+      })
   )
 
   const destroyExternalAccount = useReverification(
@@ -50,7 +54,7 @@ export function SSOSettingsForm() {
     setPending(connection.provider)
 
     try {
-      const account = await createExternalAccount(connection.strategy)
+      const account = await createExternalAccount(connection)
       const redirectUrl = account?.verification?.externalVerificationRedirectURL
 
       if (!redirectUrl) {

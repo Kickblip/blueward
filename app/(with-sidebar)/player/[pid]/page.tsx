@@ -8,12 +8,9 @@ import {
   fetchProfilePictureByAuthId,
 } from "./actions"
 import { calcAverageKDA, calcWinrate, calcWinrateByChampion } from "./helpers"
-import { BsPersonFillAdd } from "react-icons/bs"
-import Link from "next/link"
 import { currentUser } from "@clerk/nextjs/server"
 import { BannerSelector } from "@/components/banner-selector"
 import { notFound } from "next/navigation"
-import { Button } from "@/components/ui/button"
 import { DonutChart } from "@/components/donut-chart"
 import { BannerBackground } from "@/components/banner-background"
 import { LevelBadge } from "@/components/level-badge"
@@ -148,17 +145,6 @@ export default async function PlayerProfile({
             </div>
           </div>
         </Card>
-
-        {!playerProfile.authId && (
-          <Button className="w-full" size="lg" asChild>
-            <Link href={`/player/${pid}/claim`}>
-              <BsPersonFillAdd size={18} />
-              <p className="font-oswald text-sm font-semibold uppercase">
-                Claim Account
-              </p>
-            </Link>
-          </Button>
-        )}
       </div>
     </div>
   )
