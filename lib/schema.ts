@@ -229,6 +229,45 @@ export const players = pgTable("players", {
   riotIdTagline: varchar({ length: 8 }).notNull(),
 })
 
+export const rankEnum = pgEnum("rank", [
+  "IRON",
+  "BRONZE",
+  "SILVER",
+  "GOLD",
+  "PLATINUM",
+  "EMERALD",
+  "DIAMOND",
+  "MASTER",
+  "GRANDMASTER",
+  "CHALLENGER",
+])
+
+export const playerSettings = pgTable("player_settings", {
+  playerId: integer("player_id")
+    .primaryKey()
+    .references(() => players.id, { onDelete: "cascade" }),
+
+  peakRank: rankEnum("peak_rank").notNull(),
+  seasonsSincePeak: smallint("seasons_since_peak").notNull(),
+  currentRank: rankEnum("current_rank").notNull(),
+
+  topSkillRank: rankEnum("top_skill_rank").notNull(),
+  jungleSkillRank: rankEnum("jungle_skill_rank").notNull(),
+  middleSkillRank: rankEnum("middle_skill_rank").notNull(),
+  bottomSkillRank: rankEnum("bottom_skill_rank").notNull(),
+  supportSkillRank: rankEnum("support_skill_rank").notNull(),
+
+  rejectedRoles: roleEnum("rejected_roles")
+    .array()
+    .notNull()
+    .default(sql`ARRAY[]::role[]`),
+
+  dislikedRoles: roleEnum("disliked_roles")
+    .array()
+    .notNull()
+    .default(sql`ARRAY[]::role[]`),
+})
+
 export const transactionTypeEnum = pgEnum("transaction_type", [
   "MATCH_EARN",
   "ADMIN_ADJUST",

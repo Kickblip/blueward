@@ -12,12 +12,12 @@ export function AdSlot({ name, className, ...props }: AdSlotProps) {
       data-slot="ad-slot"
       data-ad-unit={name}
       className={cn(
-        "z-50 grid place-items-center rounded-md border bg-background text-xs text-muted-foreground",
+        "z-50 grid place-items-center border bg-background text-xs text-muted-foreground",
         className
       )}
       {...props}
     >
-      Advertisement
+      Soon this slot will be filled with an ad to support Blueward
     </aside>
   )
 }

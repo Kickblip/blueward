@@ -28,9 +28,9 @@ export const LEVEL_GROWTH = 1.025
 export const DRAFT_ORDER = [0, 1, 1, 0, 0, 1, 1, 0] as const
 
 export const TRANSACTION_TYPES = {
-  MATCH_EARN: "Match Earn",
-  ADMIN_ADJUST: "Admin Adjust",
-  SPEND: "Spend",
+  MATCH_EARN: "Match Earnings",
+  ADMIN_ADJUST: "Admin Adjustment",
+  SPEND: "Spent",
   MARKET_STAKE: "Wager Stake",
   MARKET_PAYOUT: "Wager Payout",
   MARKET_REFUND: "Wager Refund",

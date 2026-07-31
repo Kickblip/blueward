@@ -11,7 +11,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { Logo } from "./logo"
-import { Show } from "@clerk/nextjs"
+import { Show, SignOutButton } from "@clerk/nextjs"
 import { HiMiniSparkles } from "react-icons/hi2"
 import {
   FaUsers,
@@ -159,12 +159,14 @@ export async function AppSidebar({
                         </span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer gap-4">
-                      <FaSignOutAlt className="text-chart-3 dark:text-chart-1" />
-                      <span className="font-oswald text-sm font-semibold uppercase">
-                        Sign out
-                      </span>
-                    </DropdownMenuItem>
+                    <SignOutButton>
+                      <DropdownMenuItem className="cursor-pointer gap-4">
+                        <FaSignOutAlt className="text-chart-3 dark:text-chart-1" />
+                        <span className="font-oswald text-sm font-semibold uppercase">
+                          Sign out
+                        </span>
+                      </DropdownMenuItem>
+                    </SignOutButton>
                   </DropdownMenuGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
