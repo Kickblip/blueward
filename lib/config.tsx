@@ -25,6 +25,8 @@ export const MIN_PREDICTION_PAYOUT_MULTIPLIER = 1.1
 export const BASE_LEVEL_XP = 100
 export const LEVEL_GROWTH = 1.025
 
+const DRAFT_ORDER = [0, 1, 1, 0, 0, 1, 1, 0] as const
+
 export function getProjectedPredictionMultiplier(popularity: number) {
   const marketMultiplier = 1 / Math.max(popularity, 0.01)
   return Math.max(marketMultiplier, MIN_PREDICTION_PAYOUT_MULTIPLIER)

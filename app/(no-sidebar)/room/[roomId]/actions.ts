@@ -201,3 +201,66 @@ export async function returnPlayerToPool(lobbyId: string, playerId: number) {
 
   await publishRoomSnapshot(lobby.roomId)
 }
+
+export async function startDraft(lobbyId: string) {
+  const { userId } = await auth()
+
+  if (!userId) {
+    throw new Error("Unauthorized")
+  }
+
+  if (!lobbyId) {
+    throw new Error("Invalid lobby")
+  }
+
+  const [lobby] = await db
+    .select({
+      roomId: lobbies.roomId,
+      phase: lobbies.phase,
+    })
+    .from(lobbies)
+    .innerJoin(rooms, eq(rooms.id, lobbies.roomId))
+    .where(and(eq(lobbies.id, lobbyId), eq(rooms.ownerAuthId, userId)))
+    .limit(1)
+
+  if (!lobby) {
+    throw new Error("Lobby not found or unauthorized")
+  }
+
+  if (lobby.phase !== "OPEN") {
+    throw new Error("Draft has already started")
+  }
+
+  const captains = await db
+    .select({ teamId: lobbyPlayers.teamId })
+    .from(lobbyPlayers)
+    .where(
+      and(
+        eq(lobbyPlayers.roomId, lobby.roomId),
+        eq(lobbyPlayers.lobbyId, lobbyId),
+        eq(lobbyPlayers.isCaptain, true)
+      )
+    )
+
+  const hasTeam0Captain = captains.some(({ teamId }) => teamId === 0)
+  const hasTeam1Captain = captains.some(({ teamId }) => teamId === 1)
+
+  if (!hasTeam0Captain || !hasTeam1Captain) {
+    throw new Error("Both teams require a captain")
+  }
+
+  const [startedLobby] = await db
+    .update(lobbies)
+    .set({
+      phase: "DRAFTING",
+      draftPickIndex: 0,
+    })
+    .where(and(eq(lobbies.id, lobbyId), eq(lobbies.phase, "OPEN")))
+    .returning({ id: lobbies.id })
+
+  if (!startedLobby) {
+    throw new Error("Draft has already started")
+  }
+
+  await publishRoomSnapshot(lobby.roomId)
+}

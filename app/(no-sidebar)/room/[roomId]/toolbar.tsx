@@ -21,11 +21,35 @@ import {
 } from "@/components/ui/avatar"
 import { useRoom } from "./room-context"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
-import { useState } from "react"
+import { useState, useTransition } from "react"
+import { startDraft } from "./actions"
 
 export function Toolbar() {
-  const { presentPlayers, playerPool } = useRoom()
+  const { presentPlayers, playerPool, activeLobby, isOwner } = useRoom()
   const [randomPlayer, setRandomPlayer] = useState<string | null>(null)
+  const [isStartingDraft, startTransition] = useTransition()
+
+  const showStartDraft = isOwner && activeLobby?.phase === "OPEN"
+
+  const hasBothCaptains =
+    activeLobby?.players.some(
+      ({ teamId, isCaptain }) => teamId === 0 && isCaptain
+    ) &&
+    activeLobby.players.some(
+      ({ teamId, isCaptain }) => teamId === 1 && isCaptain
+    )
+
+  const isStartDraftDisabled = !hasBothCaptains || isStartingDraft
+
+  function handleStartDraft() {
+    if (!activeLobby || activeLobby.phase !== "OPEN") return
+
+    const lobbyId = activeLobby.id
+
+    startTransition(async () => {
+      await startDraft(lobbyId)
+    })
+  }
 
   return (
     <header className="flex items-center justify-between gap-4 p-2">
@@ -38,9 +62,7 @@ export function Toolbar() {
               </Link>
             </Button>
           </TooltipTrigger>
-          <TooltipContent>
-            <p>Exit room</p>
-          </TooltipContent>
+          <TooltipContent>Exit room</TooltipContent>
         </Tooltip>
 
         <Tooltip>
@@ -52,9 +74,7 @@ export function Toolbar() {
               </span>
             </Button>
           </TooltipTrigger>
-          <TooltipContent>
-            <p>Generate teams automatically</p>
-          </TooltipContent>
+          <TooltipContent>Generate teams automatically</TooltipContent>
         </Tooltip>
 
         <Dialog>
@@ -70,7 +90,7 @@ export function Toolbar() {
               </DialogTrigger>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Select a random player from the pool</p>
+              Select a random player from the pool
             </TooltipContent>
           </Tooltip>
 
@@ -107,9 +127,37 @@ export function Toolbar() {
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Create and edit available prediction markets</p>
+            Create and edit available prediction markets
           </TooltipContent>
         </Tooltip>
+
+        {showStartDraft && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span
+                className="inline-flex"
+                tabIndex={isStartDraftDisabled ? 0 : undefined}
+              >
+                <Button
+                  variant="destructive"
+                  size="lg"
+                  disabled={isStartDraftDisabled}
+                  onClick={handleStartDraft}
+                >
+                  <span className="font-oswald text-lg font-semibold uppercase">
+                    {isStartingDraft
+                      ? "Starting Draft…"
+                      : "Start Draft for this lobby"}
+                  </span>
+                </Button>
+              </span>
+            </TooltipTrigger>
+
+            <TooltipContent>
+              Two captains are required for the draft to begin
+            </TooltipContent>
+          </Tooltip>
+        )}
       </div>
 
       <div className="flex items-center gap-4">
