@@ -155,13 +155,11 @@ export function SearchButton() {
       <Button
         onClick={() => handleOpenChange(true)}
         size="lg"
-        variant="outline"
+        variant="secondary"
         aria-label="Search"
       >
         <Search className="size-3.5" strokeWidth={2.8} />
-        <span className="font-oswald text-base font-semibold uppercase">
-          Search
-        </span>
+        <span className="font-oswald text-sm uppercase">Search</span>
       </Button>
 
       <CommandDialog open={open} onOpenChange={handleOpenChange}>

@@ -7,10 +7,12 @@ import { cn, toNumberWithCommas } from "@/lib/utils"
 import { useState } from "react"
 import { toast } from "sonner"
 import { Spinner } from "./ui/spinner"
+import { useSWRConfig } from "swr"
 
 export function DailyReward({ claimed }: { claimed: boolean }) {
   const [justClaimed, setJustClaimed] = useState(false)
   const [isClaiming, setIsClaiming] = useState(false)
+  const { mutate } = useSWRConfig()
 
   const isClaimed = claimed || justClaimed
 
@@ -43,6 +45,8 @@ export function DailyReward({ claimed }: { claimed: boolean }) {
       }
 
       setJustClaimed(true)
+      void mutate("/api/shop/balance")
+      void mutate("/api/shop/balance/transactions")
 
       toast.success(`Added ${toNumberWithCommas(data.amount)}!`, {
         position: "top-center",

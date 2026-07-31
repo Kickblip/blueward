@@ -12,6 +12,7 @@ import { eq } from "drizzle-orm"
 import { players } from "@/lib/schema"
 import { Footer } from "@/components/footer"
 import { AdSlot } from "@/components/ad-slot"
+import { UserBalance } from "@/components/user-balance"
 
 export default async function Layout({
   children,
@@ -43,6 +44,7 @@ export default async function Layout({
             {user && <DailyReward claimed={claimed} />}
           </div>
           <div className="flex items-center gap-2 px-4">
+            <UserBalance />
             <SearchButton />
           </div>
         </header>

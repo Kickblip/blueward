@@ -25,7 +25,17 @@ export const MIN_PREDICTION_PAYOUT_MULTIPLIER = 1.1
 export const BASE_LEVEL_XP = 100
 export const LEVEL_GROWTH = 1.025
 
-const DRAFT_ORDER = [0, 1, 1, 0, 0, 1, 1, 0] as const
+export const DRAFT_ORDER = [0, 1, 1, 0, 0, 1, 1, 0] as const
+
+export const TRANSACTION_TYPES = {
+  MATCH_EARN: "Match Earn",
+  ADMIN_ADJUST: "Admin Adjust",
+  SPEND: "Spend",
+  MARKET_STAKE: "Wager Stake",
+  MARKET_PAYOUT: "Wager Payout",
+  MARKET_REFUND: "Wager Refund",
+  DAILY_REWARD: "Daily Reward",
+} as const
 
 export function getProjectedPredictionMultiplier(popularity: number) {
   const marketMultiplier = 1 / Math.max(popularity, 0.01)
