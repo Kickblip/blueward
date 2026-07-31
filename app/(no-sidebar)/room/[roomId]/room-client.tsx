@@ -110,6 +110,7 @@ function RoomContents() {
                     key={assignment?.player.id ?? `team-1-slot-${index}`}
                     player={assignment?.player ?? null}
                     team={0}
+                    isCaptain={assignment?.isCaptain ?? false}
                     useOwnerView={isOwner}
                   />
                 )
@@ -134,6 +135,7 @@ function RoomContents() {
                     key={assignment?.player.id ?? `team-2-slot-${index}`}
                     player={assignment?.player ?? null}
                     team={1}
+                    isCaptain={assignment?.isCaptain ?? false}
                     useOwnerView={isOwner}
                   />
                 )
@@ -188,10 +190,12 @@ export function PoolCard({
 export function PlayerCard({
   player,
   team,
+  isCaptain,
   useOwnerView,
 }: {
   player: PlayerCardType | null
   team: 0 | 1
+  isCaptain: boolean
   useOwnerView: boolean
 }) {
   if (!player) {
@@ -215,9 +219,20 @@ export function PlayerCard({
       <BannerBackground bannerId={player.bannerId}>
         <div className="relative z-10 flex h-full flex-col justify-between gap-2 p-2">
           <div className="flex items-center justify-between gap-2">
-            <LevelBadge experience={player.experience} />
+            <div className="flex items-center gap-2">
+              {isCaptain && (
+                <div className="flex items-center gap-1 rounded-full border bg-secondary px-2 py-0.5">
+                  <PiCrownSimpleFill className="text-yellow-400" />
+                  <span className="font-oswald text-xs font-semibold uppercase">
+                    Captain
+                  </span>
+                </div>
+              )}
+              <LevelBadge experience={player.experience} />
+            </div>
             <PlayerDropdownMenu useOwnerView={useOwnerView} player={player} />
           </div>
+
           <h2 className="font-oswald text-4xl font-semibold text-white uppercase">
             {player.riotIdGameName}
           </h2>
