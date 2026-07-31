@@ -151,11 +151,13 @@ export async function AppSidebar({
                         My Profile
                       </span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer gap-4">
-                      <IoMdSettings className="text-chart-3 dark:text-chart-1" />
-                      <span className="font-oswald text-sm font-semibold uppercase">
-                        Settings
-                      </span>
+                    <DropdownMenuItem className="cursor-pointer gap-4" asChild>
+                      <Link href="/settings">
+                        <IoMdSettings className="text-chart-3 dark:text-chart-1" />
+                        <span className="font-oswald text-sm font-semibold uppercase">
+                          Settings
+                        </span>
+                      </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem className="cursor-pointer gap-4">
                       <FaSignOutAlt className="text-chart-3 dark:text-chart-1" />
