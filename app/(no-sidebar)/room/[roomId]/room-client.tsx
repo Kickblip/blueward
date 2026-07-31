@@ -22,7 +22,7 @@ import {
 import { BannerBackground } from "@/components/banner-background"
 import { LevelBadge } from "@/components/level-badge"
 import { EllipsisIcon } from "lucide-react"
-import { FaTrash } from "react-icons/fa6"
+import { FaTrash, FaX } from "react-icons/fa6"
 import { PiCrownSimpleFill } from "react-icons/pi"
 import {
   FaArrowCircleLeft,
@@ -32,7 +32,12 @@ import {
 } from "react-icons/fa"
 import Link from "next/link"
 import { AdSlot } from "@/components/ad-slot"
-import { movePlayerToTeam } from "./actions"
+import {
+  makePlayerCaptain,
+  movePlayerToTeam,
+  returnPlayerToPool,
+  demotePlayerCaptain,
+} from "./actions"
 
 export function RoomClient({
   initialSnapshot,
@@ -231,10 +236,32 @@ export function PlayerDropdownMenu({
 }) {
   const { activeLobby } = useRoom()
 
+  const assignment = activeLobby?.players.find(
+    ({ player: assignedPlayer }) => assignedPlayer.id === player.id
+  )
+
   function move(teamId: 0 | 1) {
     if (!activeLobby) return
 
     void movePlayerToTeam(activeLobby.id, player.id, teamId)
+  }
+
+  function makeCaptain() {
+    if (!activeLobby || !assignment) return
+
+    void makePlayerCaptain(activeLobby.id, player.id)
+  }
+
+  function demoteCaptain() {
+    if (!activeLobby || !assignment) return
+
+    void demotePlayerCaptain(activeLobby.id, player.id)
+  }
+
+  function returnToPool() {
+    if (!activeLobby || !assignment) return
+
+    void returnPlayerToPool(activeLobby.id, player.id)
   }
 
   return (
@@ -281,6 +308,27 @@ export function PlayerDropdownMenu({
                 <FaArrowCircleRight className="text-chart-3 dark:text-chart-1" />
                 Move to Team 2
               </DropdownMenuItem>
+
+              {assignment ? (
+                assignment.isCaptain ? (
+                  <DropdownMenuItem onSelect={() => demoteCaptain()}>
+                    <FaX className="text-chart-3 dark:text-chart-1" />
+                    Demote Captain
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem onSelect={() => makeCaptain()}>
+                    <PiCrownSimpleFill className="text-chart-3 dark:text-chart-1" />
+                    Make Captain
+                  </DropdownMenuItem>
+                )
+              ) : null}
+
+              {assignment && (
+                <DropdownMenuItem onSelect={returnToPool}>
+                  <FaTrash className="text-chart-3 dark:text-chart-1" />
+                  Return to Pool
+                </DropdownMenuItem>
+              )}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>

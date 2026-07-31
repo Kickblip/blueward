@@ -1,4 +1,4 @@
-import "server-only"
+"use server"
 
 import * as Ably from "ably"
 import { asc, eq } from "drizzle-orm"
@@ -97,7 +97,7 @@ export async function getRoomSnapshot(
 }
 
 const ably = new Ably.Rest({
-  key: process.env.ABLY_TOKEN_ISSUER_KEY!,
+  key: process.env.ABLY_PUBLISH_KEY!,
 })
 
 export async function publishRoomSnapshot(roomId: string) {
