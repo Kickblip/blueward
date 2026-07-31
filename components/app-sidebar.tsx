@@ -13,13 +13,7 @@ import {
 import { Logo } from "./logo"
 import { Show, SignOutButton } from "@clerk/nextjs"
 import { HiMiniSparkles } from "react-icons/hi2"
-import {
-  FaUsers,
-  FaUser,
-  FaSignOutAlt,
-  FaExternalLinkSquareAlt,
-  FaShoppingCart,
-} from "react-icons/fa"
+import { FaUsers, FaUser, FaSignOutAlt, FaShoppingCart } from "react-icons/fa"
 import { IoPodium } from "react-icons/io5"
 import { PlusIcon } from "lucide-react"
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog"
@@ -35,6 +29,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu"
 import { IoMdSettings } from "react-icons/io"
+import { safeSubstring } from "@/lib/utils"
 
 export async function AppSidebar({
   user,
@@ -42,6 +37,9 @@ export async function AppSidebar({
 }: React.ComponentProps<typeof Sidebar> & {
   user: Awaited<ReturnType<typeof currentUser>>
 }) {
+  const value = user?.privateMetadata.puuid
+  const puuid = typeof value === "string" ? value : undefined
+
   return (
     <Sidebar collapsible="icon" variant="inset" {...props}>
       <SidebarHeader>
@@ -145,12 +143,20 @@ export async function AppSidebar({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 p-2">
                   <DropdownMenuGroup>
-                    <DropdownMenuItem className="cursor-pointer gap-4">
-                      <FaExternalLinkSquareAlt className="text-chart-3 dark:text-chart-1" />
-                      <span className="font-oswald text-sm font-semibold uppercase">
-                        My Profile
-                      </span>
-                    </DropdownMenuItem>
+                    {puuid && (
+                      <DropdownMenuItem
+                        className="cursor-pointer gap-4"
+                        asChild
+                      >
+                        <Link href={`/player/${safeSubstring(puuid, 0, 20)}`}>
+                          <FaUser className="ml-0.5 size-3 text-chart-3 dark:text-chart-1" />
+                          <span className="font-oswald text-sm font-semibold uppercase">
+                            My Profile
+                          </span>
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+
                     <DropdownMenuItem className="cursor-pointer gap-4" asChild>
                       <Link href="/settings">
                         <IoMdSettings className="text-chart-3 dark:text-chart-1" />
