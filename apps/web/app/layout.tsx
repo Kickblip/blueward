@@ -5,9 +5,9 @@ import { NavbarLayout, NavbarLink } from "@repo/ui/Navbar"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { PiCrownSimpleFill } from "react-icons/pi"
 import MainContentFrame from "@repo/ui/MainContentFrame"
-import { ClerkProvider, SignUpButton, SignedIn, SignedOut } from "@clerk/nextjs"
+import { ClerkProvider, SignUpButton, Show } from "@clerk/nextjs";
 import UserButton from "@/components/UserButton"
-import { dark } from "@clerk/themes"
+import { dark } from "@clerk/ui/themes"
 import { SearchButton } from "@/components/Search"
 import { currentUser } from "@clerk/nextjs/server"
 import { Analytics } from "@vercel/analytics/next"
@@ -59,25 +59,21 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <ClerkProvider
-      appearance={{
-        theme: dark,
-        variables: { colorPrimary: "#3aa4fc" },
-        cssLayerName: "clerk",
-      }}
-    >
-      <html lang="en">
-        <body className={`${oswald.variable} ${roboto.className} ${roboto.variable}`}>
+    <html lang="en">
+      <body className={`${oswald.variable} ${roboto.className} ${roboto.variable}`}><ClerkProvider
+          appearance={{
+            theme: dark,
+            variables: { colorPrimary: "#3aa4fc" },
+            cssLayerName: "clerk",
+          }}>
           <SpeedInsights />
           <Analytics />
-
           <MainContentFrame Navbar={<Navbar />} backgroundPatternUrl="/grid.svg" backgroundPatternSize={512}>
             {children}
           </MainContentFrame>
-        </body>
-      </html>
-    </ClerkProvider>
-  )
+        </ClerkProvider></body>
+    </html>
+  );
 }
 
 const navItems = [
@@ -150,23 +146,21 @@ async function SignInButtons() {
 
   return (
     <div className="flex items-center gap-4">
-      <SignedOut>
+      <Show when="signed-out">
         <SignUpButton>
           <div className="flex items-center gap-2 rounded-xl px-6 py-1.5 border border-blue-500 bg-blue-600/80 hover:bg-blue-600 transition-colors duration-200">
             <FaUserGroup size={14} />
             <span className="text-sm uppercase">Sign Up</span>
           </div>
         </SignUpButton>
-      </SignedOut>
-
+      </Show>
       <div className="hidden md:flex">
         <SearchButton />
       </div>
-
-      <SignedIn>
+      <Show when="signed-in">
         {hasRiotAccountConnected && puuid && <UserBalance />}
         <UserButton puuid={puuid} riotConnected={hasRiotAccountConnected} isAdmin={isAdmin} />
-      </SignedIn>
+      </Show>
     </div>
-  )
+  );
 }
