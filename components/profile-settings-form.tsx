@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Spinner } from "@/components/ui/spinner"
 import { Button } from "./ui/button"
 import { FaPencil } from "react-icons/fa6"
-import { Field, FieldLabel } from "./ui/field"
+import { Field, FieldDescription, FieldLabel } from "./ui/field"
 import {
   InputGroup,
   InputGroupAddon,
@@ -143,6 +143,9 @@ export function ProfileSettingsForm() {
               </InputGroupButton>
             </InputGroupAddon>
           </InputGroup>
+          <FieldDescription className="ml-1 text-xs">
+            Optionally set a username to display instead of your Riot tag
+          </FieldDescription>
         </Field>
       </form>
     </div>

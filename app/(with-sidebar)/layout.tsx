@@ -44,7 +44,7 @@ export default async function Layout({
             {user && <DailyReward claimed={claimed} />}
           </div>
           <div className="flex items-center gap-2 px-4">
-            <UserBalance />
+            {user && <UserBalance />}
             <SearchButton />
           </div>
         </header>
