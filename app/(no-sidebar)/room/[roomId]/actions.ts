@@ -3,13 +3,67 @@
 import { and, count, eq, max, ne } from "drizzle-orm"
 import { auth } from "@clerk/nextjs/server"
 import { db } from "@/lib/db"
-import { lobbies, lobbyPlayers, rooms } from "@/lib/schema"
+import { lobbies, lobbyPlayers, roomParticipants, rooms } from "@/lib/schema"
 import { publishRoomSnapshot } from "@/lib/room-state"
 import { randomUUID } from "node:crypto"
+import * as z from "zod"
+import { redirect } from "next/navigation"
+import { guestDisplayNameSchema, saveGuestSession } from "@/lib/guest-session"
 
-export async function movePlayerToTeam(
+const continueAsGuestSchema = z.object({
+  roomId: z.uuid("Invalid room"),
+  displayName: guestDisplayNameSchema,
+})
+
+const lobbyParticipantSchema = z.object({
+  lobbyId: z.uuid(),
+  participantId: z.uuid(),
+})
+
+type ContinueAsGuestState = {
+  error?: string
+}
+
+export async function continueAsGuest(
+  _previousState: ContinueAsGuestState,
+  formData: FormData
+): Promise<ContinueAsGuestState> {
+  const result = continueAsGuestSchema.safeParse({
+    roomId: formData.get("roomId"),
+    displayName: formData.get("displayName"),
+  })
+
+  if (!result.success) {
+    return {
+      error: result.error.issues[0]?.message ?? "Invalid guest information",
+    }
+  }
+
+  const { roomId, displayName } = result.data
+  const { userId } = await auth()
+
+  if (userId) {
+    redirect(`/room/${roomId}`)
+  }
+
+  const [room] = await db
+    .select({ id: rooms.id })
+    .from(rooms)
+    .where(eq(rooms.id, roomId))
+    .limit(1)
+
+  if (!room) {
+    return { error: "This room no longer exists" }
+  }
+
+  await saveGuestSession(displayName)
+
+  redirect(`/room/${roomId}`)
+}
+
+export async function moveParticipantToTeam(
   lobbyId: string,
-  playerId: number,
+  participantId: string,
   teamId: 0 | 1
 ) {
   const { userId } = await auth()
@@ -18,24 +72,31 @@ export async function movePlayerToTeam(
     throw new Error("Unauthorized")
   }
 
-  if (
-    !lobbyId ||
-    !Number.isInteger(playerId) ||
-    playerId < 1 ||
-    (teamId !== 0 && teamId !== 1)
-  ) {
+  const result = lobbyParticipantSchema.safeParse({
+    lobbyId,
+    participantId,
+  })
+
+  if (!result.success || (teamId !== 0 && teamId !== 1)) {
     throw new Error("Invalid move")
   }
 
-  const [lobby] = await db
+  const [target] = await db
     .select({ roomId: lobbies.roomId })
     .from(lobbies)
     .innerJoin(rooms, eq(rooms.id, lobbies.roomId))
+    .innerJoin(
+      roomParticipants,
+      and(
+        eq(roomParticipants.id, participantId),
+        eq(roomParticipants.roomId, lobbies.roomId)
+      )
+    )
     .where(and(eq(lobbies.id, lobbyId), eq(rooms.ownerAuthId, userId)))
     .limit(1)
 
-  if (!lobby) {
-    throw new Error("Lobby not found or unauthorized")
+  if (!target) {
+    throw new Error("Lobby, participant, or permission not found")
   }
 
   const [{ teamSize }] = await db
@@ -45,7 +106,7 @@ export async function movePlayerToTeam(
       and(
         eq(lobbyPlayers.lobbyId, lobbyId),
         eq(lobbyPlayers.teamId, teamId),
-        ne(lobbyPlayers.playerId, playerId)
+        ne(lobbyPlayers.participantId, participantId)
       )
     )
 
@@ -56,31 +117,38 @@ export async function movePlayerToTeam(
   await db
     .insert(lobbyPlayers)
     .values({
-      roomId: lobby.roomId,
       lobbyId,
-      playerId,
+      participantId,
       teamId,
     })
     .onConflictDoUpdate({
-      target: [lobbyPlayers.roomId, lobbyPlayers.playerId],
+      target: lobbyPlayers.participantId,
       set: {
         lobbyId,
         teamId,
       },
     })
 
-  await publishRoomSnapshot(lobby.roomId)
+  await publishRoomSnapshot(target.roomId)
 }
 
-export async function makePlayerCaptain(lobbyId: string, playerId: number) {
+export async function makeParticipantCaptain(
+  lobbyId: string,
+  participantId: string
+) {
   const { userId } = await auth()
 
   if (!userId) {
     throw new Error("Unauthorized")
   }
 
-  if (!lobbyId || !Number.isInteger(playerId) || playerId < 1) {
-    throw new Error("Invalid player")
+  const result = lobbyParticipantSchema.safeParse({
+    lobbyId,
+    participantId,
+  })
+
+  if (!result.success) {
+    throw new Error("Invalid participant")
   }
 
   const [assignment] = await db
@@ -94,14 +162,14 @@ export async function makePlayerCaptain(lobbyId: string, playerId: number) {
     .where(
       and(
         eq(lobbyPlayers.lobbyId, lobbyId),
-        eq(lobbyPlayers.playerId, playerId),
+        eq(lobbyPlayers.participantId, participantId),
         eq(rooms.ownerAuthId, userId)
       )
     )
     .limit(1)
 
   if (!assignment) {
-    throw new Error("Player not found or unauthorized")
+    throw new Error("Participant not found or unauthorized")
   }
 
   await db.transaction(async (tx) => {
@@ -123,7 +191,7 @@ export async function makePlayerCaptain(lobbyId: string, playerId: number) {
       .where(
         and(
           eq(lobbyPlayers.lobbyId, lobbyId),
-          eq(lobbyPlayers.playerId, playerId)
+          eq(lobbyPlayers.participantId, participantId)
         )
       )
   })
@@ -131,15 +199,23 @@ export async function makePlayerCaptain(lobbyId: string, playerId: number) {
   await publishRoomSnapshot(assignment.roomId)
 }
 
-export async function demotePlayerCaptain(lobbyId: string, playerId: number) {
+export async function demoteParticipantCaptain(
+  lobbyId: string,
+  participantId: string
+) {
   const { userId } = await auth()
 
   if (!userId) {
     throw new Error("Unauthorized")
   }
 
-  if (!lobbyId || !Number.isInteger(playerId) || playerId < 1) {
-    throw new Error("Invalid player")
+  const result = lobbyParticipantSchema.safeParse({
+    lobbyId,
+    participantId,
+  })
+
+  if (!result.success) {
+    throw new Error("Invalid participant")
   }
 
   const [lobby] = await db
@@ -158,9 +234,8 @@ export async function demotePlayerCaptain(lobbyId: string, playerId: number) {
     .set({ isCaptain: false })
     .where(
       and(
-        eq(lobbyPlayers.roomId, lobby.roomId),
         eq(lobbyPlayers.lobbyId, lobbyId),
-        eq(lobbyPlayers.playerId, playerId),
+        eq(lobbyPlayers.participantId, participantId),
         eq(lobbyPlayers.isCaptain, true)
       )
     )
@@ -168,15 +243,23 @@ export async function demotePlayerCaptain(lobbyId: string, playerId: number) {
   await publishRoomSnapshot(lobby.roomId)
 }
 
-export async function returnPlayerToPool(lobbyId: string, playerId: number) {
+export async function returnParticipantToPool(
+  lobbyId: string,
+  participantId: string
+) {
   const { userId } = await auth()
 
   if (!userId) {
     throw new Error("Unauthorized")
   }
 
-  if (!lobbyId || !Number.isInteger(playerId) || playerId < 1) {
-    throw new Error("Invalid player")
+  const result = lobbyParticipantSchema.safeParse({
+    lobbyId,
+    participantId,
+  })
+
+  if (!result.success) {
+    throw new Error("Invalid participant")
   }
 
   const [lobby] = await db
@@ -194,9 +277,8 @@ export async function returnPlayerToPool(lobbyId: string, playerId: number) {
     .delete(lobbyPlayers)
     .where(
       and(
-        eq(lobbyPlayers.roomId, lobby.roomId),
         eq(lobbyPlayers.lobbyId, lobbyId),
-        eq(lobbyPlayers.playerId, playerId)
+        eq(lobbyPlayers.participantId, participantId)
       )
     )
 
@@ -236,11 +318,7 @@ export async function startDraft(lobbyId: string) {
     .select({ teamId: lobbyPlayers.teamId })
     .from(lobbyPlayers)
     .where(
-      and(
-        eq(lobbyPlayers.roomId, lobby.roomId),
-        eq(lobbyPlayers.lobbyId, lobbyId),
-        eq(lobbyPlayers.isCaptain, true)
-      )
+      and(eq(lobbyPlayers.lobbyId, lobbyId), eq(lobbyPlayers.isCaptain, true))
     )
 
   const hasTeam0Captain = captains.some(({ teamId }) => teamId === 0)

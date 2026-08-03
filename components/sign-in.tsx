@@ -5,16 +5,13 @@ import { SiRiotgames } from "react-icons/si"
 import { Button } from "./ui/button"
 import { useSignIn } from "@clerk/nextjs"
 import { useSearchParams } from "next/navigation"
-import { Field } from "./ui/field"
-import { Input } from "./ui/input"
-import { IoMdMail } from "react-icons/io"
 
-export function SignIn() {
+export function SignIn({ redirectUrl }: { redirectUrl?: string }) {
   const { signIn, fetchStatus } = useSignIn()
   const searchParams = useSearchParams()
 
   const signInWithRiot = async () => {
-    const next = searchParams.get("redirect_url") ?? "/"
+    const next = redirectUrl ?? searchParams.get("redirect_url") ?? "/"
     const claimUrl = `/claim-riot?next=${encodeURIComponent(next)}`
 
     const { error: resetError } = await signIn.reset()
@@ -36,7 +33,7 @@ export function SignIn() {
   }
 
   return (
-    <div className="flex w-full max-w-sm flex-col items-center gap-4">
+    <div className="flex w-full flex-col items-center gap-4">
       <div className="flex flex-col items-center">
         <span className="font-oswald text-lg font-semibold uppercase">
           Sign in to Blueward
@@ -45,10 +42,6 @@ export function SignIn() {
         <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
           Select a method to continue
         </p>
-      </div>
-
-      <div className="flex w-full items-center gap-3 font-oswald text-xs font-semibold text-muted-foreground uppercase before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
-        Or sign in with
       </div>
 
       <Button
@@ -61,11 +54,6 @@ export function SignIn() {
         <SiRiotgames className="size-4.5" />
         <span>Riot</span>
       </Button>
-
-      <p className="text-center text-xs text-muted-foreground">
-        The sign in system has been changed! If you encounter issues with your
-        account please contact @kickball on Discord
-      </p>
 
       <p className="flex items-center gap-1 text-xs text-muted-foreground">
         <span>By continuing you agree to our</span>

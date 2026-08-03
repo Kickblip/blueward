@@ -393,6 +393,33 @@ export const rooms = pgTable("rooms", {
   createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
 })
 
+export const roomParticipants = pgTable(
+  "room_participants",
+  {
+    id: varchar({ length: 36 }).primaryKey(),
+
+    roomId: varchar({ length: 36 })
+      .notNull()
+      .references(() => rooms.id, { onDelete: "cascade" }),
+
+    identityKey: varchar({ length: 160 }).notNull(),
+
+    playerId: integer().references(() => players.id, {
+      onDelete: "set null",
+    }),
+
+    displayName: varchar({ length: 32 }).notNull(),
+
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("room_participants_room_identity_unique").on(
+      table.roomId,
+      table.identityKey
+    ),
+  ]
+)
+
 export const lobbyPhaseEnum = pgEnum("lobby_phase", [
   "OPEN",
   "DRAFTING",
@@ -423,22 +450,19 @@ export const lobbies = pgTable(
 export const lobbyPlayers = pgTable(
   "lobby_players",
   {
-    roomId: varchar({ length: 36 })
-      .notNull()
-      .references(() => rooms.id, { onDelete: "cascade" }),
     lobbyId: varchar({ length: 36 })
       .notNull()
       .references(() => lobbies.id, { onDelete: "cascade" }),
 
-    playerId: integer()
+    participantId: varchar({ length: 36 })
       .notNull()
-      .references(() => players.id, { onDelete: "cascade" }),
+      .references(() => roomParticipants.id, { onDelete: "cascade" }),
 
     teamId: smallint().notNull(),
     isCaptain: boolean().notNull().default(false),
   },
   (table) => [
-    primaryKey({ columns: [table.roomId, table.playerId] }),
+    primaryKey({ columns: [table.participantId] }),
 
     check("lobby_players_team_check", sql`${table.teamId} in (0, 1)`),
 

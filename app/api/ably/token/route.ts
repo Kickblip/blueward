@@ -1,14 +1,16 @@
-import { currentUser } from "@clerk/nextjs/server"
-import { eq } from "drizzle-orm"
+import { auth } from "@clerk/nextjs/server"
+import { eq, and } from "drizzle-orm"
 import { db } from "@/lib/db"
-import { rooms } from "@/lib/schema"
+import { roomParticipants } from "@/lib/schema"
 import * as z from "zod"
 import * as Ably from "ably"
+import { getGuestSession } from "@/lib/guest-session"
 
 export async function GET(request: Request) {
-  const user = await currentUser()
+  const { userId } = await auth()
+  const guest = userId ? null : await getGuestSession()
 
-  if (!user) {
+  if (!userId && !guest) {
     return Response.json({ error: "Unauthorized" }, { status: 401 })
   }
 
@@ -21,24 +23,30 @@ export async function GET(request: Request) {
 
   const roomId = parsed.data
 
-  const room = await db.query.rooms.findFirst({
-    where: eq(rooms.id, roomId),
-    columns: { id: true },
+  const identityKey = userId ? `clerk:${userId}` : `guest:${guest!.id}`
+
+  const participant = await db.query.roomParticipants.findFirst({
+    where: and(
+      eq(roomParticipants.roomId, roomId),
+      eq(roomParticipants.identityKey, identityKey)
+    ),
+    columns: {
+      id: true,
+    },
   })
 
-  if (!room) {
-    return Response.json({ error: "Room not found" }, { status: 404 })
+  if (!participant) {
+    return Response.json({ error: "Not a room participant" }, { status: 403 })
   }
 
   const ably = new Ably.Rest({
     key: process.env.ABLY_TOKEN_ISSUER_KEY!,
   })
 
-  const channel = `room:${roomId}`
   const token = await ably.auth.requestToken({
-    clientId: user.id,
+    clientId: participant.id,
     capability: {
-      [channel]: ["presence", "subscribe"],
+      [`room:${roomId}`]: ["presence", "subscribe"],
     },
   })
 

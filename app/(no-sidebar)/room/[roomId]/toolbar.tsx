@@ -25,7 +25,8 @@ import { useState, useTransition } from "react"
 import { startDraft } from "./actions"
 
 export function Toolbar() {
-  const { presentPlayers, playerPool, activeLobby, isOwner } = useRoom()
+  const { presentParticipants, participantPool, activeLobby, isOwner } =
+    useRoom()
   const [randomPlayer, setRandomPlayer] = useState<string | null>(null)
   const [isStartingDraft, startTransition] = useTransition()
 
@@ -103,13 +104,15 @@ export function Toolbar() {
               size="lg"
               className="font-oswald font-semibold uppercase"
               onClick={() => {
-                if (playerPool.length <= 0) return
+                if (participantPool.length === 0) return
 
                 const randomIndex = Math.floor(
-                  Math.random() * playerPool.length
+                  Math.random() * participantPool.length
                 )
-                const randomPlayer = playerPool[randomIndex]
-                setRandomPlayer(randomPlayer.riotIdGameName)
+
+                const randomParticipant = participantPool[randomIndex]
+
+                setRandomPlayer(randomParticipant.displayName)
               }}
             >
               Randomize
@@ -162,28 +165,29 @@ export function Toolbar() {
 
       <div className="flex items-center gap-4">
         <AvatarGroup>
-          {presentPlayers.slice(0, 3).map((player) => (
-            <Tooltip key={player.id}>
+          {presentParticipants.slice(0, 3).map((participant) => (
+            <Tooltip key={participant.id}>
               <TooltipTrigger asChild>
                 <Avatar tabIndex={0}>
                   <AvatarImage
-                    src={player.avatarUrl ?? undefined}
-                    alt={player.riotIdGameName}
+                    src={participant.player?.avatarUrl ?? undefined}
+                    alt={participant.displayName}
                   />
-                  <AvatarFallback>
-                    {player.riotIdGameName.slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
+
+                  <AvatarFallback>?</AvatarFallback>
                 </Avatar>
               </TooltipTrigger>
 
               <TooltipContent>
-                <p>{player.riotIdGameName}</p>
+                <p>{participant.displayName}</p>
               </TooltipContent>
             </Tooltip>
           ))}
 
-          {presentPlayers.length > 3 && (
-            <AvatarGroupCount>+{presentPlayers.length - 3}</AvatarGroupCount>
+          {presentParticipants.length > 3 && (
+            <AvatarGroupCount>
+              +{presentParticipants.length - 3}
+            </AvatarGroupCount>
           )}
         </AvatarGroup>
         <div

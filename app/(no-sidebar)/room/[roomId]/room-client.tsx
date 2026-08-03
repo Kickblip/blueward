@@ -1,13 +1,12 @@
 "use client"
 
 import { cn, safeSubstring } from "@/lib/utils"
-import { PlayerCard as PlayerCardType } from "@/app/api/player/[puuid]/card/route"
+import type { RoomParticipant, RoomSnapshot } from "@/lib/room-state"
 import { Toolbar } from "./toolbar"
 import { Footer } from "./footer"
 import { Realtime } from "ably"
 import { AblyProvider, ChannelProvider } from "ably/react"
 import { useEffect, useState } from "react"
-import { RoomSnapshot } from "@/lib/room-state"
 import { RoomProvider, useRoom } from "./room-context"
 import { Button } from "@/components/ui/button"
 import {
@@ -33,20 +32,20 @@ import {
 import Link from "next/link"
 import { AdSlot } from "@/components/ad-slot"
 import {
-  makePlayerCaptain,
-  movePlayerToTeam,
-  returnPlayerToPool,
-  demotePlayerCaptain,
+  makeParticipantCaptain,
+  moveParticipantToTeam,
+  returnParticipantToPool,
+  demoteParticipantCaptain,
 } from "./actions"
 
 export function RoomClient({
   initialSnapshot,
   viewerAuthId,
-  player,
+  participant,
 }: {
   initialSnapshot: RoomSnapshot
-  viewerAuthId: string
-  player: PlayerCardType
+  viewerAuthId: string | null
+  participant: RoomParticipant
 }) {
   const roomId = initialSnapshot.roomId
   const channel = `room:${roomId}`
@@ -68,7 +67,7 @@ export function RoomClient({
       <ChannelProvider channelName={channel}>
         <RoomProvider
           initialSnapshot={initialSnapshot}
-          currentPlayer={player}
+          currentParticipant={participant}
           viewerAuthId={viewerAuthId}
         >
           <RoomContents />
@@ -79,7 +78,7 @@ export function RoomClient({
 }
 
 function RoomContents() {
-  const { activeLobby, playerPool, isOwner } = useRoom()
+  const { activeLobby, participantPool, isOwner } = useRoom()
 
   const team1Players =
     activeLobby?.players.filter(({ teamId }) => teamId === 0) ?? []
@@ -108,7 +107,7 @@ function RoomContents() {
                 return (
                   <PlayerCard
                     key={assignment?.player.id ?? `team-1-slot-${index}`}
-                    player={assignment?.player ?? null}
+                    participant={assignment?.player ?? null}
                     team={0}
                     isCaptain={assignment?.isCaptain ?? false}
                     useOwnerView={isOwner}
@@ -133,7 +132,7 @@ function RoomContents() {
                 return (
                   <PlayerCard
                     key={assignment?.player.id ?? `team-2-slot-${index}`}
-                    player={assignment?.player ?? null}
+                    participant={assignment?.player ?? null}
                     team={1}
                     isCaptain={assignment?.isCaptain ?? false}
                     useOwnerView={isOwner}
@@ -144,10 +143,10 @@ function RoomContents() {
           </div>
 
           <div className="row-span-2 min-h-0 overflow-y-auto bg-secondary p-2">
-            {playerPool.map((player) => (
+            {participantPool.map((participant) => (
               <PoolCard
-                key={player.puuid}
-                player={player}
+                key={participant.id}
+                participant={participant}
                 useOwnerView={isOwner}
               />
             ))}
@@ -163,51 +162,108 @@ function RoomContents() {
 }
 
 export function PoolCard({
-  player,
+  participant,
   useOwnerView,
 }: {
-  player: PlayerCardType
+  participant: RoomParticipant
   useOwnerView: boolean
 }) {
-  return (
-    <BannerBackground bannerId={player.bannerId}>
-      <div className="min-h-0 flex-1 overflow-hidden rounded-md border">
-        <div className="flex h-full flex-col justify-between gap-2 p-2">
-          <div className="flex items-center justify-between gap-2">
-            <LevelBadge experience={player.experience} />
-
-            <PlayerDropdownMenu useOwnerView={useOwnerView} player={player} />
+  const content = (
+    <div className="min-h-0 flex-1 overflow-hidden rounded-md border bg-secondary">
+      <div className="flex h-full flex-col justify-between gap-2 p-2">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            {participant.player && (
+              <LevelBadge experience={participant.player.experience} />
+            )}
           </div>
-          <h2 className="font-oswald text-4xl font-semibold text-white uppercase">
-            {player.riotIdGameName}
-          </h2>
+
+          <PlayerDropdownMenu
+            useOwnerView={useOwnerView}
+            participant={participant}
+          />
         </div>
+
+        <h2
+          className={cn(
+            "font-oswald text-4xl font-semibold uppercase",
+            participant.player && "text-white"
+          )}
+        >
+          {participant.displayName}
+        </h2>
       </div>
+    </div>
+  )
+
+  if (!participant.player) {
+    return content
+  }
+
+  return (
+    <BannerBackground bannerId={participant.player.bannerId}>
+      {content}
     </BannerBackground>
   )
 }
 
 export function PlayerCard({
-  player,
+  participant,
   team,
   isCaptain,
   useOwnerView,
 }: {
-  player: PlayerCardType | null
+  participant: RoomParticipant | null
   team: 0 | 1
   isCaptain: boolean
   useOwnerView: boolean
 }) {
-  if (!player) {
+  if (!participant) {
     return (
       <div
         className={cn(
-          `h-32 border border-l-4 bg-secondary`,
+          "h-32 border border-l-4 bg-secondary",
           team === 0 ? "border-l-blue-500" : "border-l-rose-500"
         )}
       />
     )
   }
+
+  const content = (
+    <div className="relative z-10 flex h-full flex-col justify-between gap-2 p-2">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          {isCaptain && (
+            <div className="flex items-center gap-1 rounded-full border bg-secondary px-2 py-0.5">
+              <PiCrownSimpleFill className="text-yellow-400" />
+
+              <span className="font-oswald text-xs font-semibold uppercase">
+                Captain
+              </span>
+            </div>
+          )}
+
+          {participant.player && (
+            <LevelBadge experience={participant.player.experience} />
+          )}
+        </div>
+
+        <PlayerDropdownMenu
+          useOwnerView={useOwnerView}
+          participant={participant}
+        />
+      </div>
+
+      <h2
+        className={cn(
+          "font-oswald text-4xl font-semibold uppercase",
+          participant.player && "text-white"
+        )}
+      >
+        {participant.displayName}
+      </h2>
+    </div>
+  )
 
   return (
     <div
@@ -216,67 +272,53 @@ export function PlayerCard({
         team === 0 ? "border-l-blue-500" : "border-l-rose-500"
       )}
     >
-      <BannerBackground bannerId={player.bannerId}>
-        <div className="relative z-10 flex h-full flex-col justify-between gap-2 p-2">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              {isCaptain && (
-                <div className="flex items-center gap-1 rounded-full border bg-secondary px-2 py-0.5">
-                  <PiCrownSimpleFill className="text-yellow-400" />
-                  <span className="font-oswald text-xs font-semibold uppercase">
-                    Captain
-                  </span>
-                </div>
-              )}
-              <LevelBadge experience={player.experience} />
-            </div>
-            <PlayerDropdownMenu useOwnerView={useOwnerView} player={player} />
-          </div>
-
-          <h2 className="font-oswald text-4xl font-semibold text-white uppercase">
-            {player.riotIdGameName}
-          </h2>
-        </div>
-      </BannerBackground>
+      {participant.player ? (
+        <BannerBackground bannerId={participant.player.bannerId}>
+          {content}
+        </BannerBackground>
+      ) : (
+        content
+      )}
     </div>
   )
 }
 
 export function PlayerDropdownMenu({
   useOwnerView,
-  player,
+  participant,
 }: {
   useOwnerView: boolean
-  player: PlayerCardType
+  participant: RoomParticipant
 }) {
   const { activeLobby } = useRoom()
 
   const assignment = activeLobby?.players.find(
-    ({ player: assignedPlayer }) => assignedPlayer.id === player.id
+    ({ player: assignedParticipant }) =>
+      assignedParticipant.id === participant.id
   )
 
   function move(teamId: 0 | 1) {
     if (!activeLobby) return
 
-    void movePlayerToTeam(activeLobby.id, player.id, teamId)
+    void moveParticipantToTeam(activeLobby.id, participant.id, teamId)
   }
 
   function makeCaptain() {
     if (!activeLobby || !assignment) return
 
-    void makePlayerCaptain(activeLobby.id, player.id)
+    void makeParticipantCaptain(activeLobby.id, participant.id)
   }
 
   function demoteCaptain() {
     if (!activeLobby || !assignment) return
 
-    void demotePlayerCaptain(activeLobby.id, player.id)
+    void demoteParticipantCaptain(activeLobby.id, participant.id)
   }
 
   function returnToPool() {
     if (!activeLobby || !assignment) return
 
-    void returnPlayerToPool(activeLobby.id, player.id)
+    void returnParticipantToPool(activeLobby.id, participant.id)
   }
 
   return (
@@ -290,15 +332,21 @@ export function PlayerDropdownMenu({
         <DropdownMenuGroup>
           <DropdownMenuLabel>Player</DropdownMenuLabel>
 
-          <DropdownMenuItem asChild>
-            <Link
-              href={`/player/${safeSubstring(player.puuid, 0, 20)}`}
-              target="_blank"
-            >
-              <FaUser className="text-chart-3 dark:text-chart-1" />
-              View Profile
-            </Link>
-          </DropdownMenuItem>
+          {participant.player && (
+            <DropdownMenuItem asChild>
+              <Link
+                href={`/player/${safeSubstring(
+                  participant.player.puuid,
+                  0,
+                  20
+                )}`}
+                target="_blank"
+              >
+                <FaUser className="text-chart-3 dark:text-chart-1" />
+                View Profile
+              </Link>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem>
             <FaCheckCircle className="text-chart-3 dark:text-chart-1" />
             Draft Player
