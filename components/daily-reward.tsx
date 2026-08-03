@@ -8,6 +8,7 @@ import { useState } from "react"
 import { toast } from "sonner"
 import { Spinner } from "./ui/spinner"
 import { useSWRConfig } from "swr"
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
 
 export function DailyReward({ claimed }: { claimed: boolean }) {
   const [justClaimed, setJustClaimed] = useState(false)
@@ -60,17 +61,22 @@ export function DailyReward({ claimed }: { claimed: boolean }) {
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon-lg">
-          <Image
-            src="/gift.webp"
-            alt="Daily Login Button"
-            width={24}
-            height={24}
-            className={isClaimed ? "" : "animate-bounce"}
-          />
-        </Button>
-      </PopoverTrigger>
+      <Tooltip>
+        <PopoverTrigger asChild>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon-lg">
+              <Image
+                src="/gift.webp"
+                alt="Daily Login Button"
+                width={24}
+                height={24}
+                className={isClaimed ? "" : "animate-bounce"}
+              />
+            </Button>
+          </TooltipTrigger>
+        </PopoverTrigger>
+        <TooltipContent>Claim your login bonus</TooltipContent>
+      </Tooltip>
       <PopoverContent
         align="start"
         className="font-oswald text-lg font-semibold"

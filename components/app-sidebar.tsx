@@ -150,7 +150,7 @@ export async function AppSidebar({
                       >
                         <Link href={`/player/${safeSubstring(puuid, 0, 20)}`}>
                           <FaUser className="ml-0.5 size-3 text-chart-3 dark:text-chart-1" />
-                          <span className="font-oswald text-sm font-semibold uppercase">
+                          <span className="ml-0.5 font-oswald text-sm font-semibold uppercase">
                             My Profile
                           </span>
                         </Link>

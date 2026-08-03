@@ -13,6 +13,7 @@ import { players } from "@/lib/schema"
 import { Footer } from "@/components/footer"
 import { AdSlot } from "@/components/ad-slot"
 import { UserBalance } from "@/components/user-balance"
+import { PromoCode } from "@/components/promo-code"
 
 export default async function Layout({
   children,
@@ -42,7 +43,9 @@ export default async function Layout({
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" variant="secondary" />
             {user && <DailyReward claimed={claimed} />}
+            {user && <PromoCode />}
           </div>
+
           <div className="flex items-center gap-2 px-4">
             {user && <UserBalance />}
             <SearchButton />

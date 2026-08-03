@@ -276,6 +276,7 @@ export const transactionTypeEnum = pgEnum("transaction_type", [
   "MARKET_PAYOUT",
   "MARKET_REFUND",
   "DAILY_REWARD",
+  "PROMO_CODE",
 ])
 
 export const transactions = pgTable(
@@ -587,3 +588,40 @@ export const clubMembersRelations = relations(clubMembers, ({ one }) => ({
     references: [players.id],
   }),
 }))
+
+export const promoRewardTypeEnum = pgEnum("promo_reward_type", [
+  "BALANCE",
+  "BANNER",
+])
+
+export const promoCodes = pgTable("promo_codes", {
+  code: varchar("code", { length: 64 }).primaryKey(),
+  rewardType: promoRewardTypeEnum("reward_type").notNull(),
+  rewardValue: integer("reward_value").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
+})
+
+export const promoCodeRedemptions = pgTable(
+  "promo_code_redemptions",
+  {
+    promoCode: varchar("promo_code", { length: 64 })
+      .notNull()
+      .references(() => promoCodes.code, { onDelete: "cascade" }),
+
+    playerId: integer("player_id")
+      .notNull()
+      .references(() => players.id, { onDelete: "cascade" }),
+
+    redeemedAt: timestamp("redeemed_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.promoCode, table.playerId],
+    }),
+  ]
+)
