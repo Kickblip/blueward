@@ -1,13 +1,21 @@
 import { Section, TextLink } from "../terms/page"
 import { SOCIAL_LINK_CONFIG } from "@/lib/config"
+import Link from "next/link"
 
 export default function Page() {
   return (
     <main className="min-h-screen px-6 py-12">
       <div className="mx-auto w-full max-w-3xl">
-        <header className="mb-10 space-y-3">
-          <p className="text-sm text-zinc-400">
-            <span className="font-semibold text-zinc-300">Last Updated:</span>{" "}
+        <Link
+          href="/"
+          className="font-oswald font-semibold text-blue-400 uppercase underline"
+        >
+          Return to Home
+        </Link>
+
+        <header className="my-10 space-y-3">
+          <p className="text-sm">
+            <span className="font-semibold">Last Updated:</span>{" "}
             <time dateTime="2025-12-13">12 / 13 / 2025</time>
           </p>
           <h1 className="scale-y-150 font-oswald text-5xl font-semibold">
@@ -16,7 +24,7 @@ export default function Page() {
         </header>
 
         <article className="space-y-8">
-          <p className="text-sm leading-6 text-zinc-200">
+          <p className="text-sm leading-6">
             This Privacy Policy describes how Blueward ("we," "us," or "our")
             manages your personal and non-personal information. This primarily
             includes data gathered from your usage of our website at{" "}

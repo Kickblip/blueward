@@ -35,8 +35,8 @@ export function Section({
 }) {
   return (
     <section className="space-y-2">
-      <h2 className="text-lg font-semibold text-zinc-100">{title}</h2>
-      <div className="text-sm leading-6 text-zinc-200">{children}</div>
+      <h2 className="text-lg font-semibold">{title}</h2>
+      <div className="text-sm leading-6">{children}</div>
     </section>
   )
 }
@@ -45,9 +45,16 @@ export default function Page() {
   return (
     <main className="min-h-screen px-6 py-12">
       <div className="mx-auto w-full max-w-3xl">
-        <header className="mb-10 space-y-3">
-          <p className="text-sm text-zinc-400">
-            <span className="font-semibold text-zinc-300">Last Updated:</span>{" "}
+        <Link
+          href="/"
+          className="font-oswald font-semibold text-blue-400 uppercase underline"
+        >
+          Return to Home
+        </Link>
+
+        <header className="my-10 space-y-3">
+          <p className="text-sm">
+            <span className="font-semibold">Last Updated:</span>{" "}
             <time dateTime="2025-12-13">12 / 13 / 2025</time>
           </p>
           <h1 className="scale-y-150 font-oswald text-5xl font-semibold">
@@ -56,7 +63,7 @@ export default function Page() {
         </header>
 
         <article className="space-y-8">
-          <p className="text-sm leading-6 text-zinc-200">
+          <p className="text-sm leading-6">
             These Terms of Service describe how Blueward&apos;s ("we," "us," or
             "our") services may be used, including our website at{" "}
             <TextLink href="/">blueward.lol</TextLink>. By using our services,

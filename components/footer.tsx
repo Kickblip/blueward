@@ -35,12 +35,9 @@ export function Footer() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <h3 className="font-semibold">Related</h3>
+            <h3 className="font-semibold">Socials</h3>
             <FooterLink href={SOCIAL_LINK_CONFIG.clubsite}>
               Longhorn LoL
-            </FooterLink>
-            <FooterLink href={SOCIAL_LINK_CONFIG.pixels}>
-              Pixels Minigame
             </FooterLink>
 
             <div className="mt-2 flex gap-3">
