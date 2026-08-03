@@ -22,7 +22,11 @@ export function DailyReward({ claimed }: { claimed: boolean }) {
   const days = [-2, -1, 0, 1, 2].map((offset) => {
     const date = new Date(today)
     date.setDate(date.getDate() + offset)
-    return date.getDate()
+    return {
+      offset,
+      day: date.getDate(),
+      month: date.toLocaleDateString("en-US", { month: "short" }),
+    }
   })
 
   async function handleClaim() {
@@ -82,34 +86,44 @@ export function DailyReward({ claimed }: { claimed: boolean }) {
         className="font-oswald text-lg font-semibold"
       >
         <p className="text-center">Daily Login Bonus</p>
-        <div className="flex items-center gap-2">
-          <div className="pointer-events-none grid aspect-square w-12 place-items-center rounded-md border text-muted-foreground">
-            {days[0]}
+        <div className="flex items-center gap-1">
+          <Day day={days[0].day} month={days[0].month} />
+          <Day day={days[1].day} month={days[1].month} />
+
+          <div className="flex flex-col items-center gap-1">
+            <span className="font-sans text-xs text-muted-foreground">
+              {days[2].month}
+            </span>
+            <button
+              type="button"
+              onClick={handleClaim}
+              disabled={isClaimed || isClaiming}
+              className={cn(
+                "grid aspect-square w-12 place-items-center rounded-md border",
+                isClaimed
+                  ? "pointer-events-none text-muted-foreground"
+                  : "cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
+              )}
+            >
+              {isClaiming ? <Spinner /> : days[2].day}
+            </button>
           </div>
-          <div className="pointer-events-none grid aspect-square w-12 place-items-center rounded-md border text-muted-foreground">
-            {days[1]}
-          </div>
-          <button
-            type="button"
-            onClick={handleClaim}
-            disabled={isClaimed || isClaiming}
-            className={cn(
-              "grid aspect-square w-12 place-items-center rounded-md border",
-              isClaimed
-                ? "pointer-events-none text-muted-foreground"
-                : "cursor-pointer bg-muted"
-            )}
-          >
-            {isClaiming ? <Spinner /> : days[2]}
-          </button>
-          <div className="pointer-events-none grid aspect-square w-12 place-items-center rounded-md border text-muted-foreground">
-            {days[3]}
-          </div>
-          <div className="pointer-events-none grid aspect-square w-12 place-items-center rounded-md border text-muted-foreground">
-            {days[4]}
-          </div>
+
+          <Day day={days[3].day} month={days[3].month} />
+          <Day day={days[4].day} month={days[4].month} />
         </div>
       </PopoverContent>
     </Popover>
+  )
+}
+
+function Day({ day, month }: { day: number; month: string }) {
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <span className="font-sans text-xs text-muted-foreground">{month}</span>
+      <div className="grid aspect-square w-12 place-items-center rounded-md border text-muted-foreground">
+        <span>{day}</span>
+      </div>
+    </div>
   )
 }

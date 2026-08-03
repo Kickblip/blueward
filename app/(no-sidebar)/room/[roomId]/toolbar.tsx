@@ -23,6 +23,29 @@ import { useRoom } from "./room-context"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { useState, useTransition } from "react"
 import { startDraft } from "./actions"
+import { Spinner } from "@/components/ui/spinner"
+import { FaPlay } from "react-icons/fa"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu"
+import { FaGear } from "react-icons/fa6"
+import {
+  BottomRoleIcon,
+  JungleRoleIcon,
+  MiddleRoleIcon,
+  TopRoleIcon,
+  UtilityRoleIcon,
+} from "@/lib/icons"
 
 export function Toolbar() {
   const { presentParticipants, participantPool, activeLobby, isOwner } =
@@ -134,6 +157,55 @@ export function Toolbar() {
           </TooltipContent>
         </Tooltip>
 
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon-lg">
+              <FaGear className="text-chart-3 dark:text-chart-1" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-56">
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Roles</DropdownMenuLabel>
+              <div className="flex items-center gap-1">
+                <Button size="icon-lg" variant="secondary">
+                  <TopRoleIcon />
+                </Button>
+                <Button size="icon-lg" variant="secondary">
+                  <JungleRoleIcon />
+                </Button>
+                <Button size="icon-lg" variant="secondary">
+                  <MiddleRoleIcon />
+                </Button>
+                <Button size="icon-lg" variant="secondary">
+                  <BottomRoleIcon />
+                </Button>
+                <Button size="icon-lg" variant="secondary">
+                  <UtilityRoleIcon />
+                </Button>
+              </div>
+
+              <DropdownMenuLabel>Rank</DropdownMenuLabel>
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>Select</DropdownMenuSubTrigger>
+                <DropdownMenuPortal>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem>Iron</DropdownMenuItem>
+                    <DropdownMenuItem>Bronze</DropdownMenuItem>
+                    <DropdownMenuItem>Silver</DropdownMenuItem>
+                    <DropdownMenuItem>Gold</DropdownMenuItem>
+                    <DropdownMenuItem>Platinum</DropdownMenuItem>
+                    <DropdownMenuItem>Emerald</DropdownMenuItem>
+                    <DropdownMenuItem>Diamond</DropdownMenuItem>
+                    <DropdownMenuItem>Master</DropdownMenuItem>
+                    <DropdownMenuItem>Grandmaster</DropdownMenuItem>
+                    <DropdownMenuItem>Challenger</DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuPortal>
+              </DropdownMenuSub>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         {showStartDraft && (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -143,21 +215,21 @@ export function Toolbar() {
               >
                 <Button
                   variant="destructive"
-                  size="lg"
+                  size="icon-lg"
                   disabled={isStartDraftDisabled}
                   onClick={handleStartDraft}
                 >
                   <span className="font-oswald text-lg font-semibold uppercase">
-                    {isStartingDraft
-                      ? "Starting Draft…"
-                      : "Start Draft for this lobby"}
+                    {isStartingDraft ? <Spinner /> : <FaPlay />}
                   </span>
                 </Button>
               </span>
             </TooltipTrigger>
 
             <TooltipContent>
-              Two captains are required for the draft to begin
+              {isStartDraftDisabled
+                ? "Two captains are required for the draft to begin"
+                : "Start draft for this lobby"}
             </TooltipContent>
           </Tooltip>
         )}
