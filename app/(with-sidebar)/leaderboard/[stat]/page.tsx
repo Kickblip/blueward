@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Card } from "@/components/ui/card"
 import { timestampToRelativeTime, toNumberWithCommas } from "@/lib/utils"
 import { IoPodium } from "react-icons/io5"
+import { fetchPlayerBannersByPuuids } from "../../actions"
 
 export async function generateStaticParams() {
   return Object.keys(statList).map((stat) => ({ stat }))
@@ -32,6 +33,10 @@ export default async function Leaderboard({
   const limit = 15
   const players = await getTopPlayersForStat(stat, limit)
   const podium = players.slice(0, 3)
+
+  const banners = await fetchPlayerBannersByPuuids(
+    podium.map((player) => player.puuid)
+  )
 
   const buildStatsProp = (value: number, createdAt: string) => ({
     [statList[stat]]: toNumberWithCommas(value),
@@ -71,7 +76,7 @@ export default async function Leaderboard({
             stats={buildStatsProp(player.value, player.createdAt)}
             name={player.riotIdGameName}
             puuid={player.puuid}
-            backgroundImage={`${process.env.NEXT_PUBLIC_CDN_BASE}/img/champion/centered/${player.championName}_0.jpg`}
+            bannerId={banners[player.puuid] ?? 0}
           />
         ))}
 
