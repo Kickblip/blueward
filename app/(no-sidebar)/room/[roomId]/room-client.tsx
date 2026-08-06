@@ -4,9 +4,7 @@ import { cn, safeSubstring } from "@/lib/utils"
 import type { RoomParticipant, RoomSnapshot } from "@/lib/room-state"
 import { Toolbar } from "./toolbar"
 import { Footer } from "./footer"
-import { Realtime } from "ably"
-import { AblyProvider, ChannelProvider } from "ably/react"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { RoomProvider, useRoom } from "./room-context"
 import { Button } from "@/components/ui/button"
 import {
@@ -37,6 +35,9 @@ import {
   returnParticipantToPool,
   demoteParticipantCaptain,
 } from "./actions"
+import { useSession } from "@clerk/nextjs"
+import { createClient as createSupabaseClient } from "@supabase/supabase-js"
+import { createClient as createSupabaseBrowserClient } from "@/lib/supabase/client"
 
 export function RoomClient({
   initialSnapshot,
@@ -47,33 +48,40 @@ export function RoomClient({
   viewerAuthId: string | null
   participant: RoomParticipant
 }) {
-  const roomId = initialSnapshot.roomId
-  const channel = `room:${roomId}`
-  const [client, setClient] = useState<Realtime | null>(null)
+  const { session } = useSession()
 
-  useEffect(() => {
-    const realtime = new Realtime({
-      authUrl: `/api/ably/token?roomId=${encodeURIComponent(roomId)}`,
-    })
+  const supabase = useMemo(() => {
+    // Guests use their Supabase anonymous-auth cookie session.
+    if (viewerAuthId === null) {
+      return createSupabaseBrowserClient()
+    }
 
-    setClient(realtime)
-    return () => realtime.close()
-  }, [roomId])
+    // Clerk may still be loading its browser session.
+    if (!session) return null
 
-  if (!client) return <aside>Connecting…</aside>
+    // Signed-in users send their native Clerk token to Supabase.
+    return createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+      {
+        accessToken: () => session.getToken(),
+      }
+    )
+  }, [session, viewerAuthId])
+
+  if (!supabase) {
+    return <aside>Connecting…</aside>
+  }
 
   return (
-    <AblyProvider client={client}>
-      <ChannelProvider channelName={channel}>
-        <RoomProvider
-          initialSnapshot={initialSnapshot}
-          currentParticipant={participant}
-          viewerAuthId={viewerAuthId}
-        >
-          <RoomContents />
-        </RoomProvider>
-      </ChannelProvider>
-    </AblyProvider>
+    <RoomProvider
+      supabase={supabase}
+      initialSnapshot={initialSnapshot}
+      currentParticipant={participant}
+      viewerAuthId={viewerAuthId}
+    >
+      <RoomContents />
+    </RoomProvider>
   )
 }
 

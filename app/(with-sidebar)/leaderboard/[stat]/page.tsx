@@ -1,6 +1,7 @@
 import { LeaderboardRow } from "@/components/leaderboard-row"
 import { PodiumRow } from "@/components/podium-row"
-import { statList, getTopPlayersForStat, StatKey } from "./helpers"
+import { getTopPlayersForStat } from "./actions"
+import { type StatKey, statList } from "./constants"
 import Link from "next/link"
 import { Card } from "@/components/ui/card"
 import { timestampToRelativeTime, toNumberWithCommas } from "@/lib/utils"

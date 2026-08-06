@@ -8,11 +8,15 @@ import { publishRoomSnapshot } from "@/lib/room-state"
 import { randomUUID } from "node:crypto"
 import * as z from "zod"
 import { redirect } from "next/navigation"
-import { guestDisplayNameSchema, saveGuestSession } from "@/lib/guest-session"
+import { createClient as createSupabaseClient } from "@/lib/supabase/server"
 
 const continueAsGuestSchema = z.object({
   roomId: z.uuid("Invalid room"),
-  displayName: guestDisplayNameSchema,
+  displayName: z
+    .string()
+    .trim()
+    .min(1, "Enter a display name")
+    .max(32, "Display name must be 32 characters or fewer"),
 })
 
 const lobbyParticipantSchema = z.object({
@@ -40,9 +44,10 @@ export async function continueAsGuest(
   }
 
   const { roomId, displayName } = result.data
-  const { userId } = await auth()
+  const { userId: clerkUserId } = await auth()
 
-  if (userId) {
+  // Clerk always takes precedence over a leftover anonymous session.
+  if (clerkUserId) {
     redirect(`/room/${roomId}`)
   }
 
@@ -56,7 +61,45 @@ export async function continueAsGuest(
     return { error: "This room no longer exists" }
   }
 
-  await saveGuestSession(displayName)
+  const supabase = await createSupabaseClient()
+  const { data: claimsData } = await supabase.auth.getClaims()
+  const claims = claimsData?.claims
+
+  let guestUserId: string
+
+  if (claims) {
+    if (claims.is_anonymous !== true) {
+      return { error: "The current Supabase session is not anonymous" }
+    }
+
+    guestUserId = claims.sub
+  } else {
+    const { data, error } = await supabase.auth.signInAnonymously()
+
+    if (error || !data.user) {
+      console.error("Anonymous sign-in failed", error)
+      return { error: "Could not create a guest session" }
+    }
+
+    guestUserId = data.user.id
+  }
+
+  await db
+    .insert(roomParticipants)
+    .values({
+      id: randomUUID(),
+      roomId,
+      identityKey: `supabase:${guestUserId}`,
+      displayName,
+      playerId: null,
+    })
+    .onConflictDoUpdate({
+      target: [roomParticipants.roomId, roomParticipants.identityKey],
+      set: {
+        displayName,
+        playerId: null,
+      },
+    })
 
   redirect(`/room/${roomId}`)
 }

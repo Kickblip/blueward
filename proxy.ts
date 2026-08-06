@@ -1,6 +1,14 @@
 import { clerkMiddleware } from "@clerk/nextjs/server"
+import { updateSession } from "@/lib/supabase/proxy"
 
-export default clerkMiddleware()
+export default clerkMiddleware((_auth, request) => {
+  const { pathname } = request.nextUrl
+
+  // Supabase anonymous auth is currently only used by the room system
+  if (pathname === "/room" || pathname.startsWith("/room/")) {
+    return updateSession(request)
+  }
+})
 
 export const config = {
   matcher: [
