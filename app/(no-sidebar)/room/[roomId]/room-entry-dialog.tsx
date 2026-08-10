@@ -22,11 +22,7 @@ export function RoomEntryDialog({ roomId }: { roomId: string }) {
 
   return (
     <Dialog open>
-      <DialogContent
-        showCloseButton={false}
-        onEscapeKeyDown={(event) => event.preventDefault()}
-        onPointerDownOutside={(event) => event.preventDefault()}
-      >
+      <DialogContent showCloseButton={false}>
         {mode === "guest" && (
           <DialogHeader>
             <DialogTitle className="text-center">

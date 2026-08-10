@@ -28,7 +28,6 @@ import {
   FaCheckCircle,
 } from "react-icons/fa"
 import Link from "next/link"
-import { AdSlot } from "@/components/ad-slot"
 import {
   makeParticipantCaptain,
   moveParticipantToTeam,
@@ -88,69 +87,55 @@ export function RoomClient({
 function RoomContents() {
   const { activeLobby, participantPool, isOwner } = useRoom()
 
-  const team1Players =
-    activeLobby?.players.filter(({ teamId }) => teamId === 0) ?? []
-
-  const team2Players =
-    activeLobby?.players.filter(({ teamId }) => teamId === 1) ?? []
-
   return (
     <main className="grid h-dvh grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden">
       <Toolbar />
 
       <section className="min-h-0 overflow-y-auto">
         <div className="max-w-9xl mx-auto grid h-full min-h-0 w-full grid-cols-[7fr_7fr_6fr] grid-rows-[minmax(0,1fr)_90px] gap-4 p-4">
-          <div className="flex min-h-0 flex-col">
-            <div className="flex items-center gap-2 p-2">
-              <div className="size-4 rounded-xs bg-blue-500" />
-              <h2 className="font-oswald text-lg font-semibold uppercase">
-                Team 1
-              </h2>
-            </div>
-
-            <div className="flex min-h-0 flex-1 flex-col gap-4 p-2">
-              {Array.from({ length: 5 }, (_, index) => {
-                const assignment = team1Players[index]
-
-                return (
-                  <PlayerCard
-                    key={assignment?.player.id ?? `team-1-slot-${index}`}
-                    participant={assignment?.player ?? null}
-                    team={0}
-                    isCaptain={assignment?.isCaptain ?? false}
-                    useOwnerView={isOwner}
-                  />
-                )
-              })}
-            </div>
-          </div>
-
-          <div className="flex min-h-0 flex-col">
-            <div className="flex items-center gap-2 p-2">
-              <div className="size-4 rounded-xs bg-rose-500" />
-              <h2 className="font-oswald text-lg font-semibold uppercase">
-                Team 2
-              </h2>
-            </div>
-
-            <div className="flex min-h-0 flex-1 flex-col gap-4 p-2">
-              {Array.from({ length: 5 }, (_, index) => {
-                const assignment = team2Players[index]
-
-                return (
-                  <PlayerCard
-                    key={assignment?.player.id ?? `team-2-slot-${index}`}
-                    participant={assignment?.player ?? null}
-                    team={1}
-                    isCaptain={assignment?.isCaptain ?? false}
-                    useOwnerView={isOwner}
-                  />
-                )
-              })}
-            </div>
-          </div>
-
           <div className="row-span-2 min-h-0 overflow-y-auto bg-secondary p-2">
+            {([0, 1] as const).map((team) => {
+              const players =
+                activeLobby?.players.filter(({ teamId }) => teamId === team) ??
+                []
+
+              return (
+                <div key={team} className="flex min-h-0 flex-col">
+                  <div className="flex items-center gap-2 p-2">
+                    <div
+                      className={cn(
+                        "size-4 rounded-xs",
+                        team === 0 ? "bg-blue-500" : "bg-rose-500"
+                      )}
+                    />
+
+                    <h2 className="font-oswald text-lg font-semibold uppercase">
+                      Team {team + 1}
+                    </h2>
+                  </div>
+
+                  <div className="flex min-h-0 flex-1 flex-col gap-4 p-2">
+                    {Array.from({ length: 5 }, (_, index) => {
+                      const assignment = players[index]
+
+                      return (
+                        <PlayerCard
+                          key={
+                            assignment?.player.id ??
+                            `team-${team + 1}-slot-${index}`
+                          }
+                          participant={assignment?.player ?? null}
+                          team={team}
+                          isCaptain={assignment?.isCaptain ?? false}
+                          useOwnerView={isOwner}
+                        />
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })}
+
             {participantPool.map((participant) => (
               <PoolCard
                 key={participant.id}
@@ -159,8 +144,6 @@ function RoomContents() {
               />
             ))}
           </div>
-
-          <AdSlot name="lobby-bottom" className="col-span-2 h-[90px] w-full" />
         </div>
       </section>
 
@@ -305,30 +288,6 @@ export function PlayerDropdownMenu({
       assignedParticipant.id === participant.id
   )
 
-  function move(teamId: 0 | 1) {
-    if (!activeLobby) return
-
-    void moveParticipantToTeam(activeLobby.id, participant.id, teamId)
-  }
-
-  function makeCaptain() {
-    if (!activeLobby || !assignment) return
-
-    void makeParticipantCaptain(activeLobby.id, participant.id)
-  }
-
-  function demoteCaptain() {
-    if (!activeLobby || !assignment) return
-
-    void demoteParticipantCaptain(activeLobby.id, participant.id)
-  }
-
-  function returnToPool() {
-    if (!activeLobby || !assignment) return
-
-    void returnParticipantToPool(activeLobby.id, participant.id)
-  }
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -360,42 +319,51 @@ export function PlayerDropdownMenu({
             Draft Player
           </DropdownMenuItem>
         </DropdownMenuGroup>
-        {useOwnerView && (
+        {useOwnerView && activeLobby && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuLabel>Admin</DropdownMenuLabel>
               <DropdownMenuItem
-                disabled={!activeLobby}
-                onSelect={() => move(0)}
+                onSelect={() =>
+                  void moveParticipantToTeam(activeLobby.id, participant.id, 0)
+                }
               >
                 <FaArrowCircleLeft className="text-chart-3 dark:text-chart-1" />
                 Move to Team 1
               </DropdownMenuItem>
               <DropdownMenuItem
-                disabled={!activeLobby}
-                onSelect={() => move(1)}
+                onSelect={() =>
+                  void moveParticipantToTeam(activeLobby.id, participant.id, 1)
+                }
               >
                 <FaArrowCircleRight className="text-chart-3 dark:text-chart-1" />
                 Move to Team 2
               </DropdownMenuItem>
 
-              {assignment ? (
-                assignment.isCaptain ? (
-                  <DropdownMenuItem onSelect={() => demoteCaptain()}>
+              {assignment && (
+                <DropdownMenuItem
+                  onSelect={() =>
+                    void (assignment.isCaptain
+                      ? demoteParticipantCaptain(activeLobby.id, participant.id)
+                      : makeParticipantCaptain(activeLobby.id, participant.id))
+                  }
+                >
+                  {assignment.isCaptain ? (
                     <FaX className="text-chart-3 dark:text-chart-1" />
-                    Demote Captain
-                  </DropdownMenuItem>
-                ) : (
-                  <DropdownMenuItem onSelect={() => makeCaptain()}>
+                  ) : (
                     <PiCrownSimpleFill className="text-chart-3 dark:text-chart-1" />
-                    Make Captain
-                  </DropdownMenuItem>
-                )
-              ) : null}
+                  )}
+                  {assignment.isCaptain ? "Demote Captain" : "Make Captain"}
+                </DropdownMenuItem>
+              )}
 
               {assignment && (
-                <DropdownMenuItem onSelect={returnToPool}>
+                <DropdownMenuItem
+                  onSelect={() =>
+                    void returnParticipantToPool(activeLobby.id, participant.id)
+                  }
+                >
                   <FaTrash className="text-chart-3 dark:text-chart-1" />
                   Return to Pool
                 </DropdownMenuItem>

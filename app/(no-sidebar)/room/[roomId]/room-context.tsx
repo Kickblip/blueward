@@ -56,32 +56,14 @@ export function RoomProvider({
       .on<RoomSnapshot>(
         "broadcast",
         { event: "room-state-changed" },
-        ({ payload }) => {
-          if (payload.roomId === initialSnapshot.roomId) {
-            setSnapshot(payload)
-          }
-        }
+        ({ payload }) => setSnapshot(payload)
       )
       .on("presence", { event: "sync" }, () => {
-        const participantsById = new Map<string, RoomParticipant>()
-        const presenceState = channel.presenceState<RoomParticipant>()
-
-        for (const [participantId, presences] of Object.entries(
-          presenceState
-        )) {
-          // Multiple tabs can share a participant key. Present them once.
-          const presence = presences[presences.length - 1]
-
-          if (!presence) continue
-
-          participantsById.set(participantId, {
-            id: participantId,
-            displayName: presence.displayName,
-            player: presence.player,
-          })
-        }
-
-        setPresentParticipants(Array.from(participantsById.values()))
+        setPresentParticipants(
+          Object.values(channel.presenceState<RoomParticipant>()).flatMap(
+            (presences) => presences.slice(-1)
+          )
+        )
       })
 
     async function connect() {

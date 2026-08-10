@@ -24,6 +24,10 @@ const lobbyParticipantSchema = z.object({
   participantId: z.uuid(),
 })
 
+const moveParticipantSchema = lobbyParticipantSchema.extend({
+  teamId: z.union([z.literal(0), z.literal(1)]),
+})
+
 type ContinueAsGuestState = {
   error?: string
 }
@@ -109,18 +113,10 @@ export async function moveParticipantToTeam(
   participantId: string,
   teamId: 0 | 1
 ) {
-  const { userId } = await auth()
+  const { userId } = await auth.protect()
+  lobbyParticipantSchema.parse({ lobbyId, participantId, teamId })
 
-  if (!userId) {
-    throw new Error("Unauthorized")
-  }
-
-  const result = lobbyParticipantSchema.safeParse({
-    lobbyId,
-    participantId,
-  })
-
-  if (!result.success || (teamId !== 0 && teamId !== 1)) {
+  if (teamId !== 0 && teamId !== 1) {
     throw new Error("Invalid move")
   }
 
@@ -179,20 +175,8 @@ export async function makeParticipantCaptain(
   lobbyId: string,
   participantId: string
 ) {
-  const { userId } = await auth()
-
-  if (!userId) {
-    throw new Error("Unauthorized")
-  }
-
-  const result = lobbyParticipantSchema.safeParse({
-    lobbyId,
-    participantId,
-  })
-
-  if (!result.success) {
-    throw new Error("Invalid participant")
-  }
+  const { userId } = await auth.protect()
+  moveParticipantSchema.parse({ lobbyId, participantId })
 
   const [assignment] = await db
     .select({
@@ -246,20 +230,8 @@ export async function demoteParticipantCaptain(
   lobbyId: string,
   participantId: string
 ) {
-  const { userId } = await auth()
-
-  if (!userId) {
-    throw new Error("Unauthorized")
-  }
-
-  const result = lobbyParticipantSchema.safeParse({
-    lobbyId,
-    participantId,
-  })
-
-  if (!result.success) {
-    throw new Error("Invalid participant")
-  }
+  const { userId } = await auth.protect()
+  lobbyParticipantSchema.parse({ lobbyId, participantId })
 
   const [lobby] = await db
     .select({ roomId: lobbies.roomId })
@@ -290,20 +262,8 @@ export async function returnParticipantToPool(
   lobbyId: string,
   participantId: string
 ) {
-  const { userId } = await auth()
-
-  if (!userId) {
-    throw new Error("Unauthorized")
-  }
-
-  const result = lobbyParticipantSchema.safeParse({
-    lobbyId,
-    participantId,
-  })
-
-  if (!result.success) {
-    throw new Error("Invalid participant")
-  }
+  const { userId } = await auth.protect()
+  lobbyParticipantSchema.parse({ lobbyId, participantId })
 
   const [lobby] = await db
     .select({ roomId: lobbies.roomId })
@@ -329,11 +289,7 @@ export async function returnParticipantToPool(
 }
 
 export async function startDraft(lobbyId: string) {
-  const { userId } = await auth()
-
-  if (!userId) {
-    throw new Error("Unauthorized")
-  }
+  const { userId } = await auth.protect()
 
   if (!lobbyId) {
     throw new Error("Invalid lobby")
@@ -364,10 +320,7 @@ export async function startDraft(lobbyId: string) {
       and(eq(lobbyPlayers.lobbyId, lobbyId), eq(lobbyPlayers.isCaptain, true))
     )
 
-  const hasTeam0Captain = captains.some(({ teamId }) => teamId === 0)
-  const hasTeam1Captain = captains.some(({ teamId }) => teamId === 1)
-
-  if (!hasTeam0Captain || !hasTeam1Captain) {
+  if (captains.length !== 2) {
     throw new Error("Both teams require a captain")
   }
 
@@ -388,11 +341,7 @@ export async function startDraft(lobbyId: string) {
 }
 
 export async function createLobby(roomId: string) {
-  const { userId } = await auth()
-
-  if (!userId) {
-    throw new Error("Unauthorized")
-  }
+  const { userId } = await auth.protect()
 
   if (!roomId) {
     throw new Error("Invalid room")
