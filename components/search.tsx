@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { statList } from "@/app/(with-sidebar)/leaderboard/[stat]/constants"
+import { statList } from "@/app/(with-sidebar)/leaderboard/[stat]/helpers"
 import { IoPodium } from "react-icons/io5"
 import { FaUserGroup } from "react-icons/fa6"
 import { safeSubstring } from "@/lib/utils"

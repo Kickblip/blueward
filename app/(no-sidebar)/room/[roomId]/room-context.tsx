@@ -1,13 +1,7 @@
 "use client"
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react"
-import type { SupabaseClient } from "@supabase/supabase-js"
+import { createContext, useContext, useState, type ReactNode } from "react"
+import { useChannel, usePresence, usePresenceListener } from "ably/react"
 import type { RoomParticipant, RoomSnapshot } from "@/lib/room-state"
 
 type RoomContextValue = RoomSnapshot & {
@@ -21,13 +15,11 @@ type RoomContextValue = RoomSnapshot & {
 const RoomContext = createContext<RoomContextValue | null>(null)
 
 export function RoomProvider({
-  supabase,
   initialSnapshot,
   currentParticipant,
   viewerAuthId,
   children,
 }: {
-  supabase: SupabaseClient
   initialSnapshot: RoomSnapshot
   currentParticipant: RoomParticipant
   viewerAuthId: string | null
@@ -35,75 +27,27 @@ export function RoomProvider({
 }) {
   const [snapshot, setSnapshot] = useState(initialSnapshot)
   const [selectedLobbyId, selectLobby] = useState<string | null>(null)
-  const [presentParticipants, setPresentParticipants] = useState<
-    RoomParticipant[]
-  >([])
 
-  useEffect(() => {
-    let disposed = false
+  usePresence<RoomParticipant>(undefined, currentParticipant)
 
-    const channel = supabase.channel(`room:${initialSnapshot.roomId}`, {
-      config: {
-        private: true,
-        presence: {
-          enabled: true,
-          key: currentParticipant.id,
-        },
-      },
+  const { presenceData } = usePresenceListener<RoomParticipant>()
+
+  useChannel({}, "room-state-changed", ({ data }) => {
+    setSnapshot(data as RoomSnapshot)
+  })
+
+  const participantsById = new Map<string, RoomParticipant>()
+
+  for (const { clientId, data } of presenceData) {
+    if (!clientId || !data) continue
+
+    participantsById.set(clientId, {
+      ...data,
+      id: clientId,
     })
+  }
 
-    channel
-      .on<RoomSnapshot>(
-        "broadcast",
-        { event: "room-state-changed" },
-        ({ payload }) => setSnapshot(payload)
-      )
-      .on("presence", { event: "sync" }, () => {
-        setPresentParticipants(
-          Object.values(channel.presenceState<RoomParticipant>()).flatMap(
-            (presences) => presences.slice(-1)
-          )
-        )
-      })
-
-    async function connect() {
-      // Ensures either the Supabase anonymous JWT or Clerk JWT is installed
-      // on the Realtime connection before joining the private channel.
-      await supabase.realtime.setAuth()
-
-      if (disposed) return
-
-      channel.subscribe(async (status, error) => {
-        if (disposed) return
-
-        if (status === "SUBSCRIBED") {
-          const trackStatus = await channel.track(currentParticipant)
-
-          if (trackStatus !== "ok") {
-            console.error("Could not track room presence:", trackStatus)
-          }
-
-          return
-        }
-
-        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-          setPresentParticipants([])
-          console.error("Room Realtime connection failed:", error ?? status)
-        }
-      })
-    }
-
-    void connect().catch((error) => {
-      if (!disposed) {
-        console.error("Could not authenticate room Realtime:", error)
-      }
-    })
-
-    return () => {
-      disposed = true
-      void supabase.removeChannel(channel)
-    }
-  }, [currentParticipant, initialSnapshot.roomId, supabase])
+  const presentParticipants = Array.from(participantsById.values())
 
   const activeLobby =
     snapshot.lobbies.find(({ id }) => id === selectedLobbyId) ??

@@ -1,6 +1,6 @@
 "use server"
 
-import { createClient } from "@supabase/supabase-js"
+import * as Ably from "ably"
 import { asc, eq } from "drizzle-orm"
 import { db } from "@/lib/db"
 import {
@@ -123,17 +123,9 @@ export async function getRoomSnapshot(
   }
 }
 
-const supabasePublisher = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SECRET_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-      detectSessionInUrl: false,
-    },
-  }
-)
+const ably = new Ably.Rest({
+  key: process.env.ABLY_PUBLISH_KEY!,
+})
 
 export async function publishRoomSnapshot(roomId: string) {
   const snapshot = await getRoomSnapshot(roomId)
@@ -142,21 +134,9 @@ export async function publishRoomSnapshot(roomId: string) {
     throw new Error("Room not found")
   }
 
-  const channel = supabasePublisher.channel(`room:${roomId}`, {
-    config: {
-      private: true,
-    },
-  })
-
-  try {
-    const result = await channel.httpSend("room-state-changed", snapshot)
-
-    if (!result.success) {
-      throw new Error(`Could not publish room snapshot: ${result.error}`)
-    }
-  } finally {
-    await supabasePublisher.removeChannel(channel)
-  }
+  await ably.channels
+    .get(`room:${roomId}`)
+    .publish("room-state-changed", snapshot)
 
   return snapshot
 }

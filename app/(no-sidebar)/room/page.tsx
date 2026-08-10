@@ -5,7 +5,11 @@ import { createRoom } from "./actions"
 export default function Page() {
   return (
     <form action={createRoom}>
-      <Button type="submit" size="lg">
+      <Button
+        type="submit"
+        size="lg"
+        className="bg-primary text-primary-foreground hover:bg-primary/80"
+      >
         <PlusIcon className="size-6!" />
         <span className="pl-1 font-oswald text-lg font-semibold uppercase">
           Create a room

@@ -8,24 +8,16 @@ import { publishRoomSnapshot } from "@/lib/room-state"
 import { randomUUID } from "node:crypto"
 import * as z from "zod"
 import { redirect } from "next/navigation"
-import { createClient as createSupabaseClient } from "@/lib/supabase/server"
+import { guestDisplayNameSchema, saveGuestSession } from "@/lib/guest-session"
 
 const continueAsGuestSchema = z.object({
   roomId: z.uuid("Invalid room"),
-  displayName: z
-    .string()
-    .trim()
-    .min(1, "Enter a display name")
-    .max(32, "Display name must be 32 characters or fewer"),
+  displayName: guestDisplayNameSchema,
 })
 
 const lobbyParticipantSchema = z.object({
   lobbyId: z.uuid(),
   participantId: z.uuid(),
-})
-
-const moveParticipantSchema = lobbyParticipantSchema.extend({
-  teamId: z.union([z.literal(0), z.literal(1)]),
 })
 
 type ContinueAsGuestState = {
@@ -48,10 +40,9 @@ export async function continueAsGuest(
   }
 
   const { roomId, displayName } = result.data
-  const { userId: clerkUserId } = await auth()
+  const { userId } = await auth()
 
-  // Clerk always takes precedence over a leftover anonymous session.
-  if (clerkUserId) {
+  if (userId) {
     redirect(`/room/${roomId}`)
   }
 
@@ -65,45 +56,7 @@ export async function continueAsGuest(
     return { error: "This room no longer exists" }
   }
 
-  const supabase = await createSupabaseClient()
-  const { data: claimsData } = await supabase.auth.getClaims()
-  const claims = claimsData?.claims
-
-  let guestUserId: string
-
-  if (claims) {
-    if (claims.is_anonymous !== true) {
-      return { error: "The current Supabase session is not anonymous" }
-    }
-
-    guestUserId = claims.sub
-  } else {
-    const { data, error } = await supabase.auth.signInAnonymously()
-
-    if (error || !data.user) {
-      console.error("Anonymous sign-in failed", error)
-      return { error: "Could not create a guest session" }
-    }
-
-    guestUserId = data.user.id
-  }
-
-  await db
-    .insert(roomParticipants)
-    .values({
-      id: randomUUID(),
-      roomId,
-      identityKey: `supabase:${guestUserId}`,
-      displayName,
-      playerId: null,
-    })
-    .onConflictDoUpdate({
-      target: [roomParticipants.roomId, roomParticipants.identityKey],
-      set: {
-        displayName,
-        playerId: null,
-      },
-    })
+  await saveGuestSession(displayName)
 
   redirect(`/room/${roomId}`)
 }
@@ -113,10 +66,18 @@ export async function moveParticipantToTeam(
   participantId: string,
   teamId: 0 | 1
 ) {
-  const { userId } = await auth.protect()
-  lobbyParticipantSchema.parse({ lobbyId, participantId, teamId })
+  const { userId } = await auth()
 
-  if (teamId !== 0 && teamId !== 1) {
+  if (!userId) {
+    throw new Error("Unauthorized")
+  }
+
+  const result = lobbyParticipantSchema.safeParse({
+    lobbyId,
+    participantId,
+  })
+
+  if (!result.success || (teamId !== 0 && teamId !== 1)) {
     throw new Error("Invalid move")
   }
 
@@ -175,8 +136,20 @@ export async function makeParticipantCaptain(
   lobbyId: string,
   participantId: string
 ) {
-  const { userId } = await auth.protect()
-  moveParticipantSchema.parse({ lobbyId, participantId })
+  const { userId } = await auth()
+
+  if (!userId) {
+    throw new Error("Unauthorized")
+  }
+
+  const result = lobbyParticipantSchema.safeParse({
+    lobbyId,
+    participantId,
+  })
+
+  if (!result.success) {
+    throw new Error("Invalid participant")
+  }
 
   const [assignment] = await db
     .select({
@@ -230,8 +203,20 @@ export async function demoteParticipantCaptain(
   lobbyId: string,
   participantId: string
 ) {
-  const { userId } = await auth.protect()
-  lobbyParticipantSchema.parse({ lobbyId, participantId })
+  const { userId } = await auth()
+
+  if (!userId) {
+    throw new Error("Unauthorized")
+  }
+
+  const result = lobbyParticipantSchema.safeParse({
+    lobbyId,
+    participantId,
+  })
+
+  if (!result.success) {
+    throw new Error("Invalid participant")
+  }
 
   const [lobby] = await db
     .select({ roomId: lobbies.roomId })
@@ -262,8 +247,20 @@ export async function returnParticipantToPool(
   lobbyId: string,
   participantId: string
 ) {
-  const { userId } = await auth.protect()
-  lobbyParticipantSchema.parse({ lobbyId, participantId })
+  const { userId } = await auth()
+
+  if (!userId) {
+    throw new Error("Unauthorized")
+  }
+
+  const result = lobbyParticipantSchema.safeParse({
+    lobbyId,
+    participantId,
+  })
+
+  if (!result.success) {
+    throw new Error("Invalid participant")
+  }
 
   const [lobby] = await db
     .select({ roomId: lobbies.roomId })
@@ -289,7 +286,11 @@ export async function returnParticipantToPool(
 }
 
 export async function startDraft(lobbyId: string) {
-  const { userId } = await auth.protect()
+  const { userId } = await auth()
+
+  if (!userId) {
+    throw new Error("Unauthorized")
+  }
 
   if (!lobbyId) {
     throw new Error("Invalid lobby")
@@ -320,7 +321,10 @@ export async function startDraft(lobbyId: string) {
       and(eq(lobbyPlayers.lobbyId, lobbyId), eq(lobbyPlayers.isCaptain, true))
     )
 
-  if (captains.length !== 2) {
+  const hasTeam0Captain = captains.some(({ teamId }) => teamId === 0)
+  const hasTeam1Captain = captains.some(({ teamId }) => teamId === 1)
+
+  if (!hasTeam0Captain || !hasTeam1Captain) {
     throw new Error("Both teams require a captain")
   }
 
@@ -341,7 +345,11 @@ export async function startDraft(lobbyId: string) {
 }
 
 export async function createLobby(roomId: string) {
-  const { userId } = await auth.protect()
+  const { userId } = await auth()
+
+  if (!userId) {
+    throw new Error("Unauthorized")
+  }
 
   if (!roomId) {
     throw new Error("Invalid room")
