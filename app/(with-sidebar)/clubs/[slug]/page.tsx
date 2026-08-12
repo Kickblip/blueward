@@ -123,22 +123,6 @@ export default async function Page({
           <h2 className="font-oswald text-2xl font-semibold uppercase">
             {club.name}
           </h2>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="icon-sm">
-                <FaPencil className="size-4 text-chart-3 dark:text-chart-1" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-3xl">
-              <DialogHeader>
-                <DialogTitle className="font-oswald text-lg font-semibold uppercase">
-                  Club Settings
-                </DialogTitle>
-              </DialogHeader>
-
-              <ClubSettingsForm club={club} />
-            </DialogContent>
-          </Dialog>
         </div>
       </Card>
     </div>

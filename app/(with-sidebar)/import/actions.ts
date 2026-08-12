@@ -8,7 +8,7 @@ import {
 } from "@/lib/schema"
 import { calculateMMR } from "./mmr"
 import { sql, eq } from "drizzle-orm"
-import { SUPPORT_PAYOUT_MULTIPLIER } from "@/lib/config"
+import { BLUEWARD_VERSION, SUPPORT_PAYOUT_MULTIPLIER } from "@/lib/config"
 import { calculateMatchXp } from "@/lib/level"
 
 export async function fetchWithRetry(
@@ -171,7 +171,7 @@ function mapMatchRow(m: any) {
     gameMode: String(info.gameMode),
     gameType: String(info.gameType),
     gameVersion: String(info.gameVersion),
-    bluewardVersion: process.env.NEXT_PUBLIC_BLUEWARD_VERSION!,
+    bluewardVersion: BLUEWARD_VERSION,
   }
 }
 

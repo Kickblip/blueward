@@ -459,14 +459,13 @@ export const lobbyPlayers = pgTable(
 
     participantId: varchar({ length: 36 })
       .notNull()
+      .primaryKey()
       .references(() => roomParticipants.id, { onDelete: "cascade" }),
 
     teamId: smallint().notNull(),
     isCaptain: boolean().notNull().default(false),
   },
   (table) => [
-    primaryKey({ columns: [table.participantId] }),
-
     check("lobby_players_team_check", sql`${table.teamId} in (0, 1)`),
 
     uniqueIndex("lobby_players_captain_unique")
