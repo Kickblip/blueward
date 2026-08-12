@@ -47,19 +47,42 @@ export default function Page() {
           <span>Prizes</span>
         </h1>
 
-        <div className="flex flex-col gap-1">
-          <p>1st Place</p>
-          <span className="w-fit rounded-full border border-yellow-600 bg-yellow-500 px-2 font-oswald text-xs font-semibold text-yellow-100">
-            2556 RP
+        <div className="flex items-center justify-between gap-4">
+          <Image
+            src="/badges/tournament/first.svg"
+            alt=""
+            width={64}
+            height={64}
+          />
+          <span className="flex items-center gap-2 font-oswald text-3xl font-semibold uppercase italic">
+            450,000
+            <CrystalIcon size={24} className="mt-1" />
           </span>
-          <span className="flex w-fit items-center gap-1 rounded-full border border-blue-600 bg-blue-500 px-2 font-oswald text-xs font-semibold text-blue-100">
-            250,000 <CrystalIcon className="text-white" />
+        </div>
+
+        <div className="flex items-center justify-between gap-4">
+          <Image
+            src="/badges/tournament/second.svg"
+            alt=""
+            width={64}
+            height={64}
+          />
+          <span className="flex items-center gap-2 font-oswald text-3xl font-semibold uppercase italic">
+            300,000
+            <CrystalIcon size={24} className="mt-1" />
           </span>
-          <span className="w-fit rounded-full border border-purple-600 bg-purple-500 px-2 font-oswald text-xs font-semibold text-purple-100 uppercase">
-            Premium Exclusive Banner
-          </span>
-          <span className="w-fit rounded-full border border-emerald-600 bg-emerald-500 px-2 font-oswald text-xs font-semibold text-emerald-100 uppercase">
-            Exclusive Banner
+        </div>
+
+        <div className="flex items-center justify-between gap-4">
+          <Image
+            src="/badges/tournament/third.svg"
+            alt=""
+            width={64}
+            height={64}
+          />
+          <span className="flex items-center gap-2 font-oswald text-3xl font-semibold uppercase italic">
+            150,000
+            <CrystalIcon size={24} className="mt-1" />
           </span>
         </div>
       </div>

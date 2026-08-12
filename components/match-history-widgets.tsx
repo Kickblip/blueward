@@ -205,7 +205,7 @@ export function Items({ srcs, size = 30 }: { srcs: string[]; size?: number }) {
             src === "/" ? (
               <div
                 key={index}
-                className="aspect-square rounded border"
+                className="aspect-square rounded border border-zinc-600"
                 style={{ width: size, height: size }}
               ></div>
             ) : (
@@ -227,7 +227,7 @@ export function Items({ srcs, size = 30 }: { srcs: string[]; size?: number }) {
             src === "/" ? (
               <div
                 key={index}
-                className="aspect-square rounded border"
+                className="aspect-square rounded border border-zinc-600"
                 style={{ width: size, height: size }}
               ></div>
             ) : (

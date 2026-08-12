@@ -1,12 +1,13 @@
 "use client"
 
-import { useMemo, useState } from "react"
-import { FaPencilAlt } from "react-icons/fa"
-import { AnimatePresence, motion } from "framer-motion"
+import { useState } from "react"
+import { RiPencilFill } from "react-icons/ri"
 import Image from "next/image"
 import { BANNER_CONFIG } from "@/lib/config"
 import { useRouter } from "next/navigation"
 import { Spinner } from "./ui/spinner"
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "./ui/dialog"
+import { Button } from "./ui/button"
 
 export function BannerSelector({
   playerBanners,
@@ -19,19 +20,10 @@ export function BannerSelector({
   const [savingId, setSavingId] = useState<number | null>(null)
   const router = useRouter()
 
-  const banners = useMemo(() => {
-    return playerBanners
-      .map((id) => {
-        const banner = BANNER_CONFIG[id as keyof typeof BANNER_CONFIG]
-        if (!banner) return null
-        return {
-          id,
-          name: banner.name,
-          description: banner.description,
-        }
-      })
-      .filter((banner): banner is NonNullable<typeof banner> => banner !== null)
-  }, [playerBanners])
+  const banners = playerBanners.flatMap((id) => {
+    const banner = BANNER_CONFIG[id as keyof typeof BANNER_CONFIG]
+    return banner ? [{ id, ...banner }] : []
+  })
 
   async function selectBanner(bannerId: number) {
     try {
@@ -55,83 +47,62 @@ export function BannerSelector({
   if (!banners.length) return null
 
   return (
-    <>
-      <button
-        onClick={() => setOpen(true)}
-        className="absolute top-2 right-2 rounded border border-zinc-800 bg-zinc-900 p-2 hover:bg-zinc-800"
-      >
-        <FaPencilAlt className="text-zinc-200" />
-      </button>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          size="icon-lg"
+          className="absolute top-2 right-2 border border-zinc-800 bg-zinc-900 hover:bg-zinc-800"
+        >
+          <RiPencilFill className="size-5 text-white" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-h-[90dvh] w-[calc(100%-2rem)] overflow-y-auto sm:max-w-6xl">
+        <DialogTitle className="font-oswald text-lg font-semibold uppercase">
+          Banner Select
+        </DialogTitle>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            role="dialog"
-            aria-modal="true"
-          >
-            <button
-              className="absolute inset-0 bg-black/70"
-              onClick={() => setOpen(false)}
-              aria-label="Close modal"
-            />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {banners.map((banner) => {
+            const isSaving = savingId === banner.id
 
-            <motion.div
-              className="relative grid max-h-[90vh] w-full max-w-6xl grid-cols-3 gap-4 overflow-y-auto rounded-lg border border-zinc-800 bg-zinc-900 p-4"
-              initial={{ opacity: 0, scale: 0.98, y: 8 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.98, y: 8 }}
-              transition={{ duration: 0.15 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {banners.map((banner) => {
-                const isSaving = savingId === banner.id
+            return (
+              <button
+                key={banner.id}
+                className="group relative aspect-[2/1] overflow-hidden rounded"
+                disabled={savingId !== null}
+                onClick={() => selectBanner(banner.id)}
+              >
+                <Image
+                  src={`/banners/compressed/${banner.id}.webp`}
+                  alt={banner.name}
+                  fill
+                  className={`object-cover transition-transform duration-200 group-hover:scale-105 ${
+                    isSaving ? "brightness-75" : ""
+                  }`}
+                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                />
 
-                return (
-                  <button
-                    key={banner.id}
-                    className="group relative aspect-[2/1] overflow-hidden rounded"
-                    disabled={savingId !== null}
-                    onClick={() => selectBanner(banner.id)}
-                  >
-                    <Image
-                      src={`/banners/compressed/${banner.id}.webp`}
-                      alt={banner.name}
-                      fill
-                      className={`object-cover transition-transform duration-200 group-hover:scale-105 ${
-                        isSaving ? "brightness-75" : ""
-                      }`}
-                      sizes="(max-width: 1024px) 33vw, 420px"
-                    />
-
-                    <div className="absolute inset-x-0 bottom-0 bg-black/60 px-2 py-1">
-                      {isSaving ? (
-                        <div className="flex justify-center p-0.5">
-                          <Spinner />
-                        </div>
-                      ) : (
-                        <>
-                          <p className="text-sm font-medium text-zinc-100">
-                            {banner.name}
-                          </p>
-                          {banner.description ? (
-                            <p className="text-xs text-zinc-300">
-                              {banner.description}
-                            </p>
-                          ) : null}
-                        </>
+                <div className="absolute inset-x-0 bottom-0 bg-black/60 px-2 py-1">
+                  {isSaving ? (
+                    <Spinner className="mx-auto my-0.5" />
+                  ) : (
+                    <>
+                      <p className="text-sm font-medium text-white">
+                        {banner.name}
+                      </p>
+                      {banner.description && (
+                        <p className="text-xs text-zinc-200">
+                          {banner.description}
+                        </p>
                       )}
-                    </div>
-                  </button>
-                )
-              })}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+                    </>
+                  )}
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }

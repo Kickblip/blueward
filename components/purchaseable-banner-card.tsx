@@ -7,12 +7,21 @@ import { CrystalIcon } from "@/lib/icons"
 import { toNumberWithCommas } from "@/lib/utils"
 import { BANNER_CONFIG, RARITY_PRICES } from "@/lib/config"
 import { BannerOwnershipPopup } from "./banner-ownership-popup"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog"
+import { Button } from "./ui/button"
+import { Spinner } from "./ui/spinner"
+import { toast } from "sonner"
 
 export function PurchaseableBannerCard({ bannerId }: { bannerId: number }) {
   const [isPurchasing, setIsPurchasing] = useState(false)
-  const [isConfirming, setIsConfirming] = useState(false)
   const [showPopup, setShowPopup] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   const banner = BANNER_CONFIG[bannerId as keyof typeof BANNER_CONFIG]
   const price = RARITY_PRICES[banner.rarity]
@@ -21,30 +30,27 @@ export function PurchaseableBannerCard({ bannerId }: { bannerId: number }) {
     if (isPurchasing) return
 
     setIsPurchasing(true)
-    setError(null)
 
     try {
       const res = await fetch("/api/shop/banners/purchase", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({ bannerId }),
       })
 
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data?.error ?? "Failed to purchase banner")
-        return
+        throw new Error(data.message || "Failed to purchase banner")
       }
 
       await mutate("/api/shop/balance", { balance: data.balance }, false)
-      setIsConfirming(false)
+
+      setIsDialogOpen(false)
       setShowPopup(true)
     } catch (error) {
-      console.error("Banner purchase failed:", error)
-      setError("Failed to purchase banner")
+      toast.error("Something went wrong while purchasing your banner", {
+        position: "top-center",
+      })
     } finally {
       setIsPurchasing(false)
     }
@@ -53,87 +59,52 @@ export function PurchaseableBannerCard({ bannerId }: { bannerId: number }) {
   return (
     <>
       <div className="flex cursor-pointer flex-col gap-2">
-        <div className="relative aspect-[2/1] w-full overflow-hidden rounded-md">
-          <button
-            type="button"
-            onClick={() => {
-              if (isPurchasing) return
-              setError(null)
-              setIsConfirming(true)
-            }}
-            disabled={isPurchasing}
-            className="absolute inset-0 z-0 text-left disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            <Image
-              src={`/banners/compressed/${bannerId}.webp`}
-              alt={banner.name}
-              fill
-              className="object-cover"
-            />
-
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/15 to-transparent" />
-
-            <div className="absolute bottom-0 left-0 z-10 flex flex-col gap-1 p-4">
-              <div className="flex items-center gap-1">
-                <CrystalIcon size={20} />
-                <p className="font-oswald text-lg font-semibold">
-                  {toNumberWithCommas(price)}
-                </p>
-              </div>
-              <h2 className="font-oswald text-3xl font-semibold text-white uppercase">
-                {banner.name}
-              </h2>
-            </div>
-
-            <div className="absolute top-0 right-0 z-10">
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <div className="relative aspect-[2/1] w-full overflow-hidden rounded-md">
               <Image
-                src="/horizons.png"
-                alt="Horizons set logo"
-                width={100}
-                height={80}
+                src={`/banners/compressed/${bannerId}.webp`}
+                alt={banner.name}
+                fill
+                className="object-cover"
               />
-            </div>
-          </button>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/15 to-transparent" />
 
-          {isConfirming && (
-            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/65 p-4">
-              <div className="w-full max-w-xs rounded-md border border-zinc-800 bg-zinc-950 p-4 text-center">
-                <p className="font-oswald text-2xl font-semibold uppercase">
-                  Buy Banner?
-                </p>
-                <p className="mt-2 text-sm text-zinc-400">
-                  Purchase <span className="text-white">{banner.name}</span> for{" "}
-                  <span className="text-white">
+              <div className="absolute bottom-0 left-0 z-10 flex flex-col gap-1 p-4">
+                <div className="flex items-center gap-1">
+                  <CrystalIcon size={20} />
+                  <p className="font-oswald text-lg font-semibold text-white">
                     {toNumberWithCommas(price)}
-                  </span>
-                  ?
-                </p>
-
-                <div className="mt-4 flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsConfirming(false)}
-                    disabled={isPurchasing}
-                    className="flex-1 cursor-pointer rounded-md border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm transition hover:bg-zinc-800 disabled:opacity-60"
-                  >
-                    Cancel
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handlePurchase}
-                    disabled={isPurchasing}
-                    className="flex-1 cursor-pointer rounded-md border border-blue-400 bg-blue-600 px-3 py-2 text-sm transition hover:bg-sky-400 disabled:opacity-60"
-                  >
-                    Confirm
-                  </button>
+                  </p>
                 </div>
+                <h2 className="font-oswald text-3xl font-semibold text-white uppercase">
+                  {banner.name}
+                </h2>
               </div>
             </div>
-          )}
-        </div>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="font-oswald text-lg font-semibold uppercase">
+                Confirm Purchase
+              </DialogTitle>
+            </DialogHeader>
+            <p className="">
+              Purchase <span className="font-semibold">{banner.name}</span> for{" "}
+              <span className="font-semibold">{toNumberWithCommas(price)}</span>
+              ?
+            </p>
 
-        {error && <div className="text-sm text-red-300">{error}</div>}
+            <Button
+              size="lg"
+              disabled={isPurchasing}
+              onClick={handlePurchase}
+              className="w-full font-oswald font-semibold uppercase"
+            >
+              {isPurchasing ? <Spinner /> : "Buy it!"}
+            </Button>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <BannerOwnershipPopup

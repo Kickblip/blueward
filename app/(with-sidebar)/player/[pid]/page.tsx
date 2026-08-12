@@ -14,6 +14,11 @@ import { notFound } from "next/navigation"
 import { DonutChart } from "@/components/donut-chart"
 import { BannerBackground } from "@/components/banner-background"
 import { LevelBadge } from "@/components/level-badge"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 export default async function PlayerProfile({
   params,
@@ -81,7 +86,12 @@ export default async function PlayerProfile({
           </BannerBackground>
 
           <div className="mb-2 flex flex-col gap-4 px-4 pt-10">
-            <LevelBadge experience={playerProfile.experience} />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <LevelBadge experience={playerProfile.experience} />
+              </TooltipTrigger>
+              <TooltipContent>Player Level</TooltipContent>
+            </Tooltip>
             <div className="flex items-end gap-1">
               <p className="scale-y-150 font-oswald text-4xl font-semibold">
                 {playerProfile.riotIdGameName}
