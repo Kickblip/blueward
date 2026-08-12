@@ -5,7 +5,7 @@ import { SOCIAL_LINK_CONFIG } from "@/lib/config"
 
 export function Footer() {
   return (
-    <footer className="mx-auto mt-6 mb-8 flex w-full max-w-7xl flex-col gap-6">
+    <footer className="mx-auto mt-6 mb-8 flex w-full max-w-7xl flex-col gap-6 px-6">
       <div className="flex justify-between">
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2">

@@ -14,7 +14,9 @@ import { Footer } from "@/components/footer"
 import { AdSlot } from "@/components/ad-slot"
 import { UserBalance } from "@/components/user-balance"
 import { PromoCode } from "@/components/promo-code"
-import { QuestTracker } from "@/components/quest-tracker"
+import { Button } from "@/components/ui/button"
+import Image from "next/image"
+import Link from "next/link"
 
 export default async function Layout({
   children,
@@ -43,8 +45,23 @@ export default async function Layout({
         <header className="z-20 flex h-16 shrink-0 items-center justify-between gap-2">
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" variant="secondary" />
+            <Button variant="ghost" size="lg" asChild>
+              <Link href="/climb" className="relative flex items-center">
+                <Image
+                  src="/climb-challenge.webp"
+                  alt="Climb Challenge"
+                  width={24}
+                  height={24}
+                />
+
+                <span className="font-oswald font-semibold uppercase">
+                  Climb Challenge
+                </span>
+
+                <div className="absolute top-1.5 left-1.5 animate-bounce rounded-full bg-rose-500 p-1" />
+              </Link>
+            </Button>
             {user && <DailyReward claimed={claimed} />}
-            {user && <QuestTracker />}
             {user && <PromoCode />}
           </div>
 

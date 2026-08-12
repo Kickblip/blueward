@@ -15,7 +15,8 @@ export function LevelBadge({
   const level = calculateLevel(experience)
 
   const badgeSrc =
-    levelBadges.find(([threshold]) => level >= threshold)?.[1] ?? "/1.png"
+    levelBadges.find(([threshold]) => level >= threshold)?.[1] ??
+    "/badges/player/1.png"
 
   const badgeVariants = {
     default: "w-14",

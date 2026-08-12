@@ -14,6 +14,7 @@ import { Logo } from "./logo"
 import { Show, SignOutButton } from "@clerk/nextjs"
 import { HiMiniSparkles } from "react-icons/hi2"
 import { FaUsers, FaUser, FaSignOutAlt, FaShoppingCart } from "react-icons/fa"
+import { FaTrophy } from "react-icons/fa6"
 import { IoPodium } from "react-icons/io5"
 import { PlusIcon } from "lucide-react"
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog"
@@ -30,6 +31,8 @@ import {
 } from "./ui/dropdown-menu"
 import { IoMdSettings } from "react-icons/io"
 import { safeSubstring } from "@/lib/utils"
+import Image from "next/image"
+import { CrystalIcon } from "@/lib/icons"
 
 export async function AppSidebar({
   user,
@@ -99,6 +102,17 @@ export async function AppSidebar({
                     <FaUsers className="size-6! text-chart-3 dark:text-chart-1" />
                     <span className="pl-1 font-oswald text-lg font-semibold uppercase group-data-[collapsible=icon]:sr-only">
                       Clubs
+                    </span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild size="lg" tooltip="Tournaments">
+                  <Link href="/tournament">
+                    <FaTrophy className="size-6! text-chart-3 dark:text-chart-1" />
+                    <span className="pl-1 font-oswald text-lg font-semibold uppercase group-data-[collapsible=icon]:sr-only">
+                      Tournaments
                     </span>
                   </Link>
                 </SidebarMenuButton>

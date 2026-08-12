@@ -13,8 +13,10 @@ import {
   check,
   primaryKey,
   date,
+  jsonb,
 } from "drizzle-orm/pg-core"
 import { relations, sql } from "drizzle-orm"
+import type { Database as BracketDatabase } from "brackets-manager"
 
 // matches table -> 1 row per game
 // objectives table -> 1 row per team per game (2 rows per game)
@@ -512,6 +514,133 @@ export const clubMembers = pgTable(
   ]
 )
 
+export const tournamentStatusEnum = pgEnum("tournament_status", [
+  "SIGNUP",
+  "ACTIVE",
+  "COMPLETED",
+  "CANCELLED",
+])
+
+export const tournaments = pgTable(
+  "tournaments",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+
+    clubId: integer()
+      .notNull()
+      .references(() => clubs.id, { onDelete: "cascade" }),
+
+    name: varchar({ length: 128 }).notNull(),
+    slug: varchar({ length: 64 }).notNull(),
+
+    channel: varchar({ length: 64 }),
+
+    status: tournamentStatusEnum().notNull().default("SIGNUP"),
+    startsAt: timestamp({ withTimezone: true }),
+
+    bracketData: jsonb().$type<BracketDatabase>().notNull().default({
+      participant: [],
+      stage: [],
+      group: [],
+      round: [],
+      match: [],
+      match_game: [],
+    }),
+
+    version: integer().notNull().default(0),
+
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("tournaments_club_slug_unique").on(table.clubId, table.slug),
+    index("tournaments_club_status_index").on(table.clubId, table.status),
+  ]
+)
+
+export const tournamentEntries = pgTable(
+  "tournament_entries",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+
+    tournamentId: integer()
+      .notNull()
+      .references(() => tournaments.id, { onDelete: "cascade" }),
+
+    name: varchar({ length: 64 }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("tournament_entries_tournament_name_unique").on(
+      table.tournamentId,
+      table.name
+    ),
+  ]
+)
+
+export const tournamentGames = pgTable(
+  "tournament_games",
+  {
+    tournamentId: integer()
+      .notNull()
+      .references(() => tournaments.id, { onDelete: "cascade" }),
+
+    bracketMatchId: integer().notNull(),
+    gameNumber: smallint().notNull(),
+
+    matchRowId: integer().references(() => matches.id, {
+      onDelete: "set null",
+    }),
+
+    scheduledAt: timestamp({ withTimezone: true }),
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.tournamentId, table.bracketMatchId, table.gameNumber],
+    }),
+
+    uniqueIndex("tournament_games_match_row_unique").on(table.matchRowId),
+
+    check("tournament_games_game_number_check", sql`${table.gameNumber} > 0`),
+  ]
+)
+
+export const promoRewardTypeEnum = pgEnum("promo_reward_type", [
+  "BALANCE",
+  "BANNER",
+])
+
+export const promoCodes = pgTable("promo_codes", {
+  code: varchar("code", { length: 64 }).primaryKey(),
+  rewardType: promoRewardTypeEnum("reward_type").notNull(),
+  rewardValue: integer("reward_value").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
+})
+
+export const promoCodeRedemptions = pgTable(
+  "promo_code_redemptions",
+  {
+    promoCode: varchar("promo_code", { length: 64 })
+      .notNull()
+      .references(() => promoCodes.code, { onDelete: "cascade" }),
+
+    playerId: integer("player_id")
+      .notNull()
+      .references(() => players.id, { onDelete: "cascade" }),
+
+    redeemedAt: timestamp("redeemed_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.promoCode, table.playerId],
+    }),
+  ]
+)
+
 export const marketsRelations = relations(markets, ({ many }) => ({
   selections: many(marketSelections),
   transactions: many(transactions),
@@ -576,6 +705,7 @@ export const playerPerformancesRelations = relations(
 
 export const clubsRelations = relations(clubs, ({ many }) => ({
   members: many(clubMembers),
+  tournaments: many(tournaments),
 }))
 
 export const clubMembersRelations = relations(clubMembers, ({ one }) => ({
@@ -589,39 +719,37 @@ export const clubMembersRelations = relations(clubMembers, ({ one }) => ({
   }),
 }))
 
-export const promoRewardTypeEnum = pgEnum("promo_reward_type", [
-  "BALANCE",
-  "BANNER",
-])
+export const tournamentsRelations = relations(tournaments, ({ one, many }) => ({
+  club: one(clubs, {
+    fields: [tournaments.clubId],
+    references: [clubs.id],
+  }),
 
-export const promoCodes = pgTable("promo_codes", {
-  code: varchar("code", { length: 64 }).primaryKey(),
-  rewardType: promoRewardTypeEnum("reward_type").notNull(),
-  rewardValue: integer("reward_value").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  expiresAt: timestamp("expires_at", { withTimezone: true }),
-})
+  entries: many(tournamentEntries),
+  games: many(tournamentGames),
+}))
 
-export const promoCodeRedemptions = pgTable(
-  "promo_code_redemptions",
-  {
-    promoCode: varchar("promo_code", { length: 64 })
-      .notNull()
-      .references(() => promoCodes.code, { onDelete: "cascade" }),
-
-    playerId: integer("player_id")
-      .notNull()
-      .references(() => players.id, { onDelete: "cascade" }),
-
-    redeemedAt: timestamp("redeemed_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-  },
-  (table) => [
-    primaryKey({
-      columns: [table.promoCode, table.playerId],
+export const tournamentEntriesRelations = relations(
+  tournamentEntries,
+  ({ one }) => ({
+    tournament: one(tournaments, {
+      fields: [tournamentEntries.tournamentId],
+      references: [tournaments.id],
     }),
-  ]
+  })
+)
+
+export const tournamentGamesRelations = relations(
+  tournamentGames,
+  ({ one }) => ({
+    tournament: one(tournaments, {
+      fields: [tournamentGames.tournamentId],
+      references: [tournaments.id],
+    }),
+
+    match: one(matches, {
+      fields: [tournamentGames.matchRowId],
+      references: [matches.id],
+    }),
+  })
 )
