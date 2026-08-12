@@ -45,7 +45,7 @@ export default async function Layout({
         <header className="z-20 flex h-16 shrink-0 items-center justify-between gap-2">
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" variant="secondary" />
-            <Button variant="ghost" size="lg" asChild>
+            <Button variant="secondary" size="lg" asChild>
               <Link href="/climb" className="relative flex items-center">
                 <Image
                   src="/climb-challenge.webp"

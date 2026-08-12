@@ -54,10 +54,13 @@ export default function Page() {
             width={64}
             height={64}
           />
-          <span className="flex items-center gap-2 font-oswald text-3xl font-semibold uppercase italic">
-            450,000
-            <CrystalIcon size={24} className="mt-1" />
-          </span>
+          <div className="flex items-center gap-2 font-oswald text-3xl font-semibold uppercase italic">
+            <span className="text-red-500 dark:text-red-400">4,000 RP</span>+
+            <span className="flex items-center gap-2">
+              450,000
+              <CrystalIcon size={24} className="mt-1" />
+            </span>
+          </div>
         </div>
 
         <div className="flex items-center justify-between gap-4">
@@ -82,6 +85,22 @@ export default function Page() {
           />
           <span className="flex items-center gap-2 font-oswald text-3xl font-semibold uppercase italic">
             150,000
+            <CrystalIcon size={24} className="mt-1" />
+          </span>
+        </div>
+
+        <div className="flex items-center justify-between gap-4 font-oswald text-3xl font-semibold uppercase italic">
+          <span>4th - 10th</span>
+          <span className="flex items-center gap-2">
+            30,000
+            <CrystalIcon size={24} className="mt-1" />
+          </span>
+        </div>
+
+        <div className="flex items-center justify-between gap-4 font-oswald text-3xl font-semibold uppercase italic">
+          <span>11th+</span>
+          <span className="flex items-center gap-2">
+            15,000
             <CrystalIcon size={24} className="mt-1" />
           </span>
         </div>

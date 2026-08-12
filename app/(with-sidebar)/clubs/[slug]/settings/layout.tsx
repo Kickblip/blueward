@@ -59,7 +59,7 @@ export default async function Layout({
           </Link>
         </Button>
       </nav>
-      <div className="mx-auto w-full max-w-xl">{children}</div>
+      <div className="mx-auto w-full max-w-2xl">{children}</div>
     </div>
   )
 }
