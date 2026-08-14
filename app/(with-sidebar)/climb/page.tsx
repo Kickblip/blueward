@@ -48,12 +48,7 @@ export default function Page() {
         </h1>
 
         <div className="flex items-center justify-between gap-4">
-          <Image
-            src="/badges/tournament/first.svg"
-            alt=""
-            width={64}
-            height={64}
-          />
+          <Image src="/badges/first.svg" alt="" width={64} height={64} />
           <div className="flex items-center gap-2 font-oswald text-3xl font-semibold uppercase italic">
             <span className="text-red-500 dark:text-red-400">4,000 RP</span>+
             <span className="flex items-center gap-2">
@@ -64,12 +59,7 @@ export default function Page() {
         </div>
 
         <div className="flex items-center justify-between gap-4">
-          <Image
-            src="/badges/tournament/second.svg"
-            alt=""
-            width={64}
-            height={64}
-          />
+          <Image src="/badges/second.svg" alt="" width={64} height={64} />
           <span className="flex items-center gap-2 font-oswald text-3xl font-semibold uppercase italic">
             300,000
             <CrystalIcon size={24} className="mt-1" />
@@ -77,12 +67,7 @@ export default function Page() {
         </div>
 
         <div className="flex items-center justify-between gap-4">
-          <Image
-            src="/badges/tournament/third.svg"
-            alt=""
-            width={64}
-            height={64}
-          />
+          <Image src="/badges/third.svg" alt="" width={64} height={64} />
           <span className="flex items-center gap-2 font-oswald text-3xl font-semibold uppercase italic">
             150,000
             <CrystalIcon size={24} className="mt-1" />

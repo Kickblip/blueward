@@ -1,4 +1,4 @@
-export default async function Predictions() {
+export default async function Page() {
   return (
     <div className="grid h-[80dvh] w-full place-items-center">
       <div className="flex flex-col items-center gap-2">
