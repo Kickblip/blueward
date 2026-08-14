@@ -1,42 +1,58 @@
 import { currentUser, clerkClient } from "@clerk/nextjs/server"
+import { CheckCircle2Icon } from "lucide-react"
+import pLimit from "p-limit"
 import { ErrorMessage } from "@/components/error-message"
 import { RecentGame } from "@/components/recent-game"
-import pLimit from "p-limit"
-import Link from "next/link"
-import { fetchWithRetry } from "./actions"
+import { Card } from "@/components/ui/card"
+import { db } from "@/lib/db"
+import { players } from "@/lib/schema"
+import { fetchWithRetry, riotMatchSchema, submitMatch } from "./actions"
+import { SubmitMatchForm } from "./submit-match-form"
+import { eq } from "drizzle-orm"
+import { SubmitMatchButton } from "./submit-match-button"
 
-export default async function RecentGames() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ submitted?: string }>
+}) {
+  const { submitted } = await searchParams
   const user = await currentUser()
   if (!user) {
+    return <ErrorMessage message="Please sign in" />
+  }
+
+  const player = await db.query.players.findFirst({
+    where: eq(players.authId, user.id),
+    columns: {
+      id: true,
+      puuid: true,
+    },
+    with: {
+      clubMemberships: {
+        columns: {
+          clubId: true,
+        },
+        with: {
+          club: {
+            columns: {
+              name: true,
+            },
+          },
+        },
+      },
+    },
+  })
+
+  if (!player) {
     return (
-      <ErrorMessage
-        code={401}
-        message="User not authenticated. Please log in!"
-      />
+      // Should never happen but this would be from an unclaimed account
+      <ErrorMessage message="Unclaimed account" />
     )
   }
 
-  if (user.privateMetadata.role !== "admin") {
-    return (
-      <ErrorMessage
-        code={403}
-        message="User not authorized to import game data"
-      />
-    )
-  }
-
-  const hasRiotAccountConnected =
-    user &&
-    user.externalAccounts.some(
-      (account) => account.provider === "oauth_custom_riot_games"
-    )
-  if (!hasRiotAccountConnected) {
-    return (
-      <ErrorMessage
-        code={400}
-        message="Please connect your Riot account in your profile settings to import game data"
-      />
-    )
+  if (player.clubMemberships.length === 0) {
+    return <ErrorMessage message="You must join a club to submit matches" />
   }
 
   const client = await clerkClient()
@@ -62,7 +78,6 @@ export default async function RecentGames() {
   if (!matchIdsRes.ok) {
     return (
       <ErrorMessage
-        code={matchIdsRes.status}
         message={
           matchIdsRes.status === 429
             ? "Riot is rate limiting requests. Please wait and try again."
@@ -84,7 +99,10 @@ export default async function RecentGames() {
             riotRequest
           )
 
-          return res.ok ? await res.json() : null
+          if (!res.ok) return null
+
+          const match = riotMatchSchema.safeParse(await res.json())
+          return match.success ? match.data : null
         })
       )
     )
@@ -92,52 +110,83 @@ export default async function RecentGames() {
 
   if (matchIds.length > 0 && rawMatches.length === 0) {
     return (
-      <ErrorMessage
-        code={429}
-        message="Riot is rate limiting match requests. Please wait and try again."
-      />
+      <ErrorMessage message="Riot is rate limiting match requests. Please wait and try again." />
     )
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <h1 className="font-oswald text-2xl font-semibold">
-        Recently Played (Click to import)
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
+      <h1 className="font-oswald text-2xl font-semibold uppercase">
+        Recently Played
       </h1>
 
-      <h1 className="font-oswald text-2xl font-semibold text-orange-500">
-        IMPORTANT: THESE ARE NOT ONLY CUSTOM GAMES they are all recently played
-        games
-      </h1>
-      <h1 className="font-oswald text-2xl font-semibold text-orange-500">
-        IMPORTANT: ONLY IMPORT INHOUSES - not clol
-      </h1>
-      <h1 className="font-oswald text-2xl font-semibold text-red-500">
-        BE CAREFUL WHAT YOU IMPORT
-      </h1>
+      {submitted && (
+        <Card className="flex-row items-start gap-3">
+          <CheckCircle2Icon className="mt-0.5 size-5 shrink-0 text-chart-3 dark:text-chart-1" />
+          <div>
+            <p className="font-oswald font-semibold uppercase">
+              Match submitted
+            </p>
+            <p className="text-sm">
+              Your club&apos;s admins can now review it.
+            </p>
+          </div>
+        </Card>
+      )}
 
-      <div className="grid grid-cols-3 gap-4">
-        {rawMatches.map((m, idx) => (
-          <Link
-            key={idx}
-            href={`/import/${m.metadata.matchId}`}
-            prefetch={false}
-          >
-            <RecentGame
-              key={idx}
-              players={m.info.participants.map((p: any) => ({
-                riotIdGameName: p.riotIdGameName,
-                championName: p.championName,
-                kills: p.kills,
-                deaths: p.deaths,
-                assists: p.assists,
-              }))}
-              gameEndTimestamp={m.info.gameEndTimestamp}
-              interactive={false}
-            />
-          </Link>
-        ))}
-      </div>
+      <SubmitMatchForm submitAction={submitMatch}>
+        <div className="flex flex-col gap-4">
+          {rawMatches.map((match, idx) => (
+            <label key={match.metadata.matchId} className="cursor-pointer">
+              <input
+                type="radio"
+                name="matchId"
+                value={match.metadata.matchId}
+                defaultChecked={idx === 0}
+                required
+                className="peer sr-only"
+              />
+              <div className="rounded-md ring-offset-background peer-checked:ring-2 peer-checked:ring-chart-3 peer-focus-visible:ring-2 peer-focus-visible:ring-ring dark:peer-checked:ring-chart-1">
+                <RecentGame
+                  players={match.info.participants.map((participant) => ({
+                    puuid: participant.puuid,
+                    riotIdGameName: participant.riotIdGameName,
+                    championName: participant.championName,
+                    kills: participant.kills,
+                    deaths: participant.deaths,
+                    assists: participant.assists,
+                  }))}
+                  gameEndTimestamp={match.info.gameEndTimestamp}
+                  interactive={false}
+                />
+              </div>
+            </label>
+          ))}
+        </div>
+
+        <Card title="Submit match" className="gap-4 lg:sticky lg:top-4">
+          <p className="text-sm text-muted-foreground">
+            Select a recent game and the club that should review it
+          </p>
+
+          <label className="flex flex-col gap-2 text-sm font-medium">
+            <select
+              name="clubId"
+              required
+              defaultValue={player.clubMemberships[0].clubId}
+              className="h-9 rounded-md border bg-background px-3"
+            >
+              {player.clubMemberships.map(({ clubId, club }) => (
+                <option key={clubId} value={clubId}>
+                  {club.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <SubmitMatchButton disabled={rawMatches.length === 0} />
+        </Card>
+      </SubmitMatchForm>
     </div>
   )
 }

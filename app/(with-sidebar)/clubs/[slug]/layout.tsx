@@ -3,6 +3,8 @@ import { IoPodium } from "react-icons/io5"
 import Link from "next/link"
 import { FaGear } from "react-icons/fa6"
 import { RiHome6Fill } from "react-icons/ri"
+import { FaCloudUploadAlt } from "react-icons/fa"
+import { getClubReviewer } from "@/app/(with-sidebar)/import/actions"
 
 export default async function Layout({
   children,
@@ -12,6 +14,7 @@ export default async function Layout({
   params: Promise<{ slug: string }>
 }>) {
   const { slug } = await params
+  const reviewer = await getClubReviewer(slug)
 
   return (
     <main className="flex min-h-screen flex-col">
@@ -51,6 +54,20 @@ export default async function Layout({
             <span>Settings</span>
           </Link>
         </Button>
+
+        {reviewer && (
+          <Button
+            variant="default"
+            size="lg"
+            className="ml-auto gap-2 font-oswald text-lg font-semibold uppercase"
+            asChild
+          >
+            <Link href={`/import/${slug}`} className="text-white">
+              <FaCloudUploadAlt className="size-5" />
+              <span>Pending Matches</span>
+            </Link>
+          </Button>
+        )}
       </nav>
 
       {children}

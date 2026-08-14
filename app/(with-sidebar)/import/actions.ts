@@ -1,15 +1,319 @@
 import { db } from "@/lib/db"
-import {
-  matches,
-  playerPerformances,
-  teamObjectives,
-  players,
-  transactions,
-} from "@/lib/schema"
 import { calculateMMR } from "./mmr"
-import { sql, eq } from "drizzle-orm"
 import { BLUEWARD_VERSION, SUPPORT_PAYOUT_MULTIPLIER } from "@/lib/config"
 import { calculateMatchXp } from "@/lib/level"
+import { auth, clerkClient } from "@clerk/nextjs/server"
+import { and, eq, inArray, sql } from "drizzle-orm"
+import { revalidatePath, revalidateTag } from "next/cache"
+import { redirect } from "next/navigation"
+import * as z from "zod"
+import {
+  clubMembers,
+  clubs,
+  matches,
+  matchSubmissions,
+  playerPerformances,
+  players,
+  teamObjectives,
+  transactions,
+} from "@/lib/schema"
+import { safeSubstring } from "@/lib/utils"
+
+const submissionSchema = z.object({
+  matchId: z.string().trim().min(1).max(32),
+  clubId: z.coerce.number().int().positive(),
+})
+
+export const riotMatchSchema = z.looseObject({
+  metadata: z.looseObject({
+    matchId: z.string(),
+    participants: z.array(z.string()),
+  }),
+  info: z.looseObject({
+    gameEndTimestamp: z.number(),
+    gameDuration: z.number(),
+    gameMode: z.string(),
+    gameType: z.string(),
+    participants: z.array(
+      z.looseObject({
+        puuid: z.string(),
+        riotIdGameName: z.string(),
+        riotIdTagline: z.string(),
+        championName: z.string(),
+        kills: z.number(),
+        deaths: z.number(),
+        assists: z.number(),
+      })
+    ),
+  }),
+})
+
+const reviewSchema = z.object({
+  submissionId: z.coerce.number().int().positive(),
+  decision: z.enum(["APPROVE", "REJECT"]),
+})
+
+type ImportTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0]
+
+export async function getClubReviewer(clubSlug: string) {
+  const { userId } = await auth()
+  if (!userId) return null
+
+  const [reviewer] = await db
+    .select({
+      clubId: clubs.id,
+      clubName: clubs.name,
+      playerId: players.id,
+    })
+    .from(clubs)
+    .innerJoin(clubMembers, eq(clubMembers.clubId, clubs.id))
+    .innerJoin(players, eq(players.id, clubMembers.playerId))
+    .where(
+      and(
+        eq(clubs.slug, clubSlug),
+        eq(players.authId, userId),
+        inArray(clubMembers.role, ["OWNER", "ADMIN"])
+      )
+    )
+    .limit(1)
+
+  return reviewer ?? null
+}
+
+export type SubmitMatchState = {
+  error?: string
+}
+
+export async function submitMatch(
+  _previousState: SubmitMatchState,
+  formData: FormData
+): Promise<SubmitMatchState> {
+  "use server"
+
+  const input = submissionSchema.safeParse({
+    matchId: formData.get("matchId"),
+    clubId: formData.get("clubId"),
+  })
+
+  if (!input.success) {
+    return { error: "Invalid match submission." }
+  }
+
+  const { userId } = await auth()
+
+  if (!userId) {
+    return { error: "You must be signed in." }
+  }
+
+  const { matchId, clubId } = input.data
+
+  const [membership] = await db
+    .select({
+      playerId: players.id,
+      puuid: players.puuid,
+    })
+    .from(players)
+    .innerJoin(clubMembers, eq(clubMembers.playerId, players.id))
+    .where(and(eq(players.authId, userId), eq(clubMembers.clubId, clubId)))
+    .limit(1)
+
+  if (!membership) {
+    return { error: "You are not a member of this club." }
+  }
+
+  const [existingMatch, existingSubmission] = await Promise.all([
+    db.query.matches.findFirst({
+      where: eq(matches.matchId, matchId),
+      columns: { id: true },
+    }),
+    db.query.matchSubmissions.findFirst({
+      where: eq(matchSubmissions.matchId, matchId),
+      columns: { status: true },
+    }),
+  ])
+
+  if (existingMatch) {
+    return { error: "This match has already been imported." }
+  }
+
+  if (existingSubmission && existingSubmission.status !== "REJECTED") {
+    return {
+      error: `This match is already ${existingSubmission.status.toLowerCase()}.`,
+    }
+  }
+
+  const client = await clerkClient()
+  const provider = await client.users.getUserOauthAccessToken(
+    userId,
+    "custom_riot_games"
+  )
+  const riotToken = provider.data[0]?.token
+
+  if (!riotToken) {
+    return { error: "Connect your Riot account before submitting a match." }
+  }
+
+  const response = await fetchWithRetry(
+    `${process.env.NEXT_PUBLIC_RIOT_RSO_API_ROOT!}/matches/${encodeURIComponent(matchId)}`,
+    {
+      headers: {
+        Authorization: `Bearer ${riotToken}`,
+      },
+      cache: "no-store",
+    }
+  )
+
+  if (!response.ok) {
+    return { error: `Failed to fetch match from Riot (${response.status}).` }
+  }
+
+  const match = riotMatchSchema.safeParse(
+    await response.json().catch(() => null)
+  )
+
+  if (!match.success || match.data.metadata.matchId !== matchId) {
+    return { error: "Riot returned invalid match data." }
+  }
+
+  if (!match.data.metadata.participants.includes(membership.puuid)) {
+    return { error: "You can only submit matches you participated in." }
+  }
+
+  const [submission] = await db
+    .insert(matchSubmissions)
+    .values({
+      clubId,
+      matchId,
+      submittedByPlayerId: membership.playerId,
+      rawMatch: match.data,
+    })
+    .onConflictDoUpdate({
+      target: matchSubmissions.matchId,
+      set: {
+        clubId,
+        submittedByPlayerId: membership.playerId,
+        rawMatch: match.data,
+        status: "PENDING",
+        reviewedByPlayerId: null,
+        reviewedAt: null,
+        createdAt: new Date(),
+      },
+      setWhere: eq(matchSubmissions.status, "REJECTED"),
+    })
+    .returning({ id: matchSubmissions.id })
+
+  if (!submission) {
+    return { error: "This match has already been submitted." }
+  }
+
+  revalidatePath("/import")
+  redirect(`/import?submitted=${submission.id}`)
+}
+
+export async function reviewMatchSubmission(formData: FormData) {
+  "use server"
+
+  const input = reviewSchema.safeParse({
+    submissionId: formData.get("submissionId"),
+    decision: formData.get("decision"),
+  })
+
+  if (!input.success) throw new Error("Invalid review decision.")
+
+  const { userId } = await auth()
+  if (!userId) throw new Error("You must be signed in.")
+
+  const { submissionId, decision } = input.data
+
+  const reviewed = await db.transaction(async (tx) => {
+    const access = await getAuthorizedPendingSubmission(
+      tx,
+      submissionId,
+      userId
+    )
+
+    if (!access) {
+      throw new Error("Submission not found or you cannot review it.")
+    }
+
+    const match =
+      decision === "APPROVE" ? riotMatchSchema.safeParse(access.rawMatch) : null
+
+    if (match && !match.success) {
+      throw new Error("Stored match data is invalid.")
+    }
+
+    const [claimed] = await tx
+      .update(matchSubmissions)
+      .set({
+        status: decision === "APPROVE" ? "APPROVED" : "REJECTED",
+        reviewedAt: new Date(),
+        reviewedByPlayerId: access.reviewerPlayerId,
+      })
+      .where(
+        and(
+          eq(matchSubmissions.id, access.submissionId),
+          eq(matchSubmissions.status, "PENDING")
+        )
+      )
+      .returning({ id: matchSubmissions.id })
+
+    if (!claimed) throw new Error("Submission has already been reviewed.")
+
+    if (match?.success) {
+      await importMatchJsonWithTx(tx, match.data)
+    }
+
+    return {
+      clubSlug: access.clubSlug,
+      puuids: match?.success ? match.data.metadata.participants : null,
+    }
+  })
+
+  if (reviewed.puuids) revalidateImportedMatch(reviewed.puuids)
+  revalidatePath(`/import/${reviewed.clubSlug}`)
+  redirect(`/import/${reviewed.clubSlug}`)
+}
+
+async function getAuthorizedPendingSubmission(
+  tx: ImportTransaction,
+  submissionId: number,
+  userId: string
+) {
+  const [submission] = await tx
+    .select({
+      submissionId: matchSubmissions.id,
+      rawMatch: matchSubmissions.rawMatch,
+      clubSlug: clubs.slug,
+      reviewerPlayerId: players.id,
+    })
+    .from(matchSubmissions)
+    .innerJoin(clubs, eq(clubs.id, matchSubmissions.clubId))
+    .innerJoin(clubMembers, eq(clubMembers.clubId, clubs.id))
+    .innerJoin(players, eq(players.id, clubMembers.playerId))
+    .where(
+      and(
+        eq(matchSubmissions.id, submissionId),
+        eq(matchSubmissions.status, "PENDING"),
+        eq(players.authId, userId),
+        inArray(clubMembers.role, ["OWNER", "ADMIN"])
+      )
+    )
+    .limit(1)
+
+  return submission ?? null
+}
+
+function revalidateImportedMatch(puuids: string[]) {
+  revalidateTag("recent-games", "max")
+  revalidateTag("top-players-by-mmr", "max")
+  revalidatePath("/leaderboard/[stat]", "page")
+  revalidatePath("/")
+
+  for (const puuid of puuids) {
+    revalidateTag(`recent-matches:${safeSubstring(puuid, 0, 20)}`, "max")
+  }
+}
 
 export async function fetchWithRetry(
   url: string,
@@ -29,81 +333,29 @@ export async function fetchWithRetry(
   return res
 }
 
-export async function importMatchJson(m: any) {
-  return db.transaction(async (tx) => {
-    // Insert match (1 row)
-    const matchRow = mapMatchRow(m)
+async function importMatchJsonWithTx(tx: ImportTransaction, m: any) {
+  const matchRow = mapMatchRow(m)
 
-    const inserted = await tx
-      .insert(matches)
-      .values(matchRow)
-      .onConflictDoNothing({ target: matches.matchId })
-      .returning({ id: matches.id })
+  // ponytail: matchId uniqueness is the import guard; add idempotent writes only if partial retries are introduced.
+  const [insertedMatch] = await tx
+    .insert(matches)
+    .values(matchRow)
+    .returning({ id: matches.id })
 
-    let matchRowId = inserted[0]?.id
+  if (!insertedMatch) throw new Error("Failed to insert match.")
+  const matchRowId = insertedMatch.id
 
-    if (!matchRowId) {
-      const existing = await tx
-        .select({ id: matches.id })
-        .from(matches)
-        .where(eq(matches.matchId, matchRow.matchId))
-        .limit(1)
+  const performanceRows = mapPerformanceRows(m, matchRowId)
 
-      matchRowId = existing[0]?.id
-    }
+  await tx.insert(playerPerformances).values(performanceRows)
 
-    if (!matchRowId) {
-      throw new Error(
-        `Failed to resolve matchRowId for matchId=${matchRow.matchId}`
-      )
-    }
+  const objectiveRows = mapObjectiveRows(m, matchRowId)
 
-    // Insert player performances (10 rows)
-    const performanceRows = mapPerformanceRows(m, matchRowId)
+  await tx.insert(teamObjectives).values(objectiveRows)
 
-    const insertedPerformances = await tx
-      .insert(playerPerformances)
-      .values(performanceRows)
-      .onConflictDoNothing({
-        target: [playerPerformances.matchRowId, playerPerformances.puuid],
-      })
-      .returning({ puuid: playerPerformances.puuid })
+  await upsertPlayersFromMatch(tx, m)
 
-    // Insert team objectives (2 rows)
-    const objectiveRows = mapObjectiveRows(m, matchRowId)
-
-    await tx
-      .insert(teamObjectives)
-      .values(objectiveRows)
-      .onConflictDoNothing({
-        target: [teamObjectives.matchRowId, teamObjectives.teamId],
-      })
-
-    // Update player profiles
-    await upsertPlayersFromMatch(tx, m)
-
-    const insertedPuuids = new Set(
-      insertedPerformances.map(({ puuid }) => puuid)
-    )
-
-    for (const performance of performanceRows) {
-      if (!insertedPuuids.has(performance.puuid)) continue
-
-      const experience = calculateMatchXp(
-        matchRow.gameDuration,
-        performance.win
-      )
-
-      await tx
-        .update(players)
-        .set({
-          experience: sql`${players.experience} + ${experience}`,
-        })
-        .where(eq(players.puuid, performance.puuid))
-    }
-
-    // Insert transaction rows (10 rows)
-    await tx.execute(sql`
+  await tx.execute(sql`
       insert into ${transactions} (player_id, type, match_row_id, amount)
       select
         ${players.id},
@@ -119,20 +371,10 @@ export async function importMatchJson(m: any) {
       from ${playerPerformances}
       join ${players} on ${players.puuid} = ${playerPerformances.puuid}
       where ${playerPerformances.matchRowId} = ${matchRowId}
-      and not exists (
-      select 1
-      from ${transactions} t
-      where t.player_id = ${players.id}
-        and t.match_row_id = ${matchRowId}
-        and t.type = 'MATCH_EARN'::transaction_type
-      )
-    `)
-
-    return matchRowId
-  })
+  `)
 }
 
-export async function upsertPlayersFromMatch(tx: any, m: any) {
+async function upsertPlayersFromMatch(tx: ImportTransaction, m: any) {
   const info = m.info
   const participants = info.participants ?? []
 
@@ -140,6 +382,7 @@ export async function upsertPlayersFromMatch(tx: any, m: any) {
     puuid: String(p.puuid),
     riotIdGameName: String(p.riotIdGameName),
     riotIdTagline: String(p.riotIdTagline),
+    experience: calculateMatchXp(Number(info.gameDuration), Boolean(p.win)),
   }))
 
   await tx
@@ -150,10 +393,8 @@ export async function upsertPlayersFromMatch(tx: any, m: any) {
       set: {
         riotIdGameName: sql`excluded.riot_id_game_name`,
         riotIdTagline: sql`excluded.riot_id_tagline`,
+        experience: sql`${players.experience} + excluded.experience`,
       },
-      // only update if actually different
-      where: sql`${players.riotIdGameName} IS DISTINCT FROM excluded.riot_id_game_name
-            OR ${players.riotIdTagline} IS DISTINCT FROM excluded.riot_id_tagline`,
     })
 }
 

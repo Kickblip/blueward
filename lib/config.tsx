@@ -23,8 +23,8 @@ export const MINUTES_MARKET_IS_OPEN_BEFORE_LOCK = 10 as const
 
 export const MIN_PREDICTION_PAYOUT_MULTIPLIER = 1.1
 
-export const BASE_LEVEL_XP = 100
-export const LEVEL_GROWTH = 1.025
+export const BASE_LEVEL_XP = 15
+export const LEVEL_GROWTH = 1.0001
 
 export const DRAFT_ORDER = [0, 1, 1, 0, 0, 1, 1, 0] as const
 

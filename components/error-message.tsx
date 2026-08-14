@@ -1,21 +1,12 @@
 import { FaExclamationTriangle } from "react-icons/fa"
 
-export function ErrorMessage({
-  code,
-  message,
-}: {
-  code?: number | string
-  message?: string
-}) {
+export function ErrorMessage({ message }: { message?: string }) {
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className="rounded-xl bg-blue-600 p-4">
+      <div className="rounded-xl bg-blue-600 p-4 text-white">
         <FaExclamationTriangle size={30} />
       </div>
-      <h2 className="text-xl text-zinc-200">
-        {code ? `${code}` : "Something went wrong"}
-      </h2>
-      <p className="max-w-xs text-center text-xs text-zinc-400">
+      <p className="max-w-xs text-center font-oswald text-lg font-semibold uppercase">
         {message ? message : "Please try again later"}
       </p>
     </div>

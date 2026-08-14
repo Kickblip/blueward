@@ -13,7 +13,13 @@ import {
 import { Logo } from "./logo"
 import { Show, SignOutButton } from "@clerk/nextjs"
 import { HiMiniSparkles } from "react-icons/hi2"
-import { FaUsers, FaUser, FaSignOutAlt, FaShoppingCart } from "react-icons/fa"
+import {
+  FaUsers,
+  FaUser,
+  FaSignOutAlt,
+  FaShoppingCart,
+  FaCloudUploadAlt,
+} from "react-icons/fa"
 import { IoPodium } from "react-icons/io5"
 import { PlusIcon } from "lucide-react"
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog"
@@ -115,6 +121,22 @@ export async function AppSidebar({
                     <PlusIcon className="size-6!" />
                     <span className="pl-1 font-oswald text-lg font-semibold uppercase group-data-[collapsible=icon]:sr-only">
                       Create a room
+                    </span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  variant="outline"
+                  size="lg"
+                  tooltip="Add a match"
+                >
+                  <Link href="/import" prefetch={false}>
+                    <FaCloudUploadAlt className="size-6! text-chart-3 dark:text-chart-1" />
+                    <span className="pl-1 font-oswald text-lg font-semibold uppercase group-data-[collapsible=icon]:sr-only">
+                      Import Match
                     </span>
                   </Link>
                 </SidebarMenuButton>

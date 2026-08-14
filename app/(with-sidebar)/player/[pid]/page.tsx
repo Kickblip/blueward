@@ -19,6 +19,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { OPGGLogo } from "@/lib/icons"
+import Link from "next/link"
 
 export default async function PlayerProfile({
   params,
@@ -86,12 +88,28 @@ export default async function PlayerProfile({
           </BannerBackground>
 
           <div className="mb-2 flex flex-col gap-4 px-4 pt-10">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <LevelBadge experience={playerProfile.experience} />
-              </TooltipTrigger>
-              <TooltipContent>Player Level</TooltipContent>
-            </Tooltip>
+            <div className="flex items-center gap-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <LevelBadge experience={playerProfile.experience} />
+                </TooltipTrigger>
+                <TooltipContent>Blueward Player Level</TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    href={`https://op.gg/lol/summoners/na/${playerProfile.riotIdGameName}-${playerProfile.riotIdTagline}`}
+                    target="_blank"
+                  >
+                    <div className="rounded-full bg-blue-600 px-2 py-1.5 hover:bg-blue-500">
+                      <OPGGLogo size={13} />
+                    </div>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent>View on OP.GG</TooltipContent>
+              </Tooltip>
+            </div>
             <div className="flex items-end gap-1">
               <p className="scale-y-150 font-oswald text-4xl font-semibold">
                 {playerProfile.riotIdGameName}

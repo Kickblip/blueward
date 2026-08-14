@@ -125,39 +125,48 @@ function PodiumCard({
   first?: boolean
 }) {
   return (
-    <div className={`flex flex-col items-center gap-2 ${!first && "pt-16"}`}>
-      {first && <BiSolidCrown className="size-6 text-yellow-500" />}
+    <Link
+      href={`/player/${safeSubstring(player.puuid, 0, 20)}`}
+      className="group"
+    >
+      <div className={`flex flex-col items-center gap-2 ${!first && "pt-16"}`}>
+        {first && <BiSolidCrown className="size-6 text-yellow-500" />}
 
-      <div className="relative mb-6 aspect-video w-full">
-        <Image
-          src={`/banners/compressed/${profileCard?.bannerId || 0}.webp`}
-          alt=""
-          fill
-          className="rounded-md object-cover"
-        />
+        <div className="relative mb-6 aspect-video w-full">
+          <Image
+            src={`/banners/compressed/${profileCard?.bannerId || 0}.webp`}
+            alt=""
+            fill
+            className="rounded-md object-cover"
+          />
 
-        <div className="absolute top-full left-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
-          <AvatarGroup>
-            <Avatar className="size-12">
-              <AvatarImage
-                src={`${process.env.NEXT_PUBLIC_CDN_BASE}/img/champion/tiles/${player.championName}_0.jpg`}
-              />
-            </Avatar>
-            <Avatar className="size-12">
-              <AvatarImage src={profileCard?.avatarUrl || "/defaultpfp.webp"} />
-            </Avatar>
-          </AvatarGroup>
+          <div className="absolute top-full left-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
+            <AvatarGroup>
+              <Avatar className="size-12">
+                <AvatarImage
+                  src={`${process.env.NEXT_PUBLIC_CDN_BASE}/img/champion/tiles/${player.championName}_0.jpg`}
+                />
+              </Avatar>
+              <Avatar className="size-12">
+                <AvatarImage
+                  src={profileCard?.avatarUrl || "/defaultpfp.webp"}
+                />
+              </Avatar>
+            </AvatarGroup>
+          </div>
+        </div>
+        <p className="font-oswald text-2xl font-semibold uppercase group-hover:text-chart-3 dark:group-hover:text-chart-1">
+          {player.riotIdGameName}
+        </p>
+        <div>
+          <span className="font-oswald font-semibold">
+            {toNumberWithCommas(player.value)}
+          </span>{" "}
+          <span className="text-xs font-medium uppercase">
+            {statList[stat]}
+          </span>
         </div>
       </div>
-      <p className="font-oswald text-2xl font-semibold uppercase">
-        {player.riotIdGameName}
-      </p>
-      <div>
-        <span className="font-oswald font-semibold">
-          {toNumberWithCommas(player.value)}
-        </span>{" "}
-        <span className="text-xs font-medium uppercase">{statList[stat]}</span>
-      </div>
-    </div>
+    </Link>
   )
 }
