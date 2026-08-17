@@ -8,6 +8,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { HiMiniArchiveBox } from "react-icons/hi2"
+import { BannerBackground } from "./banner-background"
 
 export function FeaturedBanner() {
   const banner =
@@ -17,41 +18,29 @@ export function FeaturedBanner() {
     <Dialog>
       <DialogTrigger asChild>
         <div className="relative col-span-2 aspect-[2/1] w-full cursor-pointer overflow-hidden rounded-md border border-chart-1 shadow-lg shadow-chart-1">
-          {/* <Image
-            src={`/banners/webp/${HORIZONS_SET_LIST.featured}.webp`}
-            alt=""
-            fill
-            className="object-cover"
-          /> */}
-          <video
-            src={`/testing.mp4`}
-            autoPlay
-            muted
-            loop
-            playsInline
-            aria-hidden="true"
-            className="absolute inset-0 size-full object-cover"
-          />
+          <BannerBackground bannerId={HORIZONS_SET_LIST.featured}>
+            <div className="size-full">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/15 to-transparent" />
 
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/15 to-transparent" />
+              <div className="absolute top-0 left-0 z-10 flex flex-col gap-1 p-4">
+                <div className="flex items-center gap-1.5 rounded-md border bg-background px-2 py-1">
+                  <HiMiniArchiveBox className="size-4 text-chart-3 dark:text-chart-1" />
+                  <p className="font-oswald text-sm font-semibold uppercase">
+                    View Set list
+                  </p>
+                </div>
+              </div>
 
-          <div className="absolute top-0 left-0 z-10 flex flex-col gap-1 p-4">
-            <div className="flex items-center gap-1.5 rounded-md border bg-background px-2 py-1">
-              <HiMiniArchiveBox className="size-4 text-chart-3 dark:text-chart-1" />
-              <p className="font-oswald text-sm font-semibold uppercase">
-                View Set list
-              </p>
+              <div className="absolute bottom-0 left-0 z-10 p-4">
+                <p className="text-sm font-semibold text-white uppercase">
+                  New Animated Ultimate Banner available in base set
+                </p>
+                <h2 className="font-oswald text-7xl font-semibold text-white uppercase">
+                  {banner.name}
+                </h2>
+              </div>
             </div>
-          </div>
-
-          <div className="absolute bottom-0 left-0 z-10 p-4">
-            <p className="text-sm font-semibold text-white uppercase">
-              New Legendary Limited Banner available in Horizons
-            </p>
-            <h2 className="font-oswald text-7xl font-semibold text-white uppercase">
-              {banner.name}
-            </h2>
-          </div>
+          </BannerBackground>
         </div>
       </DialogTrigger>
 
@@ -102,40 +91,22 @@ export function FeaturedBanner() {
 
                   <div className="grid grid-cols-3 gap-4">
                     {banners.map((banner) => {
-                      const isHiddenUltimate = banner.rarity === "ultimate"
-
                       return (
                         <div
                           key={banner.id}
-                          className="group overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/70 transition-all duration-200 hover:-translate-y-0.5 hover:border-zinc-700 hover:bg-zinc-900"
+                          className="overflow-hidden rounded-md"
                         >
-                          <div className="relative aspect-[2/1] overflow-hidden">
-                            {isHiddenUltimate ? (
-                              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-zinc-900 via-zinc-950 to-black">
-                                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.14),transparent_60%)] opacity-30" />
-                                <div className="text-center">
-                                  <p className="font-oswald text-6xl font-bold tracking-[0.12em] text-white/90 uppercase">
-                                    ???
-                                  </p>
-                                </div>
+                          <BannerBackground bannerId={banner.id}>
+                            <div className="relative aspect-[2/1] overflow-hidden">
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent" />
+
+                              <div className="absolute inset-x-0 bottom-0 p-3">
+                                <p className="line-clamp-2 font-oswald text-lg leading-tight font-semibold text-white uppercase">
+                                  {banner.name}
+                                </p>
                               </div>
-                            ) : (
-                              <Image
-                                src={`/banners/compressed/${banner.id}.webp`}
-                                alt={banner.name}
-                                fill
-                                className="object-cover transition-transform duration-300"
-                              />
-                            )}
-
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent" />
-
-                            <div className="absolute inset-x-0 bottom-0 p-3">
-                              <p className="line-clamp-2 font-oswald text-lg leading-tight font-semibold text-white uppercase">
-                                {banner.name}
-                              </p>
                             </div>
-                          </div>
+                          </BannerBackground>
                         </div>
                       )
                     })}

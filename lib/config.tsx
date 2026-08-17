@@ -91,14 +91,14 @@ export const OWNERSHIP_RAKEBACK = {
 } as const
 
 export const HORIZONS_SET_LIST = {
-  featured: 60,
+  featured: 119,
   rollable: [
-    34, 7, 56, 105, 60, 85, 112, 117, 111, 24, 118, 116, 94, 84, 8, 44, 48, 91,
-    46, 37, 89, 62, 65, 69, 80, 113, 20, 11, 14, 15, 18, 106,
+    34, 119, 56, 105, 60, 85, 112, 117, 111, 24, 118, 116, 94, 84, 8, 44, 48,
+    91, 46, 37, 89, 62, 65, 69, 80, 113, 20, 11, 14, 15, 18, 106,
   ],
   buyable: [39, 16, 23, 40, 61, 81],
-  ultimate: [34, 7],
-  legendary: [56, 105, 60, 85, 112],
+  ultimate: [119],
+  legendary: [34, 56, 105, 60, 85, 112],
   epic: [117, 111, 24, 118, 116, 94, 84],
   rare: [8, 44, 48, 91, 46, 37, 89],
   common: [62, 65, 69, 80, 113, 20, 11, 14, 15, 18, 106],
@@ -130,22 +130,20 @@ export const BANNER_CONFIG = {
 
   // ================= SET 1 ROLLABLE =================
 
-  34: { name: "Look Out Below", description: "", rarity: "ultimate" },
-  7: { name: "Deliverance", description: "", rarity: "ultimate" },
+  119: {
+    name: "Crystal Rose",
+    description: "",
+    rarity: "ultimate",
+    video: "/banners/video/119.mp4",
+    mediaPosition: "center 25%",
+  },
 
+  34: { name: "Look Out Below", description: "", rarity: "legendary" },
   56: { name: "A Grand Agendum", description: "", rarity: "legendary" },
   105: { name: "Lux Illuminated", description: "", rarity: "legendary" },
   60: { name: "Nine-tailed Fox", description: "", rarity: "legendary" },
   85: { name: "Eye of the Storm", description: "", rarity: "legendary" },
   112: { name: "Last Caress", description: "", rarity: "legendary" },
-
-  119: {
-    name: "Animated Banner",
-    description: "",
-    rarity: "legendary",
-    video: "/banners/video/119.mp4",
-    mediaPosition: "center 25%",
-  },
 
   117: { name: "Experiment Gone Awry", description: "", rarity: "epic" },
   111: { name: "Call of the Forge God", description: "", rarity: "epic" },

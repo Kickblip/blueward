@@ -1,10 +1,11 @@
 "use client"
 
-import Image from "next/image"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { BANNER_CONFIG, RARITY_COLORS, type Rarity } from "@/lib/config"
 import { CrystalIcon } from "@/lib/icons"
 import { toNumberWithCommas } from "@/lib/utils"
+import { CardBody, CardContainer, CardItem } from "./ui/3d-card"
+import { BannerBackground } from "./banner-background"
 
 type BannerPopupProps = {
   open: boolean
@@ -47,36 +48,45 @@ export function BannerOwnershipPopup({
             opacity: 0.45,
           }}
         />
+        <CardContainer
+          containerClassName="-mx-32 -my-12 w-[calc(100%+16rem)] px-32 py-12"
+          className="w-full"
+        >
+          <CardBody className="relative h-auto w-full">
+            <CardItem className="w-full" translateZ={30}>
+              <BannerBackground bannerId={bannerId}>
+                <div className="relative aspect-[2/1] w-full overflow-hidden rounded-lg">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                </div>
+              </BannerBackground>
+            </CardItem>
 
-        <div className="relative aspect-[2/1] w-full overflow-hidden rounded-lg">
-          <Image
-            src={`/banners/webp/${bannerId}.webp`}
-            alt={banner.name}
-            fill
-            className="object-cover"
-          />
+            {owned && (
+              <>
+                <CardItem
+                  className="absolute top-4 left-4 font-oswald text-3xl font-semibold uppercase"
+                  translateZ={40}
+                >
+                  Owned
+                </CardItem>
 
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <CardItem
+                  className="absolute top-4 right-4 flex items-center gap-1 font-oswald text-3xl font-semibold"
+                  translateZ={40}
+                >
+                  +<CrystalIcon size={32} />
+                  {toNumberWithCommas(refundAmount)}
+                </CardItem>
+              </>
+            )}
 
-          {owned && (
-            <>
-              <div className="absolute top-4 left-4 px-3 py-1 font-oswald text-3xl font-semibold uppercase">
-                Owned
-              </div>
-
-              <div className="absolute top-4 right-4 flex items-center gap-1 px-3 py-1 font-oswald text-3xl font-semibold">
-                +<CrystalIcon size={32} />
-                {toNumberWithCommas(refundAmount)}
-              </div>
-            </>
-          )}
-
-          <div className="absolute bottom-4 left-4">
-            <DialogTitle className="font-oswald text-5xl font-semibold uppercase">
-              {banner.name}
-            </DialogTitle>
-          </div>
-        </div>
+            <CardItem className="absolute bottom-4 left-4" translateZ={50}>
+              <DialogTitle className="font-oswald text-5xl font-semibold uppercase">
+                {banner.name}
+              </DialogTitle>
+            </CardItem>
+          </CardBody>
+        </CardContainer>
       </DialogContent>
     </Dialog>
   )
