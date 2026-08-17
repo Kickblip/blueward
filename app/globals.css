@@ -133,3 +133,21 @@
     @apply font-sans;
   }
 }
+
+@keyframes wobble {
+  0%,
+  100% {
+    transform: rotate(-3deg);
+  }
+
+  50% {
+    transform: rotate(3deg);
+  }
+}
+
+@layer utilities {
+  .animate-wobble {
+    transform-origin: center;
+    animation: wobble 3s ease-in-out infinite;
+  }
+}

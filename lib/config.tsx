@@ -139,6 +139,14 @@ export const BANNER_CONFIG = {
   85: { name: "Eye of the Storm", description: "", rarity: "legendary" },
   112: { name: "Last Caress", description: "", rarity: "legendary" },
 
+  119: {
+    name: "Animated Banner",
+    description: "",
+    rarity: "legendary",
+    video: "/banners/video/119.mp4",
+    mediaPosition: "center 25%",
+  },
+
   117: { name: "Experiment Gone Awry", description: "", rarity: "epic" },
   111: { name: "Call of the Forge God", description: "", rarity: "epic" },
   24: { name: "Welcome Back", description: "", rarity: "epic" },

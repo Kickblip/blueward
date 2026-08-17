@@ -1,94 +1,142 @@
 import { Card } from "@/components/ui/card"
 import Image from "next/image"
-import { CrystalIcon } from "@/lib/icons"
-import { FaGift } from "react-icons/fa6"
+import { Avatar, AvatarGroup, AvatarImage } from "@/components/ui/avatar"
+import { BiSolidCrown } from "react-icons/bi"
+import { Button } from "@/components/ui/button"
+import { InfoIcon } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 export default function Page() {
   return (
-    <div className="grid min-h-screen w-full grid-cols-3">
-      <div className="col-span-2 flex flex-col items-center gap-8">
-        <div className="grid w-full max-w-3xl grid-cols-3 gap-4">
-          <Card>
-            <p className="font-oswald text-lg font-semibold uppercase">
-              Kickball
-            </p>
-          </Card>
-          <Card>
-            <></>
-          </Card>
-          <Card>
-            <></>
-          </Card>
-        </div>
-        <Image src="/podium.svg" alt="" width={512} height={512} />
+    <div className="mx-auto flex w-full max-w-3xl flex-col items-center gap-8">
+      <div className="relative flex w-full justify-center">
+        <Image
+          src="/devil/title.svg"
+          alt=""
+          className="my-4"
+          width={325}
+          height={325}
+        />
 
-        <div className="-mt-40 flex h-96 w-full max-w-3xl flex-col gap-2 rounded-md border bg-secondary">
-          <span className="w-fit rounded-full border border-yellow-600 bg-yellow-500 px-2 font-oswald text-xs font-semibold text-yellow-100">
-            2556 RP
-          </span>
+        <div className="absolute top-4 right-0 z-30 flex gap-2">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="lg"
+                className="font-oswald font-semibold uppercase"
+              >
+                <InfoIcon />
+                Prizes
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle className="font-oswald text-lg font-semibold uppercase">
+                  Prizes
+                </DialogTitle>
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
 
-          <span className="flex w-fit items-center gap-1 rounded-full border border-blue-600 bg-blue-500 px-2 font-oswald text-xs font-semibold text-blue-100">
-            250,000 <CrystalIcon className="text-white" />
-          </span>
-
-          <span className="w-fit rounded-full border border-purple-600 bg-purple-500 px-2 font-oswald text-xs font-semibold text-purple-100 uppercase">
-            Premium Exclusive Banner
-          </span>
-
-          <span className="w-fit rounded-full border border-emerald-600 bg-emerald-500 px-2 font-oswald text-xs font-semibold text-emerald-100 uppercase">
-            Exclusive Banner
-          </span>
+          <Button size="lg" className="font-oswald font-semibold uppercase">
+            Join
+          </Button>
         </div>
       </div>
 
-      <div className="col-span-1 flex flex-col gap-4">
-        <h1 className="flex items-center gap-2 font-oswald text-2xl font-semibold uppercase">
-          <FaGift className="size-6 text-chart-3 dark:text-chart-1" />
-          <span>Prizes</span>
-        </h1>
+      <div className="relative w-full">
+        <Image
+          src="/devil/face.svg"
+          alt=""
+          width={156}
+          height={156}
+          className="animate-wobble pointer-events-none absolute top-0 left-0 z-20 -translate-x-1/2 -translate-y-1/2"
+        />
 
-        <div className="flex items-center justify-between gap-4">
-          <Image src="/badges/first.svg" alt="" width={64} height={64} />
-          <div className="flex items-center gap-2 font-oswald text-3xl font-semibold uppercase italic">
-            <span className="text-red-500 dark:text-red-400">4,000 RP</span>+
-            <span className="flex items-center gap-2">
-              450,000
-              <CrystalIcon size={24} className="mt-1" />
-            </span>
+        <div className="pointer-events-none absolute top-0 right-0 z-20 translate-x-1/2 -translate-y-1/2">
+          <div className="flex items-start -space-x-3">
+            <Image
+              src="/devil/die.svg"
+              alt=""
+              width={48}
+              height={48}
+              className="animate-wobble -rotate-12"
+            />
+
+            <Image
+              src="/devil/die.svg"
+              alt=""
+              width={48}
+              height={48}
+              className="animate-wobble mt-5 rotate-12"
+            />
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-4">
-          <Image src="/badges/second.svg" alt="" width={64} height={64} />
-          <span className="flex items-center gap-2 font-oswald text-3xl font-semibold uppercase italic">
-            300,000
-            <CrystalIcon size={24} className="mt-1" />
-          </span>
-        </div>
+        <Image
+          src="/devil/hand.svg"
+          alt=""
+          width={128}
+          height={128}
+          className="animate-wobble pointer-events-none absolute bottom-0 left-0 z-20 -translate-x-1/2 translate-y-1/2 scale-x-[-1] rotate-10"
+        />
 
-        <div className="flex items-center justify-between gap-4">
-          <Image src="/badges/third.svg" alt="" width={64} height={64} />
-          <span className="flex items-center gap-2 font-oswald text-3xl font-semibold uppercase italic">
-            150,000
-            <CrystalIcon size={24} className="mt-1" />
-          </span>
-        </div>
+        {/* <Image
+          src="/devil/hand.svg"
+          alt=""
+          width={128}
+          height={128}
+          className="animate-wobble pointer-events-none absolute right-0 bottom-0 z-20 translate-x-1/2 translate-y-1/2 -rotate-10"
+        /> */}
 
-        <div className="flex items-center justify-between gap-4 font-oswald text-3xl font-semibold uppercase italic">
-          <span>4th - 10th</span>
-          <span className="flex items-center gap-2">
-            30,000
-            <CrystalIcon size={24} className="mt-1" />
-          </span>
+        <div className="grid w-full max-w-3xl grid-cols-3 gap-4">
+          <PodiumCard />
+          <PodiumCard first />
+          <PodiumCard />
         </div>
+      </div>
 
-        <div className="flex items-center justify-between gap-4 font-oswald text-3xl font-semibold uppercase italic">
-          <span>11th+</span>
-          <span className="flex items-center gap-2">
-            15,000
-            <CrystalIcon size={24} className="mt-1" />
-          </span>
+      <Image src="/devil/podium.svg" alt="" width={512} height={512} />
+
+      <Card className="-mt-40 h-96 w-full">
+        <></>
+      </Card>
+    </div>
+  )
+}
+
+function PodiumCard({ first = false }: { first?: boolean }) {
+  return (
+    <div className={`flex flex-col items-center gap-2 ${!first && "pt-16"}`}>
+      {first && <BiSolidCrown className="size-6 text-yellow-500" />}
+
+      <div className="relative mb-6 aspect-video w-full">
+        <Image
+          src={`/banners/compressed/5.webp`}
+          alt=""
+          fill
+          className="rounded-md object-cover"
+        />
+
+        <div className="absolute top-full left-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
+          <Avatar className="size-12">
+            <AvatarImage src={"/defaultpfp.webp"} />
+          </Avatar>
         </div>
+      </div>
+      <p className="font-oswald text-2xl font-semibold uppercase group-hover:text-chart-3 dark:group-hover:text-chart-1">
+        Kickball
+      </p>
+      <div>
+        <span className="font-oswald font-semibold">+200</span>{" "}
+        <span className="text-xs font-medium uppercase">LP</span>
       </div>
     </div>
   )
