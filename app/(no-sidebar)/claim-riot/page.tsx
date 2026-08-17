@@ -13,11 +13,7 @@ export default async function Page({
 
   const user = await currentUser()
 
-  if (!user) {
-    redirect(`/signin?redirect_url=${encodeURIComponent(destination)}`)
-  }
-
-  if (typeof user.privateMetadata.puuid === "string") {
+  if (typeof user?.privateMetadata.puuid === "string") {
     redirect(destination)
   }
 

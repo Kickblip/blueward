@@ -55,6 +55,7 @@ type RiotIdentityResult =
       puuid: string
       riotIdGameName: string
       riotIdTagline: string
+      platform: string
       userId: string
       client: Awaited<ReturnType<typeof clerkClient>>
     }
@@ -165,6 +166,7 @@ export async function getCurrentRiotIdentity(): Promise<RiotIdentityResult> {
     puuid,
     riotIdGameName,
     riotIdTagline,
+    platform,
     userId: user.id,
     client,
   }
@@ -174,10 +176,12 @@ export async function claimProfileByPuuid(args: {
   puuid: string
   riotIdGameName: string
   riotIdTagline: string
+  platform: string
   userId: string
   client: Awaited<ReturnType<typeof clerkClient>>
 }): Promise<ClaimProfileResult> {
-  const { puuid, riotIdGameName, riotIdTagline, userId, client } = args
+  const { puuid, riotIdGameName, platform, riotIdTagline, userId, client } =
+    args
 
   const player = await db.query.players.findFirst({
     where: eq(players.puuid, puuid),
@@ -192,33 +196,72 @@ export async function claimProfileByPuuid(args: {
       riotIdGameName,
       riotIdTagline,
     })
+  } else {
+    if (player.authId && player.authId !== userId) {
+      return { ok: false, code: 409, message: "Player already claimed." }
+    }
 
-    await client.users.updateUserMetadata(userId, {
-      privateMetadata: {
-        puuid,
+    await db
+      .update(players)
+      .set({
+        authId: userId,
+        riotIdGameName,
+        riotIdTagline,
+      })
+      .where(eq(players.id, player.id))
+  }
+
+  const summonerRes = await fetchWithRetry(
+    `https://${platform}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/${encodeURIComponent(puuid)}`,
+    {
+      headers: {
+        "X-Riot-Token": process.env.RIOT_API_KEY!,
       },
-    })
+    }
+  )
 
-    return { ok: true, puuid }
+  if (!summonerRes.ok) {
+    return {
+      ok: false,
+      code: summonerRes.status,
+      message: "Failed to fetch League profile.",
+    }
   }
 
-  if (player.authId && player.authId !== userId) {
-    return { ok: false, code: 409, message: "Player already claimed." }
+  const { profileIconId } = (await summonerRes.json()) as {
+    profileIconId?: number
   }
 
-  await db
-    .update(players)
-    .set({
-      authId: userId,
-      riotIdGameName,
-      riotIdTagline,
-    })
-    .where(eq(players.id, player.id))
+  if (typeof profileIconId !== "number") {
+    return {
+      ok: false,
+      code: 500,
+      message: "League profile icon was missing.",
+    }
+  }
+
+  const iconResponse = await fetch(
+    `${process.env.NEXT_PUBLIC_CDN_BASE}/${process.env.NEXT_PUBLIC_PATCH_VERSION}/img/profileicon/${profileIconId}.png`
+  )
+
+  if (!iconResponse.ok) {
+    return {
+      ok: false,
+      code: 502,
+      message: "Failed to download League profile icon.",
+    }
+  }
+
+  await client.users.updateUserProfileImage(userId, {
+    file: await iconResponse.blob(),
+  })
+
+  await client.users.updateUser(userId, {
+    username: riotIdGameName,
+  })
 
   await client.users.updateUserMetadata(userId, {
-    privateMetadata: {
-      puuid,
-    },
+    privateMetadata: { puuid },
   })
 
   return { ok: true, puuid }
