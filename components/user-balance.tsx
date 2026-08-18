@@ -90,12 +90,12 @@ export function UserBalance() {
               </div>
             ))}
 
-            <Button
+            {/* <Button
               size="lg"
               className="mt-1 font-oswald font-semibold uppercase"
             >
               View All
-            </Button>
+            </Button> */}
           </>
         ) : (
           <p className="text-sm text-muted-foreground">No transactions yet.</p>
