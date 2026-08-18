@@ -15,6 +15,7 @@ import { mutate } from "swr"
 import { BannerOwnershipPopup } from "./banner-ownership-popup"
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
 import { Button } from "./ui/button"
+import { InfoIcon } from "lucide-react"
 
 type RollResponse = {
   rarity: Rarity
@@ -153,7 +154,36 @@ export function BannerRoll() {
   }
 
   return (
-    <Card className="border-chart-1 shadow-lg shadow-chart-1">
+    <Card className="relative border-chart-1 shadow-lg shadow-chart-1">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            className="absolute top-2 right-2 text-muted-foreground"
+          >
+            <InfoIcon aria-hidden="true" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <div className="flex items-center justify-between gap-8">
+            <div className="flex flex-col gap-1">
+              <p>Ultimate</p>
+              <p>Legendary</p>
+              <p>Epic</p>
+              <p>Rare</p>
+              <p>Common</p>
+            </div>
+            <div className="flex flex-col gap-1 text-right">
+              <p>{RARITY_RATES.ultimate * 100}%</p>
+              <p>{RARITY_RATES.legendary * 100}%</p>
+              <p>{RARITY_RATES.epic * 100}%</p>
+              <p>{RARITY_RATES.rare * 100}%</p>
+              <p>{Math.floor(RARITY_RATES.common * 100)}%</p>
+            </div>
+          </div>
+        </TooltipContent>
+      </Tooltip>
+
       <div className="flex items-center justify-center pt-8">
         <div className="relative flex h-72 w-72 items-center justify-center">
           <div className="pointer-events-none absolute top-1 left-1/2 z-20 h-0 w-0 -translate-x-1/2 rotate-180 border-t-0 border-r-[12px] border-b-[18px] border-l-[12px] border-r-transparent border-b-white border-l-transparent drop-shadow-[0_0_10px_rgba(255,255,255,0.45)]" />
@@ -196,42 +226,18 @@ export function BannerRoll() {
         </div>
       </div>
 
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            type="button"
-            onClick={handleRoll}
-            disabled={isRolling}
-            size="lg"
-            className="z-20 h-14 rounded-lg"
-          >
-            <CrystalIcon size={25} className="text-white" />
-            <p className="font-oswald text-xl font-semibold text-white uppercase">
-              {isRolling
-                ? "Rolling..."
-                : `${toNumberWithCommas(ROLL_PRICE)} ROLL`}
-            </p>
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <div className="flex items-center justify-between gap-8">
-            <div className="flex flex-col gap-1">
-              <p>Ultimate</p>
-              <p>Legendary</p>
-              <p>Epic</p>
-              <p>Rare</p>
-              <p>Common</p>
-            </div>
-            <div className="flex flex-col gap-1 text-right">
-              <p>{RARITY_RATES.ultimate * 100}%</p>
-              <p>{RARITY_RATES.legendary * 100}%</p>
-              <p>{RARITY_RATES.epic * 100}%</p>
-              <p>{RARITY_RATES.rare * 100}%</p>
-              <p>{Math.floor(RARITY_RATES.common * 100)}%</p>
-            </div>
-          </div>
-        </TooltipContent>
-      </Tooltip>
+      <Button
+        type="button"
+        onClick={handleRoll}
+        disabled={isRolling}
+        size="lg"
+        className="z-20 h-14 rounded-lg"
+      >
+        <CrystalIcon size={25} className="text-white" />
+        <p className="font-oswald text-xl font-semibold text-white uppercase">
+          {isRolling ? "Rolling..." : `${toNumberWithCommas(ROLL_PRICE)} ROLL`}
+        </p>
+      </Button>
 
       {errorMessage && (
         <div className="px-4 py-2 text-sm text-red-200">{errorMessage}</div>
