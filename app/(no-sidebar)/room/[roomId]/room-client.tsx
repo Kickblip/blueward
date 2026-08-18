@@ -37,6 +37,18 @@ import {
   returnParticipantToPool,
   demoteParticipantCaptain,
 } from "./actions"
+import {
+  BottomRoleIcon,
+  JungleRoleIcon,
+  MiddleRoleIcon,
+  TopRoleIcon,
+  UtilityRoleIcon,
+} from "@/lib/icons"
+import {
+  TooltipContent,
+  Tooltip,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 export function RoomClient({
   initialSnapshot,
@@ -161,6 +173,60 @@ function RoomContents() {
   )
 }
 
+const ROLE_ICONS: Partial<
+  Record<RoomParticipant["roles"][number], typeof TopRoleIcon>
+> = {
+  TOP: TopRoleIcon,
+  JUNGLE: JungleRoleIcon,
+  MIDDLE: MiddleRoleIcon,
+  BOTTOM: BottomRoleIcon,
+  UTILITY: UtilityRoleIcon,
+}
+
+function PlayerPreferenceBadges({
+  roles,
+  rank,
+}: Pick<RoomParticipant, "roles" | "rank">) {
+  if (roles.length === 0 && !rank) return null
+
+  return (
+    <div className="flex flex-wrap items-center gap-1">
+      {roles.map((role) => {
+        const Icon = ROLE_ICONS[role]
+
+        if (!Icon) return null
+
+        const label =
+          role === "UTILITY"
+            ? "Support"
+            : `${role[0]}${role.slice(1).toLowerCase()}`
+
+        return (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span
+                key={role}
+                title={label}
+                aria-label={`Preferred role: ${label}`}
+                className="flex size-6 items-center justify-center rounded-full border bg-secondary/90 text-secondary-foreground shadow-sm"
+              >
+                <Icon className="size-3.5" />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>{label}</TooltipContent>
+          </Tooltip>
+        )
+      })}
+
+      {rank && (
+        <span className="inline-flex h-6 items-center rounded-full border bg-secondary/90 px-2 font-oswald text-[10px] font-semibold text-secondary-foreground uppercase shadow-sm">
+          {rank}
+        </span>
+      )}
+    </div>
+  )
+}
+
 export function PoolCard({
   participant,
   useOwnerView,
@@ -172,10 +238,15 @@ export function PoolCard({
     <div className="min-h-0 flex-1 overflow-hidden rounded-md border bg-secondary">
       <div className="flex h-full flex-col justify-between gap-2 p-2">
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {participant.player && (
               <LevelBadge experience={participant.player.experience} />
             )}
+
+            <PlayerPreferenceBadges
+              roles={participant.roles}
+              rank={participant.rank}
+            />
           </div>
 
           <PlayerDropdownMenu
@@ -232,7 +303,7 @@ export function PlayerCard({
   const content = (
     <div className="relative z-10 flex h-full flex-col justify-between gap-2 p-2">
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {isCaptain && (
             <div className="flex items-center gap-1 rounded-full border bg-secondary px-2 py-0.5">
               <PiCrownSimpleFill className="text-yellow-400" />
@@ -246,6 +317,11 @@ export function PlayerCard({
           {participant.player && (
             <LevelBadge experience={participant.player.experience} />
           )}
+
+          <PlayerPreferenceBadges
+            roles={participant.roles}
+            rank={participant.rank}
+          />
         </div>
 
         <PlayerDropdownMenu

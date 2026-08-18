@@ -3,12 +3,21 @@
 import { and, count, eq, max, ne } from "drizzle-orm"
 import { auth } from "@clerk/nextjs/server"
 import { db } from "@/lib/db"
-import { lobbies, lobbyPlayers, roomParticipants, rooms } from "@/lib/schema"
-import { publishRoomSnapshot } from "@/lib/room-state"
+import {
+  lobbies,
+  lobbyPlayers,
+  players,
+  rankEnum,
+  roleEnum,
+  roomParticipants,
+  rooms,
+} from "@/lib/schema"
+import { publishRoomSnapshot, type RoomParticipant } from "@/lib/room-state"
 import { randomUUID } from "node:crypto"
 import * as z from "zod"
 import { redirect } from "next/navigation"
 import { guestDisplayNameSchema, saveGuestSession } from "@/lib/guest-session"
+import { updateTag } from "next/cache"
 
 const continueAsGuestSchema = z.object({
   roomId: z.uuid("Invalid room"),
@@ -18,6 +27,20 @@ const continueAsGuestSchema = z.object({
 const lobbyParticipantSchema = z.object({
   lobbyId: z.uuid(),
   participantId: z.uuid(),
+})
+
+const lobbyRoleSchema = z.enum(roleEnum.enumValues).exclude(["FILL"])
+const lobbyRankSchema = z.enum(rankEnum.enumValues)
+
+const lobbyPreferencesSchema = z.object({
+  roomId: z.uuid(),
+  roles: z
+    .array(lobbyRoleSchema)
+    .max(5)
+    .refine((roles) => new Set(roles).size === roles.length, {
+      message: "Roles must be unique",
+    }),
+  rank: lobbyRankSchema.nullable(),
 })
 
 type ContinueAsGuestState = {
@@ -59,6 +82,58 @@ export async function continueAsGuest(
   await saveGuestSession(displayName)
 
   redirect(`/room/${roomId}`)
+}
+
+export async function saveLobbyPreferences(
+  roomId: string,
+  preferences: Pick<RoomParticipant, "roles" | "rank">
+) {
+  const result = lobbyPreferencesSchema.safeParse({
+    roomId,
+    ...preferences,
+  })
+
+  if (!result.success) {
+    throw new Error("Invalid lobby preferences")
+  }
+
+  const { userId } = await auth()
+
+  if (!userId) {
+    throw new Error("Unauthorized")
+  }
+
+  const [participant] = await db
+    .select({
+      playerId: players.id,
+      puuid: players.puuid,
+    })
+    .from(roomParticipants)
+    .innerJoin(players, eq(players.id, roomParticipants.playerId))
+    .where(
+      and(
+        eq(roomParticipants.roomId, result.data.roomId),
+        eq(roomParticipants.identityKey, `clerk:${userId}`),
+        eq(players.authId, userId)
+      )
+    )
+    .limit(1)
+
+  if (!participant) {
+    throw new Error("Player is not a participant in this room")
+  }
+
+  await db
+    .update(players)
+    .set({
+      lobbyRoles: result.data.roles,
+      lobbyRank: result.data.rank,
+    })
+    .where(eq(players.id, participant.playerId))
+
+  updateTag(`player-card:${participant.puuid.slice(0, 20)}`)
+
+  await publishRoomSnapshot(result.data.roomId)
 }
 
 export async function moveParticipantToTeam(

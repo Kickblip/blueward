@@ -77,6 +77,8 @@ export default async function Page({
     id,
     displayName,
     player,
+    roles: player?.lobbyRoles ?? [],
+    rank: player?.lobbyRank ?? null,
   }
 
   return (

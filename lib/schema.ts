@@ -213,23 +213,6 @@ export const teamObjectives = pgTable(
   ]
 )
 
-export const players = pgTable("players", {
-  id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  authId: varchar({ length: 128 }).unique(),
-  bannerId: integer().notNull().default(0),
-  banners: integer("banners")
-    .array()
-    .notNull()
-    .default(sql`ARRAY[0,1,2,3]::int[]`),
-  createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
-  lastDailyClaimDate: date(),
-  experience: integer().notNull().default(0),
-
-  puuid: varchar({ length: 128 }).notNull().unique(),
-  riotIdGameName: varchar({ length: 32 }).notNull(),
-  riotIdTagline: varchar({ length: 8 }).notNull(),
-})
-
 export const rankEnum = pgEnum("rank", [
   "IRON",
   "BRONZE",
@@ -242,6 +225,26 @@ export const rankEnum = pgEnum("rank", [
   "GRANDMASTER",
   "CHALLENGER",
 ])
+
+export const players = pgTable("players", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  authId: varchar({ length: 128 }).unique(),
+  bannerId: integer().notNull().default(0),
+  banners: integer("banners")
+    .array()
+    .notNull()
+    .default(sql`ARRAY[0,1,2,3]::int[]`),
+  createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  lastDailyClaimDate: date(),
+  experience: integer().notNull().default(0),
+
+  lobbyRoles: roleEnum("lobby_roles").array(),
+  lobbyRank: rankEnum("lobby_rank"),
+
+  puuid: varchar({ length: 128 }).notNull().unique(),
+  riotIdGameName: varchar({ length: 32 }).notNull(),
+  riotIdTagline: varchar({ length: 8 }).notNull(),
+})
 
 export const playerSettings = pgTable("player_settings", {
   playerId: integer("player_id")

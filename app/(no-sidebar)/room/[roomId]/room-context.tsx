@@ -1,15 +1,27 @@
 "use client"
 
-import { createContext, useContext, useState, type ReactNode } from "react"
+import {
+  createContext,
+  useContext,
+  useState,
+  useRef,
+  type ReactNode,
+} from "react"
 import { useChannel, usePresence, usePresenceListener } from "ably/react"
 import type { RoomParticipant, RoomSnapshot } from "@/lib/room-state"
 
+type ParticipantPreferences = Pick<RoomParticipant, "roles" | "rank">
+
 type RoomContextValue = RoomSnapshot & {
   isOwner: boolean
+  currentParticipant: RoomParticipant
   activeLobby: RoomSnapshot["lobbies"][number] | null
   presentParticipants: RoomParticipant[]
   participantPool: RoomParticipant[]
   selectLobby: (id: string) => void
+  updateCurrentParticipant: (
+    preferences: ParticipantPreferences
+  ) => Promise<void>
 }
 
 const RoomContext = createContext<RoomContextValue | null>(null)
@@ -27,8 +39,25 @@ export function RoomProvider({
 }) {
   const [snapshot, setSnapshot] = useState(initialSnapshot)
   const [selectedLobbyId, selectLobby] = useState<string | null>(null)
+  const [participant, setParticipant] = useState(currentParticipant)
+  const participantRef = useRef(currentParticipant)
 
-  usePresence<RoomParticipant>(undefined, currentParticipant)
+  const { updateStatus } = usePresence<RoomParticipant>(
+    undefined,
+    currentParticipant
+  )
+
+  async function updateCurrentParticipant(preferences: ParticipantPreferences) {
+    const nextParticipant = {
+      ...participantRef.current,
+      ...preferences,
+    }
+
+    participantRef.current = nextParticipant
+    setParticipant(nextParticipant)
+
+    await updateStatus(nextParticipant)
+  }
 
   const { presenceData } = usePresenceListener<RoomParticipant>()
 
@@ -47,17 +76,23 @@ export function RoomProvider({
     })
   }
 
+  participantsById.set(participant.id, participant)
+
   const presentParticipants = Array.from(participantsById.values())
 
+  const lobbies = snapshot.lobbies.map((lobby) => ({
+    ...lobby,
+    players: lobby.players.map((assignment) => ({
+      ...assignment,
+      player: participantsById.get(assignment.player.id) ?? assignment.player,
+    })),
+  }))
+
   const activeLobby =
-    snapshot.lobbies.find(({ id }) => id === selectedLobbyId) ??
-    snapshot.lobbies[0] ??
-    null
+    lobbies.find(({ id }) => id === selectedLobbyId) ?? lobbies[0] ?? null
 
   const assignedParticipantIds = new Set(
-    snapshot.lobbies.flatMap((lobby) =>
-      lobby.players.map(({ player }) => player.id)
-    )
+    lobbies.flatMap((lobby) => lobby.players.map(({ player }) => player.id))
   )
 
   const participantPool = presentParticipants.filter(
@@ -70,11 +105,14 @@ export function RoomProvider({
     <RoomContext.Provider
       value={{
         ...snapshot,
+        lobbies,
         isOwner,
+        currentParticipant: participant,
         activeLobby,
         presentParticipants,
         participantPool,
         selectLobby,
+        updateCurrentParticipant,
       }}
     >
       {children}

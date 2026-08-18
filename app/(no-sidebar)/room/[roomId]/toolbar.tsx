@@ -22,7 +22,7 @@ import {
 import { useRoom } from "./room-context"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { useState, useTransition } from "react"
-import { startDraft } from "./actions"
+import { saveLobbyPreferences, startDraft } from "./actions"
 import { Spinner } from "@/components/ui/spinner"
 import { FaPlay } from "react-icons/fa"
 import {
@@ -31,12 +31,12 @@ import {
   DropdownMenuGroup,
   DropdownMenuLabel,
   DropdownMenuPortal,
-  DropdownMenuSeparator,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-  DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu"
 import { FaGear } from "react-icons/fa6"
 import {
@@ -46,12 +46,48 @@ import {
   TopRoleIcon,
   UtilityRoleIcon,
 } from "@/lib/icons"
+import type { RoomParticipant } from "@/lib/room-state"
+import { toast } from "sonner"
+
+const ROLE_OPTIONS = [
+  { value: "TOP", label: "Top", Icon: TopRoleIcon },
+  { value: "JUNGLE", label: "Jungle", Icon: JungleRoleIcon },
+  { value: "MIDDLE", label: "Middle", Icon: MiddleRoleIcon },
+  { value: "BOTTOM", label: "Bottom", Icon: BottomRoleIcon },
+  { value: "UTILITY", label: "Support", Icon: UtilityRoleIcon },
+] as const
+
+const RANK_OPTIONS = [
+  { value: "IRON", label: "Iron" },
+  { value: "BRONZE", label: "Bronze" },
+  { value: "SILVER", label: "Silver" },
+  { value: "GOLD", label: "Gold" },
+  { value: "PLATINUM", label: "Platinum" },
+  { value: "EMERALD", label: "Emerald" },
+  { value: "DIAMOND", label: "Diamond" },
+  { value: "MASTER", label: "Master" },
+  { value: "GRANDMASTER", label: "Grandmaster" },
+  { value: "CHALLENGER", label: "Challenger" },
+] as const
 
 export function Toolbar() {
-  const { presentParticipants, participantPool, activeLobby, isOwner } =
-    useRoom()
+  const {
+    roomId,
+    presentParticipants,
+    participantPool,
+    currentParticipant,
+    updateCurrentParticipant,
+    activeLobby,
+    isOwner,
+  } = useRoom()
+
   const [randomPlayer, setRandomPlayer] = useState<string | null>(null)
   const [isStartingDraft, startTransition] = useTransition()
+  const [isSavingPreferences, startSavingPreferences] = useTransition()
+
+  const selectedRankLabel =
+    RANK_OPTIONS.find(({ value }) => value === currentParticipant.rank)
+      ?.label ?? "Select"
 
   const showStartDraft = isOwner && activeLobby?.phase === "OPEN"
 
@@ -72,6 +108,48 @@ export function Toolbar() {
 
     startTransition(async () => {
       await startDraft(lobbyId)
+    })
+  }
+
+  function commitPreferences(
+    preferences: Pick<RoomParticipant, "roles" | "rank">
+  ) {
+    void updateCurrentParticipant(preferences).catch(() => {
+      toast.error("Could not update your live lobby preferences")
+    })
+
+    if (!currentParticipant.player) return
+
+    startSavingPreferences(async () => {
+      try {
+        await saveLobbyPreferences(roomId, preferences)
+      } catch {
+        toast.error("Preferences are live, but could not be saved")
+      }
+    })
+  }
+
+  function handleRoleToggle(
+    selectedRole: (typeof ROLE_OPTIONS)[number]["value"]
+  ) {
+    const roles = currentParticipant.roles.includes(selectedRole)
+      ? currentParticipant.roles.filter((role) => role !== selectedRole)
+      : [...currentParticipant.roles, selectedRole]
+
+    commitPreferences({
+      roles,
+      rank: currentParticipant.rank,
+    })
+  }
+
+  function handleRankChange(value: string) {
+    const rank = RANK_OPTIONS.find((option) => option.value === value)?.value
+
+    if (!rank) return
+
+    commitPreferences({
+      roles: currentParticipant.roles,
+      rank,
     })
   }
 
@@ -158,47 +236,61 @@ export function Toolbar() {
         </Tooltip>
 
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon-lg">
-              <FaGear className="text-chart-3 dark:text-chart-1" />
-            </Button>
-          </DropdownMenuTrigger>
+          <Tooltip defaultOpen>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon-lg">
+                  {isSavingPreferences ? (
+                    <Spinner />
+                  ) : (
+                    <FaGear className="text-chart-3 dark:text-chart-1" />
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent>Update your preferences</TooltipContent>
+          </Tooltip>
           <DropdownMenuContent align="start" className="w-56">
             <DropdownMenuGroup>
               <DropdownMenuLabel>Roles</DropdownMenuLabel>
               <div className="flex items-center gap-1">
-                <Button size="icon-lg" variant="secondary">
-                  <TopRoleIcon />
-                </Button>
-                <Button size="icon-lg" variant="secondary">
-                  <JungleRoleIcon />
-                </Button>
-                <Button size="icon-lg" variant="secondary">
-                  <MiddleRoleIcon />
-                </Button>
-                <Button size="icon-lg" variant="secondary">
-                  <BottomRoleIcon />
-                </Button>
-                <Button size="icon-lg" variant="secondary">
-                  <UtilityRoleIcon />
-                </Button>
+                {ROLE_OPTIONS.map(({ value, label, Icon }) => {
+                  const selected = currentParticipant.roles.includes(value)
+
+                  return (
+                    <Button
+                      key={value}
+                      type="button"
+                      size="icon-lg"
+                      variant={selected ? "default" : "secondary"}
+                      aria-label={label}
+                      aria-pressed={selected}
+                      onClick={() => handleRoleToggle(value)}
+                    >
+                      <Icon />
+                    </Button>
+                  )
+                })}
               </div>
 
               <DropdownMenuLabel>Rank</DropdownMenuLabel>
               <DropdownMenuSub>
-                <DropdownMenuSubTrigger>Select</DropdownMenuSubTrigger>
+                <DropdownMenuSubTrigger>
+                  {selectedRankLabel}
+                </DropdownMenuSubTrigger>
+
                 <DropdownMenuPortal>
                   <DropdownMenuSubContent>
-                    <DropdownMenuItem>Iron</DropdownMenuItem>
-                    <DropdownMenuItem>Bronze</DropdownMenuItem>
-                    <DropdownMenuItem>Silver</DropdownMenuItem>
-                    <DropdownMenuItem>Gold</DropdownMenuItem>
-                    <DropdownMenuItem>Platinum</DropdownMenuItem>
-                    <DropdownMenuItem>Emerald</DropdownMenuItem>
-                    <DropdownMenuItem>Diamond</DropdownMenuItem>
-                    <DropdownMenuItem>Master</DropdownMenuItem>
-                    <DropdownMenuItem>Grandmaster</DropdownMenuItem>
-                    <DropdownMenuItem>Challenger</DropdownMenuItem>
+                    <DropdownMenuRadioGroup
+                      value={currentParticipant.rank ?? undefined}
+                      onValueChange={handleRankChange}
+                    >
+                      {RANK_OPTIONS.map(({ value, label }) => (
+                        <DropdownMenuRadioItem key={value} value={value}>
+                          {label}
+                        </DropdownMenuRadioItem>
+                      ))}
+                    </DropdownMenuRadioGroup>
                   </DropdownMenuSubContent>
                 </DropdownMenuPortal>
               </DropdownMenuSub>

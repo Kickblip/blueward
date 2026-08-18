@@ -20,6 +20,8 @@ export type RoomParticipant = {
   id: string
   displayName: string
   player: PlayerCard | null
+  roles: NonNullable<PlayerCard["lobbyRoles"]>
+  rank: PlayerCard["lobbyRank"]
 }
 
 export type RoomSnapshot = {
@@ -101,6 +103,8 @@ export async function getRoomSnapshot(
             id: participantId,
             displayName,
             player,
+            roles: player?.lobbyRoles ?? [],
+            rank: player?.lobbyRank ?? null,
           },
         }
       }
