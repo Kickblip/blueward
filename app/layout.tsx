@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils"
 import { ThemeProvider } from "@/components/theme-provider"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { Toaster } from "@/components/ui/sonner"
+import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const oswald = Oswald({
   variable: "--font-oswald",
@@ -75,6 +77,8 @@ export default function RootLayout({
           <ThemeProvider>
             <TooltipProvider>
               {children}
+              <Analytics />
+              <SpeedInsights />
               <Toaster />
             </TooltipProvider>
           </ThemeProvider>
