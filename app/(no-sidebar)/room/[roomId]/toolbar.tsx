@@ -22,7 +22,11 @@ import {
 import { useRoom } from "./room-context"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { useState, useTransition } from "react"
-import { saveLobbyPreferences, startDraft } from "./actions"
+import {
+  adjustDraftPickIndex,
+  saveLobbyPreferences,
+  startDraft,
+} from "./actions"
 import { Spinner } from "@/components/ui/spinner"
 import { FaPlay } from "react-icons/fa"
 import {
@@ -48,6 +52,8 @@ import {
 } from "@/lib/icons"
 import type { RoomParticipant } from "@/lib/room-state"
 import { toast } from "sonner"
+import { DRAFT_PICK_ORDER } from "@/lib/draft"
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
 
 const ROLE_OPTIONS = [
   { value: "TOP", label: "Top", Icon: TopRoleIcon },
@@ -84,6 +90,21 @@ export function Toolbar() {
   const [randomPlayer, setRandomPlayer] = useState<string | null>(null)
   const [isStartingDraft, startTransition] = useTransition()
   const [isSavingPreferences, startSavingPreferences] = useTransition()
+  const [isAdjustingPickOrder, startAdjustingPickOrder] = useTransition()
+
+  const pickingTeam =
+    activeLobby?.phase === "DRAFTING"
+      ? (DRAFT_PICK_ORDER[activeLobby.draftPickIndex] ?? null)
+      : null
+
+  const phaseLabel =
+    activeLobby?.phase === "OPEN"
+      ? isStartingDraft
+        ? "Starting draft"
+        : "Waiting to start"
+      : pickingTeam !== null
+        ? `Team ${pickingTeam + 1} picking`
+        : null
 
   const selectedRankLabel =
     RANK_OPTIONS.find(({ value }) => value === currentParticipant.rank)
@@ -99,7 +120,8 @@ export function Toolbar() {
       ({ teamId, isCaptain }) => teamId === 1 && isCaptain
     )
 
-  const isStartDraftDisabled = !hasBothCaptains || isStartingDraft
+  const isStartDraftDisabled =
+    !hasBothCaptains || participantPool.length < 8 || isStartingDraft
 
   function handleStartDraft() {
     if (!activeLobby || activeLobby.phase !== "OPEN") return
@@ -108,6 +130,18 @@ export function Toolbar() {
 
     startTransition(async () => {
       await startDraft(lobbyId)
+    })
+  }
+
+  function handleAdjustPickOrder(direction: -1 | 1) {
+    if (!activeLobby || activeLobby.phase !== "DRAFTING") return
+
+    startAdjustingPickOrder(async () => {
+      try {
+        await adjustDraftPickIndex(activeLobby.id, direction)
+      } catch {
+        toast.error("Could not adjust the picking order")
+      }
     })
   }
 
@@ -354,14 +388,56 @@ export function Toolbar() {
             </AvatarGroupCount>
           )}
         </AvatarGroup>
-        <div
-          className={cn(
-            "px-6! font-oswald text-lg! font-semibold uppercase",
-            buttonVariants({ size: "lg" })
-          )}
-        >
-          Team 1 picking
-        </div>
+        {isOwner && pickingTeam !== null && activeLobby && (
+          <div className="flex items-center gap-1">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon-sm"
+              aria-label="Move backward in picking order"
+              disabled={
+                isAdjustingPickOrder || activeLobby.draftPickIndex === 0
+              }
+              onClick={() => handleAdjustPickOrder(-1)}
+            >
+              <ChevronLeftIcon />
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="icon-sm"
+              aria-label="Move forward in picking order"
+              disabled={
+                isAdjustingPickOrder ||
+                activeLobby.draftPickIndex === DRAFT_PICK_ORDER.length - 1
+              }
+              onClick={() => handleAdjustPickOrder(1)}
+            >
+              <ChevronRightIcon />
+            </Button>
+          </div>
+        )}
+
+        {phaseLabel && (
+          <div
+            className={cn(
+              "gap-2 px-6! font-oswald text-lg! font-semibold uppercase",
+              buttonVariants({ size: "lg" }),
+              activeLobby?.phase === "OPEN" && "text-muted-foreground",
+              pickingTeam === 0 && "text-blue-500",
+              pickingTeam === 1 && "text-rose-500"
+            )}
+          >
+            {phaseLabel}
+            {activeLobby?.phase === "OPEN" &&
+              (isStartingDraft ? (
+                <Spinner />
+              ) : (
+                <span className="ml-1 size-2.5 animate-pulse rounded-full bg-current" />
+              ))}
+          </div>
+        )}
       </div>
     </header>
   )

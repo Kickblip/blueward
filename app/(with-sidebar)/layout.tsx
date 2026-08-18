@@ -11,7 +11,7 @@ import { db } from "@/lib/db"
 import { eq } from "drizzle-orm"
 import { players } from "@/lib/schema"
 import { Footer } from "@/components/footer"
-import { AdSlot } from "@/components/ad-slot"
+// import { AdSlot } from "@/components/ad-slot"
 import { UserBalance } from "@/components/user-balance"
 import { PromoCode } from "@/components/promo-code"
 import { Button } from "@/components/ui/button"
@@ -72,19 +72,19 @@ export default async function Layout({
         </header>
 
         <div className="z-10 flex w-full gap-4 p-4">
-          <AdSlot
+          {/* <AdSlot
             name="left-rail"
             className="hidden h-[600px] w-[160px] shrink-0 2xl:grid"
-          />
+          /> */}
 
           <main className="mx-auto flex w-full max-w-7xl min-w-0 flex-1 flex-col">
             {children}
           </main>
 
-          <AdSlot
+          {/* <AdSlot
             name="right-rail"
             className="hidden h-[600px] w-[160px] shrink-0 2xl:grid"
-          />
+          /> */}
         </div>
 
         <Footer />

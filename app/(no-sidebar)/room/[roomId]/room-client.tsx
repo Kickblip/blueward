@@ -6,7 +6,7 @@ import { Toolbar } from "./toolbar"
 import { Footer } from "./footer"
 import { Realtime } from "ably"
 import { AblyProvider, ChannelProvider } from "ably/react"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useTransition } from "react"
 import { RoomProvider, useRoom } from "./room-context"
 import { Button } from "@/components/ui/button"
 import {
@@ -30,12 +30,12 @@ import {
   FaCheckCircle,
 } from "react-icons/fa"
 import Link from "next/link"
-import { AdSlot } from "@/components/ad-slot"
 import {
   makeParticipantCaptain,
   moveParticipantToTeam,
   returnParticipantToPool,
   demoteParticipantCaptain,
+  draftParticipant,
 } from "./actions"
 import {
   BottomRoleIcon,
@@ -49,6 +49,8 @@ import {
   Tooltip,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { DRAFT_PICK_ORDER } from "@/lib/draft"
+import { toast } from "sonner"
 
 export function RoomClient({
   initialSnapshot,
@@ -103,7 +105,7 @@ function RoomContents() {
       <Toolbar />
 
       <section className="min-h-0 overflow-y-auto">
-        <div className="max-w-9xl mx-auto grid h-full min-h-0 w-full grid-cols-[7fr_7fr_6fr] grid-rows-[minmax(0,1fr)_90px] gap-4 p-4">
+        <div className="max-w-9xl mx-auto grid h-full min-h-0 w-full grid-cols-[7fr_7fr_6fr] grid-rows-[minmax(0,1fr)] gap-4 p-4">
           <div className="flex min-h-0 flex-col">
             <div className="flex items-center gap-2 p-2">
               <div className="size-4 rounded-xs bg-blue-500" />
@@ -154,7 +156,7 @@ function RoomContents() {
             </div>
           </div>
 
-          <div className="row-span-2 min-h-0 overflow-y-auto bg-secondary p-2">
+          <div className="min-h-0 overflow-y-auto bg-secondary p-2">
             {participantPool.map((participant) => (
               <PoolCard
                 key={participant.id}
@@ -163,8 +165,6 @@ function RoomContents() {
               />
             ))}
           </div>
-
-          <AdSlot name="lobby-bottom" className="col-span-2 h-[90px] w-full" />
         </div>
       </section>
 
@@ -293,7 +293,7 @@ export function PlayerCard({
     return (
       <div
         className={cn(
-          "h-32 border border-l-4 bg-secondary",
+          "min-h-0 flex-1 overflow-hidden border border-l-4 bg-secondary",
           team === 0 ? "border-l-blue-500" : "border-l-rose-500"
         )}
       />
@@ -366,12 +366,39 @@ export function PlayerDropdownMenu({
   useOwnerView: boolean
   participant: RoomParticipant
 }) {
-  const { activeLobby } = useRoom()
+  const { activeLobby, currentParticipant } = useRoom()
+  const [isDrafting, startDraftTransition] = useTransition()
 
   const assignment = activeLobby?.players.find(
     ({ player: assignedParticipant }) =>
       assignedParticipant.id === participant.id
   )
+
+  const currentAssignment = activeLobby?.players.find(
+    ({ player }) => player.id === currentParticipant.id
+  )
+
+  const pickingTeam =
+    activeLobby?.phase === "DRAFTING"
+      ? DRAFT_PICK_ORDER[activeLobby.draftPickIndex]
+      : undefined
+
+  const canDraft =
+    !assignment &&
+    currentAssignment?.isCaptain === true &&
+    currentAssignment.teamId === pickingTeam
+
+  function draft() {
+    if (!activeLobby || !canDraft) return
+
+    startDraftTransition(async () => {
+      try {
+        await draftParticipant(activeLobby.id, participant.id)
+      } catch {
+        toast.error("Could not draft this player")
+      }
+    })
+  }
 
   function move(teamId: 0 | 1) {
     if (!activeLobby) return
@@ -423,10 +450,12 @@ export function PlayerDropdownMenu({
               </Link>
             </DropdownMenuItem>
           )}
-          <DropdownMenuItem>
-            <FaCheckCircle className="text-chart-3 dark:text-chart-1" />
-            Draft Player
-          </DropdownMenuItem>
+          {canDraft && (
+            <DropdownMenuItem disabled={isDrafting} onSelect={draft}>
+              <FaCheckCircle className="text-chart-3 dark:text-chart-1" />
+              {isDrafting ? "Drafting…" : "Draft Player"}
+            </DropdownMenuItem>
+          )}
         </DropdownMenuGroup>
         {useOwnerView && (
           <>

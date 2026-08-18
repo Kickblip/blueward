@@ -1,6 +1,6 @@
 "use server"
 
-import { and, count, eq, max, ne } from "drizzle-orm"
+import { and, count, eq, isNull, max, ne } from "drizzle-orm"
 import { auth } from "@clerk/nextjs/server"
 import { db } from "@/lib/db"
 import {
@@ -16,8 +16,13 @@ import { publishRoomSnapshot, type RoomParticipant } from "@/lib/room-state"
 import { randomUUID } from "node:crypto"
 import * as z from "zod"
 import { redirect } from "next/navigation"
-import { guestDisplayNameSchema, saveGuestSession } from "@/lib/guest-session"
 import { updateTag } from "next/cache"
+import { DRAFT_PICK_ORDER } from "@/lib/draft"
+import {
+  getGuestSession,
+  guestDisplayNameSchema,
+  saveGuestSession,
+} from "@/lib/guest-session"
 
 const continueAsGuestSchema = z.object({
   roomId: z.uuid("Invalid room"),
@@ -27,6 +32,11 @@ const continueAsGuestSchema = z.object({
 const lobbyParticipantSchema = z.object({
   lobbyId: z.uuid(),
   participantId: z.uuid(),
+})
+
+const draftPickAdjustmentSchema = z.object({
+  lobbyId: z.uuid(),
+  direction: z.union([z.literal(-1), z.literal(1)]),
 })
 
 const lobbyRoleSchema = z.enum(roleEnum.enumValues).exclude(["FILL"])
@@ -360,6 +370,200 @@ export async function returnParticipantToPool(
   await publishRoomSnapshot(lobby.roomId)
 }
 
+export async function draftParticipant(lobbyId: string, participantId: string) {
+  const result = lobbyParticipantSchema.safeParse({
+    lobbyId,
+    participantId,
+  })
+
+  if (!result.success) {
+    throw new Error("Invalid draft pick")
+  }
+
+  const { userId } = await auth()
+  const guest = userId ? null : await getGuestSession()
+
+  const identityKey = userId
+    ? `clerk:${userId}`
+    : guest
+      ? `guest:${guest.id}`
+      : null
+
+  if (!identityKey) {
+    throw new Error("Unauthorized")
+  }
+
+  const roomId = await db.transaction(async (tx) => {
+    const [lobby] = await tx
+      .select({
+        roomId: lobbies.roomId,
+        phase: lobbies.phase,
+        draftPickIndex: lobbies.draftPickIndex,
+      })
+      .from(lobbies)
+      .where(eq(lobbies.id, result.data.lobbyId))
+      .limit(1)
+      .for("update")
+
+    if (!lobby || lobby.phase !== "DRAFTING") {
+      throw new Error("Lobby is not drafting")
+    }
+
+    const pickingTeam = DRAFT_PICK_ORDER[lobby.draftPickIndex]
+
+    if (pickingTeam === undefined) {
+      throw new Error("Draft is already complete")
+    }
+
+    const [captain] = await tx
+      .select({ id: roomParticipants.id })
+      .from(lobbyPlayers)
+      .innerJoin(
+        roomParticipants,
+        and(
+          eq(roomParticipants.id, lobbyPlayers.participantId),
+          eq(roomParticipants.roomId, lobby.roomId)
+        )
+      )
+      .where(
+        and(
+          eq(lobbyPlayers.lobbyId, result.data.lobbyId),
+          eq(lobbyPlayers.teamId, pickingTeam),
+          eq(lobbyPlayers.isCaptain, true),
+          eq(roomParticipants.identityKey, identityKey)
+        )
+      )
+      .limit(1)
+
+    if (!captain) {
+      throw new Error("It is not your turn to pick")
+    }
+
+    const [target] = await tx
+      .select({ id: roomParticipants.id })
+      .from(roomParticipants)
+      .leftJoin(
+        lobbyPlayers,
+        eq(lobbyPlayers.participantId, roomParticipants.id)
+      )
+      .where(
+        and(
+          eq(roomParticipants.id, result.data.participantId),
+          eq(roomParticipants.roomId, lobby.roomId),
+          isNull(lobbyPlayers.participantId)
+        )
+      )
+      .limit(1)
+
+    if (!target) {
+      throw new Error("Player is not available")
+    }
+
+    const [{ teamSize }] = await tx
+      .select({ teamSize: count() })
+      .from(lobbyPlayers)
+      .where(
+        and(
+          eq(lobbyPlayers.lobbyId, result.data.lobbyId),
+          eq(lobbyPlayers.teamId, pickingTeam)
+        )
+      )
+
+    if (teamSize >= 5) {
+      throw new Error("Team is full")
+    }
+
+    await tx.insert(lobbyPlayers).values({
+      lobbyId: result.data.lobbyId,
+      participantId: target.id,
+      teamId: pickingTeam,
+    })
+
+    const nextPickIndex = lobby.draftPickIndex + 1
+
+    await tx
+      .update(lobbies)
+      .set({
+        draftPickIndex: nextPickIndex,
+        phase: nextPickIndex === DRAFT_PICK_ORDER.length ? "READY" : "DRAFTING",
+      })
+      .where(eq(lobbies.id, result.data.lobbyId))
+
+    return lobby.roomId
+  })
+
+  await publishRoomSnapshot(roomId)
+}
+
+export async function adjustDraftPickIndex(lobbyId: string, direction: -1 | 1) {
+  const result = draftPickAdjustmentSchema.safeParse({
+    lobbyId,
+    direction,
+  })
+
+  if (!result.success) {
+    throw new Error("Invalid draft adjustment")
+  }
+
+  const { userId } = await auth()
+
+  if (!userId) {
+    throw new Error("Unauthorized")
+  }
+
+  const adjustment = await db.transaction(async (tx) => {
+    const [lobby] = await tx
+      .select({
+        roomId: lobbies.roomId,
+        draftPickIndex: lobbies.draftPickIndex,
+      })
+      .from(lobbies)
+      .innerJoin(rooms, eq(rooms.id, lobbies.roomId))
+      .where(
+        and(
+          eq(lobbies.id, result.data.lobbyId),
+          eq(lobbies.phase, "DRAFTING"),
+          eq(rooms.ownerAuthId, userId)
+        )
+      )
+      .limit(1)
+      .for("update")
+
+    if (!lobby) {
+      throw new Error("Draft not found or unauthorized")
+    }
+
+    const draftPickIndex = Math.max(
+      0,
+      Math.min(
+        DRAFT_PICK_ORDER.length - 1,
+        lobby.draftPickIndex + result.data.direction
+      )
+    )
+
+    if (draftPickIndex === lobby.draftPickIndex) {
+      return {
+        roomId: lobby.roomId,
+        changed: false,
+      }
+    }
+
+    await tx
+      .update(lobbies)
+      .set({ draftPickIndex })
+      .where(eq(lobbies.id, result.data.lobbyId))
+
+    return {
+      roomId: lobby.roomId,
+      changed: true,
+    }
+  })
+
+  if (adjustment.changed) {
+    await publishRoomSnapshot(adjustment.roomId)
+  }
+}
+
 export async function startDraft(lobbyId: string) {
   const { userId } = await auth()
 
@@ -389,18 +593,24 @@ export async function startDraft(lobbyId: string) {
     throw new Error("Draft has already started")
   }
 
-  const captains = await db
-    .select({ teamId: lobbyPlayers.teamId })
+  const assignments = await db
+    .select({
+      teamId: lobbyPlayers.teamId,
+      isCaptain: lobbyPlayers.isCaptain,
+    })
     .from(lobbyPlayers)
-    .where(
-      and(eq(lobbyPlayers.lobbyId, lobbyId), eq(lobbyPlayers.isCaptain, true))
-    )
+    .where(eq(lobbyPlayers.lobbyId, lobbyId))
 
-  const hasTeam0Captain = captains.some(({ teamId }) => teamId === 0)
-  const hasTeam1Captain = captains.some(({ teamId }) => teamId === 1)
+  const hasTeam0Captain = assignments.some(
+    ({ teamId, isCaptain }) => teamId === 0 && isCaptain
+  )
 
-  if (!hasTeam0Captain || !hasTeam1Captain) {
-    throw new Error("Both teams require a captain")
+  const hasTeam1Captain = assignments.some(
+    ({ teamId, isCaptain }) => teamId === 1 && isCaptain
+  )
+
+  if (assignments.length !== 2 || !hasTeam0Captain || !hasTeam1Captain) {
+    throw new Error("Draft must start with exactly two captains")
   }
 
   const [startedLobby] = await db
