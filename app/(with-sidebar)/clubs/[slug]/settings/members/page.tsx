@@ -3,7 +3,7 @@ import { EllipsisIcon } from "lucide-react"
 import { notFound } from "next/navigation"
 import { FaShield, FaTrash, FaUser } from "react-icons/fa6"
 import { PiCrownSimpleFill } from "react-icons/pi"
-
+import { makeOwner, promoteToAdmin, removeMember } from "./actions"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -127,24 +127,59 @@ export default async function Page({
                           </Button>
                         </DropdownMenuTrigger>
 
-                        <DropdownMenuContent
-                          align="end"
-                          className="w-48 font-oswald font-semibold uppercase"
-                        >
-                          <DropdownMenuItem className="cursor-pointer">
-                            <FaShield className="size-3 text-chart-3 dark:text-chart-1" />
-                            Promote to Admin
-                          </DropdownMenuItem>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <form
+                            action={promoteToAdmin.bind(
+                              null,
+                              slug,
+                              member.playerId
+                            )}
+                            method="post"
+                          >
+                            <DropdownMenuItem asChild>
+                              <button
+                                type="submit"
+                                className="w-full cursor-pointer font-oswald font-semibold uppercase"
+                              >
+                                <FaShield className="size-3 text-chart-3 dark:text-chart-1" />
+                                Promote to Admin
+                              </button>
+                            </DropdownMenuItem>
+                          </form>
 
-                          <DropdownMenuItem className="cursor-pointer">
-                            <PiCrownSimpleFill className="size-3 text-chart-3 dark:text-chart-1" />
-                            Make Owner
-                          </DropdownMenuItem>
+                          <form
+                            action={makeOwner.bind(null, slug, member.playerId)}
+                            method="post"
+                          >
+                            <DropdownMenuItem asChild>
+                              <button
+                                type="submit"
+                                className="w-full cursor-pointer font-oswald font-semibold uppercase"
+                              >
+                                <PiCrownSimpleFill className="size-3 text-chart-3 dark:text-chart-1" />
+                                Make Owner
+                              </button>
+                            </DropdownMenuItem>
+                          </form>
 
-                          <DropdownMenuItem className="cursor-pointer">
-                            <FaTrash className="size-3 text-chart-3 dark:text-chart-1" />
-                            Remove
-                          </DropdownMenuItem>
+                          <form
+                            action={removeMember.bind(
+                              null,
+                              slug,
+                              member.playerId
+                            )}
+                            method="post"
+                          >
+                            <DropdownMenuItem asChild>
+                              <button
+                                type="submit"
+                                className="w-full cursor-pointer font-oswald font-semibold uppercase"
+                              >
+                                <FaTrash className="size-3 text-chart-3 dark:text-chart-1" />
+                                Remove
+                              </button>
+                            </DropdownMenuItem>
+                          </form>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
