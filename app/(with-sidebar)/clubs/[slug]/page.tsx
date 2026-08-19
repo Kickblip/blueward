@@ -1,30 +1,13 @@
 import { fetchClubBySlug, fetchClubMembersBySlug } from "./actions"
 import { BannerBackground } from "@/components/banner-background"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import {
-  ArrowLeft,
-  ArrowRight,
-  CrownIcon,
-  EllipsisIcon,
-  HandIcon,
-  Trash2Icon,
-  UserIcon,
-} from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { notFound } from "next/navigation"
 import { safeSubstring } from "@/lib/utils"
 import { fetchPlayerProfileByPuuid } from "../../player/[pid]/actions"
 import { currentUser } from "@clerk/nextjs/server"
 import { joinClub } from "./actions"
+import { LevelBadge } from "@/components/level-badge"
 
 export default async function Page({
   params,
@@ -43,11 +26,6 @@ export default async function Page({
 
   if (!members || !club) return notFound()
 
-  const isAdmin = members.some(
-    // NOT VALID
-    (member) => member.role === "ADMIN" || member.role === "OWNER"
-  )
-
   const canJoin = Boolean(player && !player.clubMemberships.length)
 
   return (
@@ -58,12 +36,23 @@ export default async function Page({
             key={member.playerCard ? member.playerCard.id : 0}
             bannerId={member.playerCard ? member.playerCard.bannerId : 0}
           >
-            <div className="min-h-0 flex-1 overflow-hidden rounded-md border">
-              <h2 className="font-oswald text-4xl font-semibold text-white uppercase">
-                {member.playerCard
-                  ? member.playerCard.riotIdGameName
-                  : "Unknown"}
-              </h2>
+            <div className="relative min-h-0 flex-1 overflow-hidden rounded-md p-2">
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 bg-gradient-to-r from-background/80 via-background/40 to-transparent"
+              />
+
+              <div className="relative z-10 flex flex-col justify-between gap-2">
+                <div className="flex items-center justify-between gap-4">
+                  <LevelBadge experience={member.playerCard?.experience ?? 0} />
+                </div>
+
+                <h2 className="font-oswald text-4xl font-semibold uppercase">
+                  {member.playerCard
+                    ? member.playerCard.riotIdGameName
+                    : "Unknown"}
+                </h2>
+              </div>
             </div>
           </BannerBackground>
         ))}

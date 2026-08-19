@@ -43,17 +43,19 @@ export default async function Layout({
           </Link>
         </Button>
 
-        <Button
-          variant="ghost"
-          size="lg"
-          className="gap-2 font-oswald text-lg font-semibold uppercase"
-          asChild
-        >
-          <Link href={`/clubs/${slug}/settings`}>
-            <FaGear className="size-5 text-chart-3 dark:text-chart-1" />
-            <span>Settings</span>
-          </Link>
-        </Button>
+        {reviewer && (
+          <Button
+            variant="ghost"
+            size="lg"
+            className="gap-2 font-oswald text-lg font-semibold uppercase"
+            asChild
+          >
+            <Link href={`/clubs/${slug}/settings`}>
+              <FaGear className="size-5 text-chart-3 dark:text-chart-1" />
+              <span>Settings</span>
+            </Link>
+          </Button>
+        )}
 
         {reviewer && (
           <Button

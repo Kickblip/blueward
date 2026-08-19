@@ -62,6 +62,7 @@ export async function fetchClubMembersBySlug(slug: string) {
               riotIdTagline: card.riotIdTagline,
               bannerId: card.bannerId,
               avatarUrl: card.avatarUrl,
+              experience: card.experience,
             }
           : null,
       }

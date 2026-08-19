@@ -90,7 +90,7 @@ export async function makeOwner(slug: string, targetPlayerId: number) {
   }
 
   await db.transaction(async (tx) => {
-    // demote first because the database permits only one owner per club.
+    // demote first because the database permits only one owner per club
     const [demoted] = await tx
       .update(clubMembers)
       .set({ role: "ADMIN" })

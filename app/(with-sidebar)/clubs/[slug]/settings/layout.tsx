@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button"
-import { auth } from "@clerk/nextjs/server"
 import { FaPencilRuler, FaUser } from "react-icons/fa"
 import { FaTrophy } from "react-icons/fa6"
 import Link from "next/link"
+import { getClubReviewer } from "@/app/(with-sidebar)/import/actions"
+import { notFound } from "next/navigation"
 
 export default async function Layout({
   children,
@@ -11,10 +12,12 @@ export default async function Layout({
   children: React.ReactNode
   params: Promise<{ slug: string }>
 }>) {
-  // TODO CHECK THEIR ROLE
-  await auth.protect()
-
   const { slug } = await params
+  const manager = await getClubReviewer(slug)
+
+  if (!manager) {
+    notFound()
+  }
 
   return (
     <div className="grid grid-cols-[1fr_3fr] gap-4">
