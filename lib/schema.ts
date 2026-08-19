@@ -507,7 +507,7 @@ export const clubMembers = pgTable(
   (table) => [
     primaryKey({ columns: [table.clubId, table.playerId] }),
 
-    index("club_members_player_id_index").on(table.playerId),
+    uniqueIndex("club_members_player_id_unique").on(table.playerId),
 
     uniqueIndex("club_members_owner_unique")
       .on(table.clubId)

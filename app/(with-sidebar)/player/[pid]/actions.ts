@@ -1,24 +1,29 @@
-import { desc, eq, sql, type InferSelectModel } from "drizzle-orm"
+import { desc, eq, sql } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { players, playerPerformances, matches } from "@/lib/schema"
 import { clerkClient } from "@clerk/nextjs/server"
 import { unstable_cache } from "next/cache"
 
-type PlayerRow = InferSelectModel<typeof players>
-
-export async function fetchPlayerProfileByPuuid(puuid: string): Promise<PlayerRow | null> {
+export async function fetchPlayerProfileByPuuid(puuid: string) {
   "use server"
 
-  const result = await db
-    .select()
-    .from(players)
-    .where(eq(sql`left(${players.puuid}, 20)`, puuid))
-    .limit(1)
-
-  return result[0] ?? null
+  return (
+    (await db.query.players.findFirst({
+      where: eq(sql`left(${players.puuid}, 20)`, puuid),
+      with: {
+        clubMemberships: {
+          with: {
+            club: true,
+          },
+        },
+      },
+    })) ?? null
+  )
 }
 
-export async function fetchProfilePictureByAuthId(authId: string | null | undefined): Promise<string | null> {
+export async function fetchProfilePictureByAuthId(
+  authId: string | null | undefined
+): Promise<string | null> {
   "use server"
 
   if (!authId) return null
@@ -54,8 +59,10 @@ const recentMatchesQuery = (puuid: string) =>
       roleBoundItem: playerPerformances.roleBoundItem,
       summoner1Id: playerPerformances.summoner1Id,
       summoner2Id: playerPerformances.summoner2Id,
-      magicDamageDealtToChampions: playerPerformances.magicDamageDealtToChampions,
-      physicalDamageDealtToChampions: playerPerformances.physicalDamageDealtToChampions,
+      magicDamageDealtToChampions:
+        playerPerformances.magicDamageDealtToChampions,
+      physicalDamageDealtToChampions:
+        playerPerformances.physicalDamageDealtToChampions,
       neutralMinionsKilled: playerPerformances.neutralMinionsKilled,
       trueDamageDealtToChampions: playerPerformances.trueDamageDealtToChampions,
       totalMinionsKilled: playerPerformances.totalMinionsKilled,
@@ -72,7 +79,9 @@ const recentMatchesQuery = (puuid: string) =>
     .where(eq(sql`left(${playerPerformances.puuid}, 20)`, puuid))
     .orderBy(desc(matches.gameEndTimestamp), desc(playerPerformances.id))
 
-export type RecentMatchRow = Awaited<ReturnType<typeof recentMatchesQuery>>[number]
+export type RecentMatchRow = Awaited<
+  ReturnType<typeof recentMatchesQuery>
+>[number]
 
 export const fetchRecentMatchesByPuuid = (puuid: string) => {
   return unstable_cache(
@@ -84,6 +93,6 @@ export const fetchRecentMatchesByPuuid = (puuid: string) => {
 
     ["recent-matches-by-puuid", puuid],
 
-    { tags: [`recent-matches:${puuid}`, "recent-matches-by-puuid"] },
+    { tags: [`recent-matches:${puuid}`, "recent-matches-by-puuid"] }
   )()
 }

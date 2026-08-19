@@ -56,6 +56,8 @@ export default async function PlayerProfile({
     notFound()
   }
 
+  const club = playerProfile.clubMemberships[0]?.club
+
   return (
     <div className="grid min-h-screen grid-cols-1 gap-4 md:grid-cols-3">
       <div className="col-span-2 flex flex-col gap-4">
@@ -95,6 +97,19 @@ export default async function PlayerProfile({
                 </TooltipTrigger>
                 <TooltipContent>Blueward Player Level</TooltipContent>
               </Tooltip>
+
+              {club && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link href={`/clubs/${club.slug}`}>
+                      <div className="rounded-full border bg-secondary px-2 py-0.5 font-oswald text-sm font-semibold uppercase">
+                        {club.name}
+                      </div>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>Club</TooltipContent>
+                </Tooltip>
+              )}
 
               <Tooltip>
                 <TooltipTrigger asChild>

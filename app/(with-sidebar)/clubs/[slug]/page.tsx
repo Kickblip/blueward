@@ -21,33 +21,34 @@ import {
 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { notFound } from "next/navigation"
-import { FaPencil } from "react-icons/fa6"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { ClubSettingsForm } from "@/components/club-settings-form"
+import { safeSubstring } from "@/lib/utils"
+import { fetchPlayerProfileByPuuid } from "../../player/[pid]/actions"
+import { currentUser } from "@clerk/nextjs/server"
+import { joinClub } from "./actions"
 
 export default async function Page({
   params,
 }: {
   params: Promise<{ slug: string }>
 }) {
-  const { slug } = await params
+  const [{ slug }, user] = await Promise.all([params, currentUser()])
 
-  const [members, club] = await Promise.all([
+  const puuid = user?.privateMetadata.puuid
+
+  const [members, club, player] = await Promise.all([
     fetchClubMembersBySlug(slug),
     fetchClubBySlug(slug),
+    puuid ? fetchPlayerProfileByPuuid(safeSubstring(puuid, 0, 20)) : null,
   ])
 
   if (!members || !club) return notFound()
 
   const isAdmin = members.some(
+    // NOT VALID
     (member) => member.role === "ADMIN" || member.role === "OWNER"
   )
+
+  const canJoin = Boolean(player && !player.clubMemberships.length)
 
   return (
     <div className="grid grid-cols-3 gap-4">
@@ -124,6 +125,12 @@ export default async function Page({
             {club.name}
           </h2>
         </div>
+
+        {canJoin && (
+          <form action={joinClub.bind(null, slug)}>
+            <Button type="submit">Join club</Button>
+          </form>
+        )}
       </Card>
     </div>
   )
