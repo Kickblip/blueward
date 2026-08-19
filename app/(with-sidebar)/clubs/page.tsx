@@ -81,19 +81,20 @@ export default async function Page() {
         </Dialog>
       </div>
 
-      <Card>
+      <div className="mt-4 flex flex-col">
         {clubs.map((club) => (
-          <Link
-            key={club.id}
-            href={`/clubs/${club.slug}`}
-            className="hover:text-chart-3 dark:hover:text-chart-1"
-          >
-            <h2 className="font-oswald text-xl font-semibold uppercase">
-              {club.name}
-            </h2>
-          </Link>
+          <Card key={club.id}>
+            <Link
+              href={`/clubs/${club.slug}`}
+              className="hover:text-chart-3 dark:hover:text-chart-1"
+            >
+              <h2 className="font-oswald text-xl font-semibold uppercase">
+                {club.name}
+              </h2>
+            </Link>
+          </Card>
         ))}
-      </Card>
+      </div>
     </div>
   )
 }
