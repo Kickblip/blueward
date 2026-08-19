@@ -202,10 +202,9 @@ function PlayerPreferenceBadges({
             : `${role[0]}${role.slice(1).toLowerCase()}`
 
         return (
-          <Tooltip>
+          <Tooltip key={role}>
             <TooltipTrigger asChild>
               <span
-                key={role}
                 title={label}
                 aria-label={`Preferred role: ${label}`}
                 className="flex size-6 items-center justify-center rounded-full border bg-secondary/90 text-secondary-foreground shadow-sm"
@@ -235,8 +234,15 @@ export function PoolCard({
   useOwnerView: boolean
 }) {
   const content = (
-    <div className="min-h-0 flex-1 overflow-hidden rounded-md border bg-secondary">
-      <div className="flex h-full flex-col justify-between gap-2 p-2">
+    <div className="relative min-h-0 flex-1 overflow-hidden rounded-md border bg-secondary">
+      {participant.player && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-background/60 via-background/20 to-transparent"
+        />
+      )}
+
+      <div className="relative z-10 flex h-full flex-col justify-between gap-2 p-2">
         <div className="flex items-center justify-between gap-2">
           <div className="flex flex-wrap items-center gap-2">
             {participant.player && (
@@ -255,12 +261,7 @@ export function PoolCard({
           />
         </div>
 
-        <h2
-          className={cn(
-            "font-oswald text-4xl font-semibold uppercase",
-            participant.player && "text-white"
-          )}
-        >
+        <h2 className="font-oswald text-4xl font-semibold uppercase">
           {participant.displayName}
         </h2>
       </div>
@@ -301,43 +302,47 @@ export function PlayerCard({
   }
 
   const content = (
-    <div className="relative z-10 flex h-full flex-col justify-between gap-2 p-2">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-2">
-          {isCaptain && (
-            <div className="flex items-center gap-1 rounded-full border bg-secondary px-2 py-0.5">
-              <PiCrownSimpleFill className="text-yellow-400" />
+    <div className="relative h-full">
+      {participant.player && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-background/60 via-background/20 to-transparent"
+        />
+      )}
 
-              <span className="font-oswald text-xs font-semibold uppercase">
-                Captain
-              </span>
-            </div>
-          )}
+      <div className="relative z-10 flex h-full flex-col justify-between gap-2 p-2">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {isCaptain && (
+              <div className="flex items-center gap-1 rounded-full border bg-secondary px-2 py-0.5">
+                <PiCrownSimpleFill className="text-yellow-400" />
 
-          {participant.player && (
-            <LevelBadge experience={participant.player.experience} />
-          )}
+                <span className="font-oswald text-xs font-semibold uppercase">
+                  Captain
+                </span>
+              </div>
+            )}
 
-          <PlayerPreferenceBadges
-            roles={participant.roles}
-            rank={participant.rank}
+            {participant.player && (
+              <LevelBadge experience={participant.player.experience} />
+            )}
+
+            <PlayerPreferenceBadges
+              roles={participant.roles}
+              rank={participant.rank}
+            />
+          </div>
+
+          <PlayerDropdownMenu
+            useOwnerView={useOwnerView}
+            participant={participant}
           />
         </div>
 
-        <PlayerDropdownMenu
-          useOwnerView={useOwnerView}
-          participant={participant}
-        />
+        <h2 className="font-oswald text-4xl font-semibold uppercase">
+          {participant.displayName}
+        </h2>
       </div>
-
-      <h2
-        className={cn(
-          "font-oswald text-4xl font-semibold uppercase",
-          participant.player && "text-white"
-        )}
-      >
-        {participant.displayName}
-      </h2>
     </div>
   )
 
