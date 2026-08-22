@@ -1,10 +1,12 @@
 "use client"
 
-import { useMemo, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import { motion } from "framer-motion"
 import Image from "next/image"
 import { toNumberWithCommas } from "@/lib/utils"
 import {
+  BANNER_CONFIG,
+  HORIZONS_SET_LIST,
   ROLL_PRICE,
   RARITY_RATES,
   type Rarity,
@@ -27,7 +29,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog"
-import { BANNER_CONFIG, HORIZONS_SET_LIST } from "@/lib/config"
 
 type RollResponse = {
   rarity: Rarity
@@ -38,13 +39,8 @@ type RollResponse = {
   balance: number
 }
 
-const RARITY_KEYS: Rarity[] = [
-  "common",
-  "rare",
-  "epic",
-  "legendary",
-  "ultimate",
-]
+const RARITY_KEYS = Object.keys(RARITY_RATES) as Rarity[]
+const DISPLAY_RARITIES = [...RARITY_KEYS].reverse()
 const CELL_COUNT = 12
 const CELL_SWEEP = 360 / CELL_COUNT
 const FULL_SPINS = 10
@@ -100,7 +96,6 @@ export function BannerRoll() {
   const [cells, setCells] = useState<Rarity[]>(INITIAL_CELLS)
   const [isRolling, setIsRolling] = useState(false)
   const [popupData, setPopupData] = useState<RollResponse | null>(null)
-  const [showPopup, setShowPopup] = useState(false)
   const activeSpin = useRef<{
     startRotation: number
     endRotation: number
@@ -110,7 +105,7 @@ export function BannerRoll() {
     winnerInjected: boolean
   } | null>(null)
 
-  const wheel = useMemo(() => makeWheelGradient(cells), [cells])
+  const wheel = makeWheelGradient(cells)
 
   function handleWheelUpdate(currentRotation: number) {
     const spin = activeSpin.current
@@ -148,12 +143,7 @@ export function BannerRoll() {
     setIsRolling(true)
 
     try {
-      const res = await fetch("/api/shop/banners/roll", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
+      const res = await fetch("/api/shop/banners/roll", { method: "POST" })
 
       const parse = await res.json()
 
@@ -197,7 +187,6 @@ export function BannerRoll() {
           )
         )
         setPopupData(data)
-        setShowPopup(true)
         setIsRolling(false)
       }, SPIN_DURATION * 1000)
     } catch (error) {
@@ -254,20 +243,11 @@ export function BannerRoll() {
             </DialogHeader>
 
             <div className="min-h-0 overflow-y-auto px-6 py-6">
-              {(
-                ["ultimate", "legendary", "epic", "rare", "common"] as const
-              ).map((rarity) => {
-                const banners = Array.from(
-                  new Set([
-                    ...HORIZONS_SET_LIST.rollable,
-                    HORIZONS_SET_LIST.featured,
-                  ])
-                )
-                  .map((id) => ({
-                    id,
-                    ...BANNER_CONFIG[id as keyof typeof BANNER_CONFIG],
-                  }))
-                  .filter((banner) => banner.rarity === rarity)
+              {DISPLAY_RARITIES.map((rarity) => {
+                const banners = HORIZONS_SET_LIST[rarity].map((id) => ({
+                  id,
+                  ...BANNER_CONFIG[id],
+                }))
 
                 if (banners.length === 0) return null
 
@@ -275,16 +255,8 @@ export function BannerRoll() {
                   <div key={rarity} className="mb-8 last:mb-0">
                     <div className="mb-4 flex items-center gap-3">
                       <div
-                        className={[
-                          "h-3 w-3 rounded-full",
-                          rarity === "ultimate" && "bg-yellow-300",
-                          rarity === "legendary" && "bg-red-400",
-                          rarity === "epic" && "bg-purple-400",
-                          rarity === "rare" && "bg-sky-400",
-                          rarity === "common" && "bg-lime-500",
-                        ]
-                          .filter(Boolean)
-                          .join(" ")}
+                        className="h-3 w-3 rounded-full"
+                        style={{ backgroundColor: RARITY_COLORS[rarity] }}
                       />
                       <h4 className="font-oswald text-2xl font-semibold uppercase">
                         {rarity}
@@ -424,7 +396,7 @@ export function BannerRoll() {
           >
             <CardBody className="relative h-auto w-full">
               <CardItem className="w-full" translateZ={60}>
-                <BannerBackground bannerId={119}>
+                <BannerBackground bannerId={HORIZONS_SET_LIST.featured}>
                   <div className="relative aspect-[2/1] w-full overflow-hidden rounded-xl border-1 border-yellow-100/60 shadow-[0_0_60px_rgba(245,241,11,0.35),0_24px_60px_rgba(0,0,0,0.55)]" />
                 </BannerBackground>
               </CardItem>
@@ -434,8 +406,8 @@ export function BannerRoll() {
       </div>
 
       <BannerOwnershipPopup
-        open={showPopup && !!popupData}
-        onClose={() => setShowPopup(false)}
+        open={!!popupData}
+        onClose={() => setPopupData(null)}
         bannerId={popupData?.bannerId ?? null}
         rarity={popupData?.rarity ?? null}
         owned={popupData?.owned}
