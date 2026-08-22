@@ -48,6 +48,20 @@ export function BannerOwnershipPopup({
             opacity: 0.45,
           }}
         />
+
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute top-1/2 left-1/2 -z-20 size-[80rem] -translate-x-1/2 -translate-y-1/2 animate-spin opacity-25 mix-blend-screen blur-md [animation-duration:30s] motion-reduce:animate-none"
+          style={{
+            background: `repeating-conic-gradient(
+                transparent 0deg 9deg,
+                ${RARITY_COLORS[rarity]} 9deg 13deg,
+                transparent 13deg 24deg
+              )`,
+            maskImage: "radial-gradient(circle, black 0 48%, transparent 76%)",
+          }}
+        />
+
         <CardContainer
           containerClassName="-mx-32 -my-12 w-[calc(100%+16rem)] px-32 py-12"
           className="w-full"
