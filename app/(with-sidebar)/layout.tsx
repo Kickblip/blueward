@@ -45,7 +45,7 @@ export default async function Layout({
         <header className="z-20 flex h-16 shrink-0 items-center justify-between gap-2">
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" variant="secondary" />
-            <Button variant="secondary" size="lg" asChild>
+            {/* <Button variant="secondary" size="lg" asChild>
               <Link href="/climb" className="relative flex items-center">
                 <Image
                   src="/climb-challenge.webp"
@@ -60,7 +60,7 @@ export default async function Layout({
 
                 <div className="absolute top-1.5 left-1.5 animate-bounce rounded-full bg-rose-500 p-1" />
               </Link>
-            </Button>
+            </Button> */}
             {user && <DailyReward claimed={claimed} />}
             {user && <PromoCode />}
           </div>

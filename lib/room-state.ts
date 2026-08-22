@@ -1,7 +1,7 @@
 "use server"
 
 import * as Ably from "ably"
-import { asc, eq } from "drizzle-orm"
+import { asc, eq, and, like } from "drizzle-orm"
 import { db } from "@/lib/db"
 import {
   lobbies,
@@ -27,6 +27,7 @@ export type RoomParticipant = {
 export type RoomSnapshot = {
   roomId: string
   ownerAuthId: string
+  dummies: RoomParticipant[]
   lobbies: {
     id: string
     ordinal: number
@@ -43,51 +44,76 @@ export type RoomSnapshot = {
 export async function getRoomSnapshot(
   roomId: string
 ): Promise<RoomSnapshot | null> {
-  const [[room], roomLobbies, assignedParticipants] = await Promise.all([
-    db
-      .select({
-        ownerAuthId: rooms.ownerAuthId,
-      })
-      .from(rooms)
-      .where(eq(rooms.id, roomId))
-      .limit(1),
+  const [[room], roomLobbies, assignedParticipants, dummyParticipants] =
+    await Promise.all([
+      db
+        .select({
+          ownerAuthId: rooms.ownerAuthId,
+        })
+        .from(rooms)
+        .where(eq(rooms.id, roomId))
+        .limit(1),
 
-    db
-      .select({
-        id: lobbies.id,
-        ordinal: lobbies.ordinal,
-        phase: lobbies.phase,
-        draftPickIndex: lobbies.draftPickIndex,
-      })
-      .from(lobbies)
-      .where(eq(lobbies.roomId, roomId))
-      .orderBy(asc(lobbies.ordinal)),
+      db
+        .select({
+          id: lobbies.id,
+          ordinal: lobbies.ordinal,
+          phase: lobbies.phase,
+          draftPickIndex: lobbies.draftPickIndex,
+        })
+        .from(lobbies)
+        .where(eq(lobbies.roomId, roomId))
+        .orderBy(asc(lobbies.ordinal)),
 
-    db
-      .select({
-        lobbyId: lobbyPlayers.lobbyId,
-        teamId: lobbyPlayers.teamId,
-        isCaptain: lobbyPlayers.isCaptain,
+      db
+        .select({
+          lobbyId: lobbyPlayers.lobbyId,
+          teamId: lobbyPlayers.teamId,
+          isCaptain: lobbyPlayers.isCaptain,
 
-        participantId: roomParticipants.id,
-        displayName: roomParticipants.displayName,
+          participantId: roomParticipants.id,
+          displayName: roomParticipants.displayName,
+          participantRoles: roomParticipants.roles,
+          participantRank: roomParticipants.rank,
 
-        playerPuuid: players.puuid,
-      })
-      .from(lobbyPlayers)
-      .innerJoin(
-        roomParticipants,
-        eq(lobbyPlayers.participantId, roomParticipants.id)
-      )
-      .leftJoin(players, eq(roomParticipants.playerId, players.id))
-      .where(eq(roomParticipants.roomId, roomId)),
-  ])
+          playerPuuid: players.puuid,
+        })
+        .from(lobbyPlayers)
+        .innerJoin(
+          roomParticipants,
+          eq(lobbyPlayers.participantId, roomParticipants.id)
+        )
+        .leftJoin(players, eq(roomParticipants.playerId, players.id))
+        .where(eq(roomParticipants.roomId, roomId)),
+
+      db
+        .select({
+          id: roomParticipants.id,
+          displayName: roomParticipants.displayName,
+          roles: roomParticipants.roles,
+          rank: roomParticipants.rank,
+        })
+        .from(roomParticipants)
+        .where(
+          and(
+            eq(roomParticipants.roomId, roomId),
+            like(roomParticipants.identityKey, "dummy:%")
+          )
+        ),
+    ])
 
   if (!room) return null
 
   const hydratedAssignments = await Promise.all(
     assignedParticipants.map(
-      async ({ participantId, displayName, playerPuuid, ...assignment }) => {
+      async ({
+        participantId,
+        displayName,
+        participantRoles,
+        participantRank,
+        playerPuuid,
+        ...assignment
+      }) => {
         const player =
           playerPuuid === null
             ? null
@@ -103,8 +129,8 @@ export async function getRoomSnapshot(
             id: participantId,
             displayName,
             player,
-            roles: player?.lobbyRoles ?? [],
-            rank: player?.lobbyRank ?? null,
+            roles: player?.lobbyRoles ?? participantRoles,
+            rank: player?.lobbyRank ?? participantRank,
           },
         }
       }
@@ -114,6 +140,12 @@ export async function getRoomSnapshot(
   return {
     roomId,
     ownerAuthId: room.ownerAuthId,
+
+    dummies: dummyParticipants.map((dummy) => ({
+      ...dummy,
+      player: null,
+    })),
+
     lobbies: roomLobbies.map((lobby) => ({
       ...lobby,
       players: hydratedAssignments
@@ -143,4 +175,13 @@ export async function publishRoomSnapshot(roomId: string) {
     .publish("room-state-changed", snapshot)
 
   return snapshot
+}
+
+export async function publishParticipantKicked(
+  roomId: string,
+  participantId: string
+) {
+  await ably.channels
+    .get(`room:${roomId}`)
+    .publish("participant-kicked", { participantId })
 }

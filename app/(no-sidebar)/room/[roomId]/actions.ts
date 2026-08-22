@@ -12,7 +12,11 @@ import {
   roomParticipants,
   rooms,
 } from "@/lib/schema"
-import { publishRoomSnapshot, type RoomParticipant } from "@/lib/room-state"
+import {
+  publishParticipantKicked,
+  publishRoomSnapshot,
+  type RoomParticipant,
+} from "@/lib/room-state"
 import { randomUUID } from "node:crypto"
 import * as z from "zod"
 import { redirect } from "next/navigation"
@@ -31,6 +35,11 @@ const continueAsGuestSchema = z.object({
 
 const lobbyParticipantSchema = z.object({
   lobbyId: z.uuid(),
+  participantId: z.uuid(),
+})
+
+const roomParticipantSchema = z.object({
+  roomId: z.uuid(),
   participantId: z.uuid(),
 })
 
@@ -94,6 +103,55 @@ export async function continueAsGuest(
   redirect(`/room/${roomId}`)
 }
 
+const addDummySchema = z.object({
+  roomId: z.uuid(),
+  displayName: guestDisplayNameSchema,
+  rank: lobbyRankSchema,
+  roles: z
+    .array(lobbyRoleSchema)
+    .min(1, "Select at least one position")
+    .max(5)
+    .refine((roles) => new Set(roles).size === roles.length),
+})
+
+export async function addDummy(roomId: string, formData: FormData) {
+  const result = addDummySchema.safeParse({
+    roomId,
+    displayName: formData.get("displayName"),
+    rank: formData.get("rank"),
+    roles: formData.getAll("roles"),
+  })
+
+  if (!result.success) {
+    throw new Error(result.error.issues[0]?.message ?? "Invalid dummy")
+  }
+
+  const { userId } = await auth()
+
+  if (!userId) throw new Error("Unauthorized")
+
+  const [room] = await db
+    .select({ id: rooms.id })
+    .from(rooms)
+    .where(and(eq(rooms.id, result.data.roomId), eq(rooms.ownerAuthId, userId)))
+    .limit(1)
+
+  if (!room) throw new Error("Room not found or unauthorized")
+
+  const id = randomUUID()
+
+  await db.insert(roomParticipants).values({
+    id,
+    roomId: result.data.roomId,
+    identityKey: `dummy:${id}`,
+    displayName: result.data.displayName,
+    roles: result.data.roles,
+    rank: result.data.rank,
+  })
+
+  await publishRoomSnapshot(result.data.roomId)
+}
+
 export async function saveLobbyPreferences(
   roomId: string,
   preferences: Pick<RoomParticipant, "roles" | "rank">
@@ -146,6 +204,137 @@ export async function saveLobbyPreferences(
   await publishRoomSnapshot(result.data.roomId)
 }
 
+export async function makeParticipantOwner(
+  roomId: string,
+  participantId: string
+) {
+  const result = roomParticipantSchema.safeParse({ roomId, participantId })
+
+  if (!result.success) {
+    throw new Error("Invalid owner transfer")
+  }
+
+  const { userId } = await auth()
+
+  if (!userId) {
+    throw new Error("Unauthorized")
+  }
+
+  const changed = await db.transaction(async (tx) => {
+    const [room] = await tx
+      .select({ id: rooms.id })
+      .from(rooms)
+      .where(
+        and(eq(rooms.id, result.data.roomId), eq(rooms.ownerAuthId, userId))
+      )
+      .limit(1)
+      .for("update")
+
+    if (!room) {
+      throw new Error("Room not found or unauthorized")
+    }
+
+    const [target] = await tx
+      .select({ authId: players.authId })
+      .from(roomParticipants)
+      .innerJoin(players, eq(players.id, roomParticipants.playerId))
+      .where(
+        and(
+          eq(roomParticipants.roomId, result.data.roomId),
+          eq(roomParticipants.id, result.data.participantId)
+        )
+      )
+      .limit(1)
+
+    if (!target?.authId) {
+      throw new Error("Only signed-in players can own a room")
+    }
+
+    if (target.authId === userId) return false
+
+    await tx
+      .update(rooms)
+      .set({ ownerAuthId: target.authId })
+      .where(eq(rooms.id, result.data.roomId))
+
+    return true
+  })
+
+  if (changed) {
+    await publishRoomSnapshot(result.data.roomId)
+  }
+}
+
+export async function kickParticipant(roomId: string, participantId: string) {
+  const result = roomParticipantSchema.safeParse({ roomId, participantId })
+
+  if (!result.success) {
+    throw new Error("Invalid kick")
+  }
+
+  const { userId } = await auth()
+
+  if (!userId) {
+    throw new Error("Unauthorized")
+  }
+
+  await db.transaction(async (tx) => {
+    const [room] = await tx
+      .select({ id: rooms.id })
+      .from(rooms)
+      .where(
+        and(eq(rooms.id, result.data.roomId), eq(rooms.ownerAuthId, userId))
+      )
+      .limit(1)
+      .for("update")
+
+    if (!room) {
+      throw new Error("Room not found or unauthorized")
+    }
+
+    const [target] = await tx
+      .select({
+        identityKey: roomParticipants.identityKey,
+        lobbyPhase: lobbies.phase,
+      })
+      .from(roomParticipants)
+      .leftJoin(
+        lobbyPlayers,
+        eq(lobbyPlayers.participantId, roomParticipants.id)
+      )
+      .leftJoin(lobbies, eq(lobbies.id, lobbyPlayers.lobbyId))
+      .where(
+        and(
+          eq(roomParticipants.roomId, result.data.roomId),
+          eq(roomParticipants.id, result.data.participantId)
+        )
+      )
+      .limit(1)
+
+    if (!target || target.identityKey === `clerk:${userId}`) {
+      throw new Error("Player not found or cannot be kicked")
+    }
+
+    if (target.lobbyPhase && target.lobbyPhase !== "OPEN") {
+      throw new Error("Players cannot be kicked after their draft has started")
+    }
+
+    await tx
+      .delete(roomParticipants)
+      .where(
+        and(
+          eq(roomParticipants.roomId, result.data.roomId),
+          eq(roomParticipants.id, result.data.participantId)
+        )
+      )
+  })
+
+  await Promise.all([
+    publishParticipantKicked(result.data.roomId, result.data.participantId),
+    publishRoomSnapshot(result.data.roomId),
+  ])
+}
+
 export async function moveParticipantToTeam(
   lobbyId: string,
   participantId: string,
@@ -167,7 +356,11 @@ export async function moveParticipantToTeam(
   }
 
   const [target] = await db
-    .select({ roomId: lobbies.roomId })
+    .select({
+      roomId: lobbies.roomId,
+      assignedLobbyId: lobbyPlayers.lobbyId,
+      assignedTeamId: lobbyPlayers.teamId,
+    })
     .from(lobbies)
     .innerJoin(rooms, eq(rooms.id, lobbies.roomId))
     .innerJoin(
@@ -177,11 +370,16 @@ export async function moveParticipantToTeam(
         eq(roomParticipants.roomId, lobbies.roomId)
       )
     )
+    .leftJoin(lobbyPlayers, eq(lobbyPlayers.participantId, roomParticipants.id))
     .where(and(eq(lobbies.id, lobbyId), eq(rooms.ownerAuthId, userId)))
     .limit(1)
 
   if (!target) {
     throw new Error("Lobby, participant, or permission not found")
+  }
+
+  if (target.assignedLobbyId === lobbyId && target.assignedTeamId === teamId) {
+    return
   }
 
   const [{ teamSize }] = await db
@@ -211,6 +409,7 @@ export async function moveParticipantToTeam(
       set: {
         lobbyId,
         teamId,
+        isCaptain: false,
       },
     })
 

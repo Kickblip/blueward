@@ -413,6 +413,12 @@ export const roomParticipants = pgTable(
       onDelete: "set null",
     }),
 
+    roles: roleEnum()
+      .array()
+      .notNull()
+      .default(sql`ARRAY[]::role[]`),
+    rank: rankEnum(),
+
     displayName: varchar({ length: 32 }).notNull(),
 
     createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),

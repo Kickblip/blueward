@@ -9,6 +9,7 @@ import {
 } from "react"
 import { useChannel, usePresence, usePresenceListener } from "ably/react"
 import type { RoomParticipant, RoomSnapshot } from "@/lib/room-state"
+import { useRouter } from "next/navigation"
 
 type ParticipantPreferences = Pick<RoomParticipant, "roles" | "rank">
 
@@ -37,6 +38,7 @@ export function RoomProvider({
   viewerAuthId: string | null
   children: ReactNode
 }) {
+  const router = useRouter()
   const [snapshot, setSnapshot] = useState(initialSnapshot)
   const [selectedLobbyId, selectLobby] = useState<string | null>(null)
   const [participant, setParticipant] = useState(currentParticipant)
@@ -63,6 +65,14 @@ export function RoomProvider({
 
   useChannel({}, "room-state-changed", ({ data }) => {
     setSnapshot(data as RoomSnapshot)
+  })
+
+  useChannel({}, "participant-kicked", ({ data }) => {
+    const kicked = data as { participantId?: unknown }
+
+    if (kicked?.participantId === participantRef.current.id) {
+      router.replace("/")
+    }
   })
 
   const participantsById = new Map<string, RoomParticipant>()
@@ -95,7 +105,7 @@ export function RoomProvider({
     lobbies.flatMap((lobby) => lobby.players.map(({ player }) => player.id))
   )
 
-  const participantPool = presentParticipants.filter(
+  const participantPool = [...presentParticipants, ...snapshot.dummies].filter(
     ({ id }) => !assignedParticipantIds.has(id)
   )
 

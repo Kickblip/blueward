@@ -20,7 +20,13 @@ import {
   AvatarImage,
 } from "@/components/ui/avatar"
 import { useRoom } from "./room-context"
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { useState, useTransition } from "react"
 import {
   adjustDraftPickIndex,
@@ -42,7 +48,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu"
-import { FaGear } from "react-icons/fa6"
+import { FaGear, FaUser } from "react-icons/fa6"
 import {
   BottomRoleIcon,
   JungleRoleIcon,
@@ -54,6 +60,8 @@ import type { RoomParticipant } from "@/lib/room-state"
 import { toast } from "sonner"
 import { DRAFT_PICK_ORDER } from "@/lib/draft"
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
+import { addDummy } from "./actions"
+import { Input } from "@/components/ui/input"
 
 const ROLE_OPTIONS = [
   { value: "TOP", label: "Top", Icon: TopRoleIcon },
@@ -88,9 +96,13 @@ export function Toolbar() {
   } = useRoom()
 
   const [randomPlayer, setRandomPlayer] = useState<string | null>(null)
+  const [dummyRoles, setDummyRoles] = useState<RoomParticipant["roles"]>([])
+  const [dummyRank, setDummyRank] = useState<RoomParticipant["rank"]>(null)
+  const [dummyDialogOpen, setDummyDialogOpen] = useState(false)
   const [isStartingDraft, startTransition] = useTransition()
   const [isSavingPreferences, startSavingPreferences] = useTransition()
   const [isAdjustingPickOrder, startAdjustingPickOrder] = useTransition()
+  const [isAddingDummy, startAddingDummy] = useTransition()
 
   const pickingTeam =
     activeLobby?.phase === "DRAFTING"
@@ -120,8 +132,7 @@ export function Toolbar() {
       ({ teamId, isCaptain }) => teamId === 1 && isCaptain
     )
 
-  const isStartDraftDisabled =
-    !hasBothCaptains || participantPool.length < 8 || isStartingDraft
+  const isStartDraftDisabled = !hasBothCaptains || isStartingDraft
 
   function handleStartDraft() {
     if (!activeLobby || activeLobby.phase !== "OPEN") return
@@ -187,6 +198,37 @@ export function Toolbar() {
     })
   }
 
+  function handleAddDummy(formData: FormData) {
+    startAddingDummy(async () => {
+      try {
+        await addDummy(roomId, formData)
+        setDummyDialogOpen(false)
+      } catch {
+        toast.error("Could not add dummy")
+      }
+    })
+  }
+
+  const dummyRankLabel =
+    RANK_OPTIONS.find(({ value }) => value === dummyRank)?.label ??
+    "Select rank"
+
+  function handleDummyRoleToggle(
+    selectedRole: RoomParticipant["roles"][number]
+  ) {
+    setDummyRoles((roles) =>
+      roles.includes(selectedRole)
+        ? roles.filter((role) => role !== selectedRole)
+        : [...roles, selectedRole]
+    )
+  }
+
+  function handleDummyRankChange(value: string) {
+    const rank = RANK_OPTIONS.find(({ value: rank }) => rank === value)?.value
+
+    if (rank) setDummyRank(rank)
+  }
+
   return (
     <header className="flex items-center justify-between gap-4 p-2">
       <div className="flex items-center gap-4">
@@ -201,73 +243,81 @@ export function Toolbar() {
           <TooltipContent>Exit room</TooltipContent>
         </Tooltip>
 
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="lg">
-              <RiRobot3Fill className="size-6 text-chart-3 dark:text-chart-1" />
-              <span className="font-oswald text-lg font-semibold uppercase">
-                Autobalance
-              </span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Generate teams automatically</TooltipContent>
-        </Tooltip>
-
-        <Dialog>
+        {isOwner && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <DialogTrigger asChild>
-                <Button variant="ghost" size="lg">
-                  <MdOutlineShuffleOn className="size-6 text-chart-3 dark:text-chart-1" />
-                  <span className="font-oswald text-lg font-semibold uppercase">
-                    Random pick
-                  </span>
-                </Button>
-              </DialogTrigger>
+              <Button variant="ghost" size="lg" disabled>
+                <RiRobot3Fill className="size-6 text-chart-3 dark:text-chart-1" />
+                <span className="font-oswald text-lg font-semibold uppercase">
+                  Autobalance
+                </span>
+              </Button>
             </TooltipTrigger>
-            <TooltipContent>
-              Select a random player from the pool
-            </TooltipContent>
+            {/* <TooltipContent>Generate teams automatically</TooltipContent> */}
+            <TooltipContent>Coming Soon</TooltipContent>
           </Tooltip>
+        )}
 
-          <DialogContent>
-            <p className="font-oswald text-lg font-semibold uppercase">
-              {randomPlayer || "No player yet"}
-            </p>
+        {isOwner && (
+          <Dialog>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="lg">
+                    <MdOutlineShuffleOn className="size-6 text-chart-3 dark:text-chart-1" />
+                    <span className="font-oswald text-lg font-semibold uppercase">
+                      Random pick
+                    </span>
+                  </Button>
+                </DialogTrigger>
+              </TooltipTrigger>
+              <TooltipContent>
+                Select a random player from the pool
+              </TooltipContent>
+            </Tooltip>
 
-            <Button
-              size="lg"
-              className="font-oswald font-semibold uppercase"
-              onClick={() => {
-                if (participantPool.length === 0) return
+            <DialogContent>
+              <p className="font-oswald text-lg font-semibold uppercase">
+                {randomPlayer || "No player yet"}
+              </p>
 
-                const randomIndex = Math.floor(
-                  Math.random() * participantPool.length
-                )
+              <Button
+                size="lg"
+                className="font-oswald font-semibold uppercase"
+                onClick={() => {
+                  if (participantPool.length === 0) return
 
-                const randomParticipant = participantPool[randomIndex]
+                  const randomIndex = Math.floor(
+                    Math.random() * participantPool.length
+                  )
 
-                setRandomPlayer(randomParticipant.displayName)
-              }}
-            >
-              Randomize
-            </Button>
-          </DialogContent>
-        </Dialog>
+                  const randomParticipant = participantPool[randomIndex]
 
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="lg">
-              <IoSparkles className="size-6 text-chart-3 dark:text-chart-1" />
-              <span className="font-oswald text-lg font-semibold uppercase">
-                Predictions
-              </span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
+                  setRandomPlayer(randomParticipant.displayName)
+                }}
+              >
+                Randomize
+              </Button>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {isOwner && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="lg" disabled>
+                <IoSparkles className="size-6 text-chart-3 dark:text-chart-1" />
+                <span className="font-oswald text-lg font-semibold uppercase">
+                  Predictions
+                </span>
+              </Button>
+            </TooltipTrigger>
+            {/* <TooltipContent>
             Create and edit available prediction markets
-          </TooltipContent>
-        </Tooltip>
+          </TooltipContent> */}
+            <TooltipContent>Coming Soon</TooltipContent>
+          </Tooltip>
+        )}
 
         <DropdownMenu>
           <Tooltip defaultOpen>
@@ -332,7 +382,7 @@ export function Toolbar() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {showStartDraft && (
+        {showStartDraft && isOwner && (
           <Tooltip>
             <TooltipTrigger asChild>
               <span
@@ -358,6 +408,111 @@ export function Toolbar() {
                 : "Start draft for this lobby"}
             </TooltipContent>
           </Tooltip>
+        )}
+
+        {isOwner && (
+          <Dialog open={dummyDialogOpen} onOpenChange={setDummyDialogOpen}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="lg">
+                    <FaUser className="size-5 text-chart-3 dark:text-chart-1" />
+                    <span className="font-oswald text-lg font-semibold uppercase">
+                      Add dummy
+                    </span>
+                  </Button>
+                </DialogTrigger>
+              </TooltipTrigger>
+              <TooltipContent>
+                Add a placeholder player to the lobby
+              </TooltipContent>
+            </Tooltip>
+
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle className="font-oswald font-semibold uppercase">
+                  Add dummy player
+                </DialogTitle>
+              </DialogHeader>
+
+              <form action={handleAddDummy} className="space-y-4">
+                <Input
+                  name="displayName"
+                  placeholder="Player name"
+                  maxLength={32}
+                  required
+                />
+
+                {dummyRoles.map((role) => (
+                  <input key={role} type="hidden" name="roles" value={role} />
+                ))}
+
+                <input type="hidden" name="rank" value={dummyRank ?? ""} />
+
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Positions</p>
+
+                  <div className="flex items-center gap-1">
+                    {ROLE_OPTIONS.map(({ value, label, Icon }) => {
+                      const selected = dummyRoles.includes(value)
+
+                      return (
+                        <Button
+                          key={value}
+                          type="button"
+                          size="icon-lg"
+                          variant={selected ? "default" : "secondary"}
+                          aria-label={label}
+                          aria-pressed={selected}
+                          onClick={() => handleDummyRoleToggle(value)}
+                        >
+                          <Icon />
+                        </Button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Rank</p>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full justify-start"
+                      >
+                        {dummyRankLabel}
+                      </Button>
+                    </DropdownMenuTrigger>
+
+                    <DropdownMenuContent className="w-56">
+                      <DropdownMenuRadioGroup
+                        value={dummyRank ?? undefined}
+                        onValueChange={handleDummyRankChange}
+                      >
+                        {RANK_OPTIONS.map(({ value, label }) => (
+                          <DropdownMenuRadioItem key={value} value={value}>
+                            {label}
+                          </DropdownMenuRadioItem>
+                        ))}
+                      </DropdownMenuRadioGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={
+                    isAddingDummy || !dummyRank || dummyRoles.length === 0
+                  }
+                >
+                  {isAddingDummy ? <Spinner /> : "Add player"}
+                </Button>
+              </form>
+            </DialogContent>
+          </Dialog>
         )}
       </div>
 

@@ -32,10 +32,12 @@ import {
 import Link from "next/link"
 import {
   makeParticipantCaptain,
+  makeParticipantOwner,
   moveParticipantToTeam,
   returnParticipantToPool,
   demoteParticipantCaptain,
   draftParticipant,
+  kickParticipant,
 } from "./actions"
 import {
   BottomRoleIcon,
@@ -371,7 +373,7 @@ export function PlayerDropdownMenu({
   useOwnerView: boolean
   participant: RoomParticipant
 }) {
-  const { activeLobby, currentParticipant } = useRoom()
+  const { activeLobby, currentParticipant, roomId } = useRoom()
   const [isDrafting, startDraftTransition] = useTransition()
 
   const assignment = activeLobby?.players.find(
@@ -429,6 +431,26 @@ export function PlayerDropdownMenu({
     void returnParticipantToPool(activeLobby.id, participant.id)
   }
 
+  function makeOwner() {
+    if (!participant.player || participant.id === currentParticipant.id) return
+
+    void makeParticipantOwner(roomId, participant.id).catch(() => {
+      toast.error("Could not transfer room ownership")
+    })
+  }
+
+  function kick() {
+    if (participant.id === currentParticipant.id) return
+
+    if (!window.confirm(`Kick ${participant.displayName} from this room?`)) {
+      return
+    }
+
+    void kickParticipant(roomId, participant.id).catch(() => {
+      toast.error("Could not kick this player")
+    })
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -468,14 +490,14 @@ export function PlayerDropdownMenu({
             <DropdownMenuGroup>
               <DropdownMenuLabel>Admin</DropdownMenuLabel>
               <DropdownMenuItem
-                disabled={!activeLobby}
+                disabled={!activeLobby || assignment?.teamId === 0}
                 onSelect={() => move(0)}
               >
                 <FaArrowCircleLeft className="text-chart-3 dark:text-chart-1" />
                 Move to Team 1
               </DropdownMenuItem>
               <DropdownMenuItem
-                disabled={!activeLobby}
+                disabled={!activeLobby || assignment?.teamId === 1}
                 onSelect={() => move(1)}
               >
                 <FaArrowCircleRight className="text-chart-3 dark:text-chart-1" />
@@ -506,11 +528,25 @@ export function PlayerDropdownMenu({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuLabel>Danger</DropdownMenuLabel>
-              <DropdownMenuItem variant="destructive">
+              <DropdownMenuItem
+                variant="destructive"
+                disabled={
+                  !participant.player ||
+                  participant.id === currentParticipant.id
+                }
+                onSelect={makeOwner}
+              >
                 <PiCrownSimpleFill />
                 Make Owner
               </DropdownMenuItem>
-              <DropdownMenuItem variant="destructive">
+              <DropdownMenuItem
+                variant="destructive"
+                disabled={
+                  participant.id === currentParticipant.id ||
+                  (Boolean(assignment) && activeLobby?.phase !== "OPEN")
+                }
+                onSelect={kick}
+              >
                 <FaTrash />
                 Kick Player
               </DropdownMenuItem>
