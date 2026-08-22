@@ -12,8 +12,22 @@ import {
 } from "@/lib/config"
 import { CrystalIcon } from "@/lib/icons"
 import { mutate } from "swr"
+import { BannerBackground } from "./banner-background"
 import { BannerOwnershipPopup } from "./banner-ownership-popup"
+import { CardBody, CardContainer, CardItem } from "./ui/3d-card"
 import { Button } from "./ui/button"
+import { toast } from "sonner"
+import { FaCircleInfo } from "react-icons/fa6"
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
+import { HiMiniSquare2Stack } from "react-icons/hi2"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog"
+import { BANNER_CONFIG, HORIZONS_SET_LIST } from "@/lib/config"
 
 type RollResponse = {
   rarity: Rarity
@@ -85,7 +99,6 @@ export function BannerRoll() {
   const [rotation, setRotation] = useState(0)
   const [cells, setCells] = useState<Rarity[]>(INITIAL_CELLS)
   const [isRolling, setIsRolling] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [popupData, setPopupData] = useState<RollResponse | null>(null)
   const [showPopup, setShowPopup] = useState(false)
   const activeSpin = useRef<{
@@ -133,7 +146,6 @@ export function BannerRoll() {
     if (isRolling) return
 
     setIsRolling(true)
-    setErrorMessage(null)
 
     try {
       const res = await fetch("/api/shop/banners/roll", {
@@ -146,7 +158,7 @@ export function BannerRoll() {
       const parse = await res.json()
 
       if (!res.ok) {
-        setErrorMessage(
+        toast.error(
           parse?.error ?? `Roll request failed with status ${res.status}`
         )
         setIsRolling(false)
@@ -191,18 +203,160 @@ export function BannerRoll() {
     } catch (error) {
       console.error("Banner roll failed:", error)
       activeSpin.current = null
-      setErrorMessage("Something went wrong while rolling.")
+      toast.error("Something went wrong while rolling.")
       setIsRolling(false)
     }
   }
 
   return (
     <div className="relative">
+      <div className="absolute top-4 left-4 z-50 max-w-lg text-left">
+        <h2 className="font-oswald text-3xl font-semibold uppercase">
+          Limited Banners
+        </h2>
+
+        <p className="text-sm text-muted-foreground">
+          New ultimate animated banner on base set
+        </p>
+
+        <Button
+          onClick={handleRoll}
+          disabled={isRolling}
+          size="lg"
+          className="mt-4 w-full"
+        >
+          <CrystalIcon size={25} className="text-white" />
+          <p className="font-oswald text-xl font-semibold text-white uppercase">
+            {isRolling
+              ? "Rolling..."
+              : `${toNumberWithCommas(ROLL_PRICE)} ROLL`}
+          </p>
+        </Button>
+      </div>
+
+      <div className="absolute top-4 right-4 z-50 flex flex-col gap-2">
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button
+              variant="ghost"
+              className="font-oswald font-semibold text-muted-foreground uppercase"
+            >
+              <HiMiniSquare2Stack />
+              View set list
+            </Button>
+          </DialogTrigger>
+
+          <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-7xl">
+            <DialogHeader>
+              <DialogTitle className="font-oswald text-4xl font-semibold uppercase">
+                Available Banners
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="min-h-0 overflow-y-auto px-6 py-6">
+              {(
+                ["ultimate", "legendary", "epic", "rare", "common"] as const
+              ).map((rarity) => {
+                const banners = Array.from(
+                  new Set([
+                    ...HORIZONS_SET_LIST.rollable,
+                    HORIZONS_SET_LIST.featured,
+                  ])
+                )
+                  .map((id) => ({
+                    id,
+                    ...BANNER_CONFIG[id as keyof typeof BANNER_CONFIG],
+                  }))
+                  .filter((banner) => banner.rarity === rarity)
+
+                if (banners.length === 0) return null
+
+                return (
+                  <div key={rarity} className="mb-8 last:mb-0">
+                    <div className="mb-4 flex items-center gap-3">
+                      <div
+                        className={[
+                          "h-3 w-3 rounded-full",
+                          rarity === "ultimate" && "bg-yellow-300",
+                          rarity === "legendary" && "bg-red-400",
+                          rarity === "epic" && "bg-purple-400",
+                          rarity === "rare" && "bg-sky-400",
+                          rarity === "common" && "bg-lime-500",
+                        ]
+                          .filter(Boolean)
+                          .join(" ")}
+                      />
+                      <h4 className="font-oswald text-2xl font-semibold uppercase">
+                        {rarity}
+                      </h4>
+                      <div className="h-px flex-1 bg-border" />
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4">
+                      {banners.map((banner) => {
+                        return (
+                          <div
+                            key={banner.id}
+                            className="overflow-hidden rounded-md"
+                          >
+                            <BannerBackground bannerId={banner.id}>
+                              <div className="relative aspect-[2/1] overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent" />
+
+                                <div className="absolute inset-x-0 bottom-0 p-3">
+                                  <p className="line-clamp-2 font-oswald text-lg leading-tight font-semibold text-white uppercase">
+                                    {banner.name}
+                                  </p>
+                                </div>
+                              </div>
+                            </BannerBackground>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              className="font-oswald font-semibold text-muted-foreground uppercase"
+            >
+              <FaCircleInfo />
+              View Rates
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">
+            <div className="flex flex-col gap-1">
+              {Object.entries(RARITY_RATES).map(([rarity, rate]) => (
+                <div
+                  key={rarity}
+                  className="flex justify-between gap-6 capitalize"
+                >
+                  <span>{rarity}</span>
+                  <span>{Number((rate * 100).toFixed(2))}%</span>
+                </div>
+              ))}
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </div>
+
       <div className="flex items-center justify-center px-4 pt-8">
-        <div className="relative aspect-[2/1] w-full max-w-3xl">
+        <div className="relative aspect-[5/3] w-full max-w-3xl">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -top-[8%] left-1/2 h-[55%] w-[72%] -translate-x-1/2 rounded-full bg-chart-2/25 blur-3xl"
+          />
+
           <svg
             aria-hidden="true"
-            viewBox="0 0 638 319"
+            viewBox="0 0 638 383"
             className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
           >
             {DOT_RINGS.map((ring, ringIndex) =>
@@ -263,25 +417,21 @@ export function BannerRoll() {
           </div>
 
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 h-[42%] bg-gradient-to-t from-background via-background/80 to-transparent" />
+
+          <CardContainer
+            containerClassName="absolute inset-x-0 bottom-2 z-40 mx-auto w-full max-w-xl px-6 py-0"
+            className="w-full"
+          >
+            <CardBody className="relative h-auto w-full">
+              <CardItem className="w-full" translateZ={60}>
+                <BannerBackground bannerId={119}>
+                  <div className="relative aspect-[2/1] w-full overflow-hidden rounded-xl border-1 border-yellow-100/60 shadow-[0_0_60px_rgba(245,241,11,0.35),0_24px_60px_rgba(0,0,0,0.55)]" />
+                </BannerBackground>
+              </CardItem>
+            </CardBody>
+          </CardContainer>
         </div>
       </div>
-
-      <Button
-        type="button"
-        onClick={handleRoll}
-        disabled={isRolling}
-        size="lg"
-        className="z-20 h-14 rounded-lg"
-      >
-        <CrystalIcon size={25} className="text-white" />
-        <p className="font-oswald text-xl font-semibold text-white uppercase">
-          {isRolling ? "Rolling..." : `${toNumberWithCommas(ROLL_PRICE)} ROLL`}
-        </p>
-      </Button>
-
-      {errorMessage && (
-        <div className="px-4 py-2 text-sm text-red-200">{errorMessage}</div>
-      )}
 
       <BannerOwnershipPopup
         open={showPopup && !!popupData}
