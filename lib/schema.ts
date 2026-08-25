@@ -600,7 +600,10 @@ export const climbChallengePlayers = pgTable("climb_challenge_players", {
     .references(() => players.id, { onDelete: "cascade" }),
   puuid: varchar({ length: 128 }).primaryKey(),
 
-  startingNetWins: integer(),
+  startingWins: integer(),
+  startingLosses: integer(),
+  wins: integer().notNull().default(0),
+  losses: integer().notNull().default(0),
   netWins: integer().notNull().default(0),
 })
 

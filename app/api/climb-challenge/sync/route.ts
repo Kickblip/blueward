@@ -18,7 +18,8 @@ export async function POST(request: NextRequest) {
   const participants = await db
     .select({
       puuid: climbChallengePlayers.puuid,
-      startingNetWins: climbChallengePlayers.startingNetWins,
+      startingWins: climbChallengePlayers.startingWins,
+      startingLosses: climbChallengePlayers.startingLosses,
     })
     .from(climbChallengePlayers)
 
@@ -53,14 +54,20 @@ export async function POST(request: NextRequest) {
           return { puuid: participant.puuid, updated: false }
         }
 
-        const currentNetWins = solo.wins - solo.losses
-        const startingNetWins = participant.startingNetWins ?? currentNetWins
-        const netWins = currentNetWins - startingNetWins
+        const startingWins = participant.startingWins ?? solo.wins
+        const startingLosses = participant.startingLosses ?? solo.losses
+
+        const wins = solo.wins - startingWins
+        const losses = solo.losses - startingLosses
+        const netWins = wins - losses
 
         await db
           .update(climbChallengePlayers)
           .set({
-            startingNetWins,
+            startingWins,
+            startingLosses,
+            wins,
+            losses,
             netWins,
           })
           .where(eq(climbChallengePlayers.puuid, participant.puuid))

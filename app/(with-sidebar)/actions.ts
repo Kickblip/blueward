@@ -178,6 +178,8 @@ export const getClimbLeaderboard = unstable_cache(
         riotIdTagline: players.riotIdTagline,
         bannerId: players.bannerId,
         netWins: climbChallengePlayers.netWins,
+        wins: climbChallengePlayers.wins,
+        losses: climbChallengePlayers.losses,
       })
       .from(climbChallengePlayers)
       .innerJoin(players, eq(climbChallengePlayers.playerId, players.id))
@@ -220,7 +222,6 @@ export const joinClimbChallenge = async () => {
     .values({
       playerId: player.id,
       puuid: player.puuid,
-      startingNetWins: null,
     })
     .onConflictDoNothing({
       target: climbChallengePlayers.puuid,
