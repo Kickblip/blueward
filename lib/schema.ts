@@ -282,6 +282,7 @@ export const transactionTypeEnum = pgEnum("transaction_type", [
   "DAILY_REWARD",
   "PROMO_CODE",
 ])
+export type TransactionType = (typeof transactionTypeEnum.enumValues)[number]
 
 export const transactions = pgTable(
   "transactions",

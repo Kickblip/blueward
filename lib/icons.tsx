@@ -202,7 +202,7 @@ export function CrystalIcon({
 }) {
   return (
     <svg
-      className={cn("text-blue-300", className)}
+      className={cn("text-chart-3 dark:text-chart-1", className)}
       width={size ?? 14}
       height={size ?? 14}
       viewBox="0 0 226 258"

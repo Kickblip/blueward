@@ -9,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useState } from "react"
 import { TRANSACTION_TYPES } from "@/lib/config"
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
 
 type Transaction = {
   id: number
@@ -44,14 +45,23 @@ export function UserBalance() {
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="secondary" size="lg">
-          <CrystalIcon size={14} />
-          <span className="font-oswald text-sm">
-            {isLoading ? <Spinner /> : toNumberWithCommas(data?.balance ?? 0)}
-          </span>
-        </Button>
-      </PopoverTrigger>
+      <Tooltip>
+        <PopoverTrigger asChild>
+          <TooltipTrigger asChild>
+            <Button variant="secondary" size="lg">
+              <CrystalIcon size={14} />
+              <span className="font-oswald text-sm">
+                {isLoading ? (
+                  <Spinner />
+                ) : (
+                  toNumberWithCommas(data?.balance ?? 0)
+                )}
+              </span>
+            </Button>
+          </TooltipTrigger>
+        </PopoverTrigger>
+        <TooltipContent>View transaction history</TooltipContent>
+      </Tooltip>
       <PopoverContent align="end">
         {transactionsLoading ? (
           <div className="flex flex-col gap-2">

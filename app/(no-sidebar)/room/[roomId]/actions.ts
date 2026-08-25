@@ -870,3 +870,47 @@ export async function createLobby(roomId: string) {
 
   return lobbyId
 }
+
+export async function resetLobby(lobbyId: string) {
+  const result = z.uuid().safeParse(lobbyId)
+
+  if (!result.success) {
+    throw new Error("Invalid lobby")
+  }
+
+  const { userId } = await auth()
+
+  if (!userId) {
+    throw new Error("Unauthorized")
+  }
+
+  const roomId = await db.transaction(async (tx) => {
+    const [lobby] = await tx
+      .select({
+        roomId: lobbies.roomId,
+      })
+      .from(lobbies)
+      .innerJoin(rooms, eq(rooms.id, lobbies.roomId))
+      .where(and(eq(lobbies.id, result.data), eq(rooms.ownerAuthId, userId)))
+      .limit(1)
+      .for("update")
+
+    if (!lobby) {
+      throw new Error("Lobby not found or unauthorized")
+    }
+
+    await tx.delete(lobbyPlayers).where(eq(lobbyPlayers.lobbyId, result.data))
+
+    await tx
+      .update(lobbies)
+      .set({
+        phase: "OPEN",
+        draftPickIndex: 0,
+      })
+      .where(eq(lobbies.id, result.data))
+
+    return lobby.roomId
+  })
+
+  await publishRoomSnapshot(roomId)
+}

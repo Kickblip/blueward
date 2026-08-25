@@ -14,6 +14,7 @@ import { Footer } from "@/components/footer"
 // import { AdSlot } from "@/components/ad-slot"
 import { UserBalance } from "@/components/user-balance"
 import { PromoCode } from "@/components/promo-code"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export default async function Layout({
   children,
@@ -47,6 +48,7 @@ export default async function Layout({
           </div>
 
           <div className="flex items-center gap-2 px-4">
+            <ThemeToggle />
             {user && <UserBalance />}
             <SearchButton />
           </div>

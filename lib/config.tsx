@@ -1,3 +1,5 @@
+import { TransactionType } from "./schema"
+
 export const CLIMB_CHALLENGE_START_DATE = "2026-08-28T17:00:00-06:00" as const
 export const CLIMB_CHALLENGE_END_DATE = "2026-09-11T23:59:59-06:00" as const
 
@@ -37,7 +39,8 @@ export const TRANSACTION_TYPES = {
   MARKET_PAYOUT: "Wager Payout",
   MARKET_REFUND: "Wager Refund",
   DAILY_REWARD: "Daily Reward",
-} as const
+  PROMO_CODE: "Promo Code",
+} as const satisfies Record<TransactionType, string>
 
 export function getProjectedPredictionMultiplier(popularity: number) {
   const marketMultiplier = 1 / Math.max(popularity, 0.01)

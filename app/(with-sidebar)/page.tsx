@@ -15,6 +15,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { BannerBackground } from "@/components/banner-background"
 
 export default async function Home() {
   const [games, leaderboard] = await Promise.all([
@@ -201,24 +202,21 @@ function PodiumCard({
     <div
       className={`flex flex-col items-center ${variant !== "gold" && "pt-12"}`}
     >
-      <div
-        className={`relative aspect-video w-full ${variant === "gold" ? "mb-14" : "mb-12"}`}
-      >
-        <Image
-          src={`/banners/compressed/5.webp`}
-          alt=""
-          fill
-          className="rounded-md object-cover"
-        />
-
-        <div className="absolute top-full left-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
-          <AvatarPodiumBorder
-            src={"/defaultpfp.webp"}
-            size={48}
-            variant={variant}
-          />
+      <BannerBackground bannerId={player.bannerId}>
+        <div
+          className={`relative aspect-video w-full rounded-md ${
+            variant === "gold" ? "mb-14" : "mb-12"
+          }`}
+        >
+          <div className="absolute top-full left-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
+            <AvatarPodiumBorder
+              src="/defaultpfp.webp"
+              size={48}
+              variant={variant}
+            />
+          </div>
         </div>
-      </div>
+      </BannerBackground>
       <p className="z-20 font-oswald text-2xl font-semibold uppercase group-hover:text-chart-3 dark:group-hover:text-chart-1">
         {player.riotIdGameName}
       </p>

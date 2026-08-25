@@ -3,9 +3,9 @@
 import { Logo } from "@/components/logo"
 import { Button, buttonVariants } from "@/components/ui/button"
 import Link from "next/link"
-import { RiRobot3Fill } from "react-icons/ri"
+// import { RiRobot3Fill } from "react-icons/ri"
 import { MdOutlineShuffleOn } from "react-icons/md"
-import { IoSparkles } from "react-icons/io5"
+// import { IoSparkles } from "react-icons/io5"
 import {
   Tooltip,
   TooltipContent,
@@ -32,6 +32,8 @@ import {
   adjustDraftPickIndex,
   saveLobbyPreferences,
   startDraft,
+  addDummy,
+  resetLobby,
 } from "./actions"
 import { Spinner } from "@/components/ui/spinner"
 import { FaPlay } from "react-icons/fa"
@@ -48,7 +50,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu"
-import { FaGear, FaUser } from "react-icons/fa6"
+import { FaGear, FaUser, FaSun, FaMoon } from "react-icons/fa6"
 import {
   BottomRoleIcon,
   JungleRoleIcon,
@@ -60,8 +62,9 @@ import type { RoomParticipant } from "@/lib/room-state"
 import { toast } from "sonner"
 import { DRAFT_PICK_ORDER } from "@/lib/draft"
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
-import { addDummy } from "./actions"
 import { Input } from "@/components/ui/input"
+import { LuRefreshCw } from "react-icons/lu"
+import { useTheme } from "next-themes"
 
 const ROLE_OPTIONS = [
   { value: "TOP", label: "Top", Icon: TopRoleIcon },
@@ -98,11 +101,14 @@ export function Toolbar() {
   const [randomPlayer, setRandomPlayer] = useState<string | null>(null)
   const [dummyRoles, setDummyRoles] = useState<RoomParticipant["roles"]>([])
   const [dummyRank, setDummyRank] = useState<RoomParticipant["rank"]>(null)
+  const [resetConfirmationOpen, setResetConfirmationOpen] = useState(false)
   const [dummyDialogOpen, setDummyDialogOpen] = useState(false)
   const [isStartingDraft, startTransition] = useTransition()
   const [isSavingPreferences, startSavingPreferences] = useTransition()
   const [isAdjustingPickOrder, startAdjustingPickOrder] = useTransition()
   const [isAddingDummy, startAddingDummy] = useTransition()
+  const [isResettingLobby, startResettingLobby] = useTransition()
+  const { resolvedTheme, setTheme } = useTheme()
 
   const pickingTeam =
     activeLobby?.phase === "DRAFTING"
@@ -198,6 +204,19 @@ export function Toolbar() {
     })
   }
 
+  function handleResetLobby() {
+    if (!activeLobby) return
+
+    startResettingLobby(async () => {
+      try {
+        await resetLobby(activeLobby.id)
+        setResetConfirmationOpen(false)
+      } catch {
+        toast.error("Could not reset the lobby")
+      }
+    })
+  }
+
   function handleAddDummy(formData: FormData) {
     startAddingDummy(async () => {
       try {
@@ -243,7 +262,7 @@ export function Toolbar() {
           <TooltipContent>Exit room</TooltipContent>
         </Tooltip>
 
-        {isOwner && (
+        {/* {isOwner && (
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="ghost" size="lg" disabled>
@@ -253,10 +272,9 @@ export function Toolbar() {
                 </span>
               </Button>
             </TooltipTrigger>
-            {/* <TooltipContent>Generate teams automatically</TooltipContent> */}
-            <TooltipContent>Coming Soon</TooltipContent>
+            <TooltipContent>Generate teams automatically</TooltipContent>
           </Tooltip>
-        )}
+        )} */}
 
         {isOwner && (
           <Dialog>
@@ -302,7 +320,7 @@ export function Toolbar() {
           </Dialog>
         )}
 
-        {isOwner && (
+        {/* {isOwner && (
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="ghost" size="lg" disabled>
@@ -312,23 +330,25 @@ export function Toolbar() {
                 </span>
               </Button>
             </TooltipTrigger>
-            {/* <TooltipContent>
-            Create and edit available prediction markets
-          </TooltipContent> */}
-            <TooltipContent>Coming Soon</TooltipContent>
+            <TooltipContent>
+              Create and edit available prediction markets
+            </TooltipContent>
           </Tooltip>
-        )}
+        )} */}
 
         <DropdownMenu>
           <Tooltip defaultOpen>
             <TooltipTrigger asChild>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon-lg">
+                <Button variant="ghost" size="lg">
                   {isSavingPreferences ? (
                     <Spinner />
                   ) : (
-                    <FaGear className="text-chart-3 dark:text-chart-1" />
+                    <FaGear className="size-5 text-chart-3 dark:text-chart-1" />
                   )}
+                  <span className="font-oswald text-lg font-semibold uppercase">
+                    Settings
+                  </span>
                 </Button>
               </DropdownMenuTrigger>
             </TooltipTrigger>
@@ -336,6 +356,24 @@ export function Toolbar() {
           </Tooltip>
           <DropdownMenuContent align="start" className="w-56">
             <DropdownMenuGroup>
+              <DropdownMenuLabel>Theme</DropdownMenuLabel>
+              <div className="flex w-full items-center gap-1 pr-1">
+                <Button
+                  variant={resolvedTheme === "dark" ? "default" : "secondary"}
+                  onClick={() => setTheme("dark")}
+                  className="w-1/2"
+                >
+                  <FaMoon />
+                </Button>
+                <Button
+                  variant={resolvedTheme === "light" ? "default" : "secondary"}
+                  onClick={() => setTheme("light")}
+                  className="w-1/2"
+                >
+                  <FaSun />
+                </Button>
+              </div>
+
               <DropdownMenuLabel>Roles</DropdownMenuLabel>
               <div className="flex items-center gap-1">
                 {ROLE_OPTIONS.map(({ value, label, Icon }) => {
@@ -381,34 +419,6 @@ export function Toolbar() {
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
-
-        {showStartDraft && isOwner && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span
-                className="inline-flex"
-                tabIndex={isStartDraftDisabled ? 0 : undefined}
-              >
-                <Button
-                  variant="destructive"
-                  size="icon-lg"
-                  disabled={isStartDraftDisabled}
-                  onClick={handleStartDraft}
-                >
-                  <span className="font-oswald text-lg font-semibold uppercase">
-                    {isStartingDraft ? <Spinner /> : <FaPlay />}
-                  </span>
-                </Button>
-              </span>
-            </TooltipTrigger>
-
-            <TooltipContent>
-              {isStartDraftDisabled
-                ? "Two captains are required for the draft to begin"
-                : "Start draft for this lobby"}
-            </TooltipContent>
-          </Tooltip>
-        )}
 
         {isOwner && (
           <Dialog open={dummyDialogOpen} onOpenChange={setDummyDialogOpen}>
@@ -511,6 +521,78 @@ export function Toolbar() {
                   {isAddingDummy ? <Spinner /> : "Add player"}
                 </Button>
               </form>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {showStartDraft && isOwner && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span
+                className="inline-flex"
+                tabIndex={isStartDraftDisabled ? 0 : undefined}
+              >
+                <Button
+                  variant="destructive"
+                  size="icon-lg"
+                  disabled={isStartDraftDisabled}
+                  onClick={handleStartDraft}
+                >
+                  <span className="font-oswald text-lg font-semibold uppercase">
+                    {isStartingDraft ? <Spinner /> : <FaPlay />}
+                  </span>
+                </Button>
+              </span>
+            </TooltipTrigger>
+
+            <TooltipContent>
+              {isStartDraftDisabled
+                ? "Two captains are required for the draft to begin"
+                : "Start draft for this lobby"}
+            </TooltipContent>
+          </Tooltip>
+        )}
+
+        {isOwner && (
+          <Dialog
+            open={resetConfirmationOpen}
+            onOpenChange={setResetConfirmationOpen}
+          >
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DialogTrigger asChild>
+                  <Button variant="destructive" size="icon-lg">
+                    <LuRefreshCw strokeWidth={2.5} />
+                  </Button>
+                </DialogTrigger>
+              </TooltipTrigger>
+
+              <TooltipContent>
+                Reset this lobby and return players to pool
+              </TooltipContent>
+            </Tooltip>
+
+            <DialogContent className="gap-2">
+              <DialogHeader className="mb-2">
+                <DialogTitle className="font-oswald font-semibold uppercase">
+                  Reset both teams in this lobby?
+                </DialogTitle>
+              </DialogHeader>
+
+              <Button
+                className="font-oswald font-semibold uppercase"
+                onClick={() => setResetConfirmationOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="font-oswald font-semibold uppercase"
+                variant="destructive"
+                disabled={isResettingLobby}
+                onClick={handleResetLobby}
+              >
+                {isResettingLobby ? <Spinner /> : "Reset"}
+              </Button>
             </DialogContent>
           </Dialog>
         )}
