@@ -1,4 +1,5 @@
-export const SEASON_END_DATE = "2026-08-21T23:59:59-06:00" as const
+export const CLIMB_CHALLENGE_START_DATE = "2026-08-28T17:00:00-06:00" as const
+export const CLIMB_CHALLENGE_END_DATE = "2026-09-11T23:59:59-06:00" as const
 
 export const BLUEWARD_VERSION = "2.0" as const
 

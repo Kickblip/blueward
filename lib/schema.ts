@@ -594,6 +594,16 @@ export const promoCodeRedemptions = pgTable(
   ]
 )
 
+export const climbChallengePlayers = pgTable("climb_challenge_players", {
+  playerId: integer()
+    .notNull()
+    .references(() => players.id, { onDelete: "cascade" }),
+  puuid: varchar({ length: 128 }).primaryKey(),
+
+  startingNetWins: integer(),
+  netWins: integer().notNull().default(0),
+})
+
 export const matchSubmissionsRelations = relations(
   matchSubmissions,
   ({ one }) => ({
