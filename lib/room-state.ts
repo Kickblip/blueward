@@ -1,7 +1,7 @@
 "use server"
 
 import * as Ably from "ably"
-import { asc, eq, and, like } from "drizzle-orm"
+import { asc, desc, eq, and, like } from "drizzle-orm"
 import { db } from "@/lib/db"
 import {
   lobbies,
@@ -84,7 +84,8 @@ export async function getRoomSnapshot(
           eq(lobbyPlayers.participantId, roomParticipants.id)
         )
         .leftJoin(players, eq(roomParticipants.playerId, players.id))
-        .where(eq(roomParticipants.roomId, roomId)),
+        .where(eq(roomParticipants.roomId, roomId))
+        .orderBy(desc(lobbyPlayers.isCaptain)),
 
       db
         .select({
