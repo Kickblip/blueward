@@ -26,7 +26,10 @@ export function RecentGame({
   const team2 = players.slice(players.length / 2)
 
   return (
-    <Card title="Recent Game" subtitle={epochToRelativeTime(gameEndTimestamp)}>
+    <Card
+      title="Recent Inhouse"
+      subtitle={epochToRelativeTime(gameEndTimestamp)}
+    >
       <div className="flex h-full flex-col gap-3">
         {team1.map((_, idx) => (
           <div className="flex h-1/5 items-center text-sm" key={idx}>

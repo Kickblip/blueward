@@ -4,6 +4,7 @@ import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { BiSolidCrown } from "react-icons/bi"
 import { Button } from "@/components/ui/button"
 import { Carousel } from "./carousel"
+import { AvatarPodiumBorder } from "@/components/avatar-podium-border"
 
 export default function Page() {
   return (
@@ -92,9 +93,15 @@ function PodiumCard({ first = false }: { first?: boolean }) {
         />
 
         <div className="absolute top-full left-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
-          <Avatar className="size-12">
+          {/* <Avatar className="size-12">
             <AvatarImage src={"/defaultpfp.webp"} />
-          </Avatar>
+          </Avatar> */}
+
+          <AvatarPodiumBorder
+            src={"/defaultpfp.webp"}
+            size={48}
+            variant={first ? "gold" : "silver"}
+          />
         </div>
       </div>
       <p className="font-oswald text-2xl font-semibold uppercase group-hover:text-chart-3 dark:group-hover:text-chart-1">
