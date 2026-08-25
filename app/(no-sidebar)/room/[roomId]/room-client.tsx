@@ -159,6 +159,11 @@ function RoomContents() {
           </div>
 
           <div className="min-h-0 overflow-y-auto bg-secondary p-2">
+            <p className="-mt-0.5 mb-1.5 text-xs font-medium text-muted-foreground">
+              {participantPool.length}/
+              {participantPool.length + (activeLobby?.players.length ?? 0)}{" "}
+              Players
+            </p>
             {participantPool.map((participant) => (
               <PoolCard
                 key={participant.id}
