@@ -36,7 +36,7 @@ export function RecentGame({
             {interactive ? (
               <Link
                 href={`/player/${safeSubstring(team1[idx]?.puuid, 0, 20)}`}
-                className="flex flex-1 flex-col pr-3 text-right transition-colors duration-200 hover:text-blue-400"
+                className="flex flex-1 flex-col pr-3 text-right transition-colors duration-200 hover:text-chart-3 dark:hover:text-chart-1"
               >
                 <p className="truncate font-semibold">
                   {team1[idx]?.riotIdGameName}
@@ -72,7 +72,7 @@ export function RecentGame({
             {interactive ? (
               <Link
                 href={`/player/${safeSubstring(team2[idx]?.puuid, 0, 20)}`}
-                className="flex flex-1 flex-col pl-3 text-left transition-colors duration-200 hover:text-blue-400"
+                className="flex flex-1 flex-col pl-3 text-left transition-colors duration-200 hover:text-chart-3 dark:hover:text-chart-1"
               >
                 <p className="truncate font-semibold">
                   {team2[idx]?.riotIdGameName}

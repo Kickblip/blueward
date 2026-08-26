@@ -253,9 +253,9 @@ export function Toolbar() {
       <div className="flex items-center gap-4">
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="default" size="icon-lg" asChild>
+            <Button variant="ghost" size="icon-lg" asChild>
               <Link href="/">
-                <Logo className="size-8 text-primary [--logo-end:#ffffff] [--logo-start:#ffffff]" />
+                <Logo className="size-8" />
               </Link>
             </Button>
           </TooltipTrigger>
