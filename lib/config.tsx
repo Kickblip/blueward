@@ -138,7 +138,7 @@ export const BANNER_CONFIG = {
     name: "Crystal Rose",
     description: "",
     rarity: "ultimate",
-    video: "/banners/video/119.mp4",
+    video: "/banners/video/119.webm",
     mediaPosition: "center 25%",
   },
 

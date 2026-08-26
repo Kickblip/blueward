@@ -110,37 +110,41 @@ export async function AppSidebar({
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  size="lg"
-                  tooltip="Create a room"
-                  className="bg-primary text-primary-foreground hover:bg-primary/80"
-                >
-                  <Link href="/room">
-                    <PlusIcon className="size-6!" />
-                    <span className="pl-1 font-oswald text-lg font-semibold uppercase group-data-[collapsible=icon]:sr-only">
-                      Create a room
-                    </span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {user && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    size="lg"
+                    tooltip="Create a room"
+                    className="bg-primary text-primary-foreground hover:bg-primary/80"
+                  >
+                    <Link href="/room">
+                      <PlusIcon className="size-6!" />
+                      <span className="pl-1 font-oswald text-lg font-semibold uppercase group-data-[collapsible=icon]:sr-only">
+                        Create a room
+                      </span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
 
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  variant="outline"
-                  size="lg"
-                  tooltip="Add a match"
-                >
-                  <Link href="/import" prefetch={false}>
-                    <FaCloudUploadAlt className="size-6! text-chart-3 dark:text-chart-1" />
-                    <span className="pl-1 font-oswald text-lg font-semibold uppercase group-data-[collapsible=icon]:sr-only">
-                      Import Match
-                    </span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {user && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    variant="outline"
+                    size="lg"
+                    tooltip="Add a match"
+                  >
+                    <Link href="/import" prefetch={false}>
+                      <FaCloudUploadAlt className="size-6! text-chart-3 dark:text-chart-1" />
+                      <span className="pl-1 font-oswald text-lg font-semibold uppercase group-data-[collapsible=icon]:sr-only">
+                        Import Match
+                      </span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
