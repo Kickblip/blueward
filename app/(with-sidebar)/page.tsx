@@ -8,7 +8,8 @@ import { PodiumRow } from "@/components/podium-row"
 import { LeaderboardRow } from "@/components/leaderboard-row"
 
 import Link from "next/link"
-import { ClimbChallengeBanner } from "@/components/climb-challenge-banner"
+import Image from "next/image"
+import { Button } from "@/components/ui/button"
 
 export default async function Home() {
   const [games, players] = await Promise.all([
@@ -57,7 +58,23 @@ export default async function Home() {
       </div>
       <div className="invisible col-span-1 flex flex-col gap-4 md:visible">
         <Link href="/climb">
-          <ClimbChallengeBanner />
+          <div className="relative h-[17rem] w-full overflow-hidden rounded-md border border-blue-300/70 shadow-[0_0_28px_rgba(59,130,246,0.55)]">
+            <Image
+              src="/climb/banner.webp"
+              alt=""
+              fill
+              className="object-cover"
+            />
+
+            <div className="absolute inset-x-0 bottom-0 z-10 p-2">
+              <Button
+                size="lg"
+                className="w-full bg-rose-500 px-4 font-oswald text-xl font-semibold text-rose-50 uppercase hover:bg-rose-400 hover:text-rose-50"
+              >
+                Go to leaderboard
+              </Button>
+            </div>
+          </div>
         </Link>
 
         {games.map((g) => (
