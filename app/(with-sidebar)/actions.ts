@@ -1,6 +1,6 @@
 import { db } from "@/lib/db"
 import { type RecentGameProps } from "@/components/recent-game"
-import { desc, sql, inArray, eq } from "drizzle-orm"
+import { desc, sql, inArray, eq, lte, asc } from "drizzle-orm"
 import { playerPerformances, players } from "@/lib/schema"
 import { MMR_LEADERBOARD_GAME_WINDOW } from "@/lib/config"
 import { unstable_cache } from "next/cache"
@@ -70,6 +70,80 @@ export const fetchRecentGames = unstable_cache(
   }
 )
 
+export const fetchLeaderboardPositionByPuuid = unstable_cache(
+  async (puuid: string) => {
+    "use server"
+
+    const recentGames = db.$with("recent_games").as(
+      db
+        .select({
+          puuid: playerPerformances.puuid,
+          mmr: playerPerformances.mmr,
+          gameNumber: sql<number>`
+              row_number() over (
+                partition by ${playerPerformances.puuid}
+                order by
+                  ${playerPerformances.createdAt} desc,
+                  ${playerPerformances.id} desc
+              )::int
+            `.as("game_number"),
+          gamesPlayed: sql<number>`
+            count(*) over (
+              partition by ${playerPerformances.puuid}
+            )::int
+          `.as("games_played"),
+        })
+        .from(playerPerformances)
+    )
+
+    const ladder = db.$with("ladder").as(
+      db
+        .select({
+          puuid: recentGames.puuid,
+          gamesPlayed: recentGames.gamesPlayed,
+          mmr: sql<number>`sum(${recentGames.mmr})::int`.as("mmr"),
+        })
+        .from(recentGames)
+        .where(lte(recentGames.gameNumber, MMR_LEADERBOARD_GAME_WINDOW))
+        .groupBy(recentGames.puuid, recentGames.gamesPlayed)
+    )
+
+    const positionedLadder = db.$with("positioned_ladder").as(
+      db
+        .select({
+          puuid: ladder.puuid,
+          mmr: ladder.mmr,
+          gamesPlayed: ladder.gamesPlayed,
+          position: sql<number>`
+              row_number() over (
+                order by ${ladder.mmr} desc, ${ladder.puuid} asc
+              )::int
+            `.as("position"),
+        })
+        .from(ladder)
+    )
+
+    const [player] = await db
+      .with(recentGames, ladder, positionedLadder)
+      .select({
+        position: positionedLadder.position,
+        mmr: positionedLadder.mmr,
+        gamesPlayed: positionedLadder.gamesPlayed,
+        riotIdGameName: players.riotIdGameName,
+      })
+      .from(positionedLadder)
+      .innerJoin(players, eq(players.puuid, positionedLadder.puuid))
+      .where(eq(positionedLadder.puuid, puuid))
+      .limit(1)
+
+    return player ?? null
+  },
+  ["individual-mmr-ladder-positions"],
+  {
+    tags: ["individual-mmr-ladder-positions"],
+  }
+)
+
 export type TopLadderPlayer = {
   riotIdGameName: string
   puuid: string
@@ -91,7 +165,9 @@ export const fetchTopLadderPlayers = unstable_cache(
           rn: sql<number>`
             row_number() over (
               partition by ${playerPerformances.puuid}
-              order by ${playerPerformances.createdAt} desc
+              order by
+                ${playerPerformances.createdAt} desc,
+                ${playerPerformances.id} desc
             )::int
           `.as("rn"),
         })
@@ -125,7 +201,7 @@ export const fetchTopLadderPlayers = unstable_cache(
       .innerJoin(totals, eq(totals.puuid, ranked.puuid))
       .where(sql`${ranked.rn} <= ${MMR_LEADERBOARD_GAME_WINDOW}`)
       .groupBy(ranked.puuid, totals.gamesPlayed)
-      .orderBy(desc(rollingMmr))
+      .orderBy(desc(rollingMmr), asc(ranked.puuid))
       .limit(limit)
 
     return rows.map((r) => ({

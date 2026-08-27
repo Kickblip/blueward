@@ -16,6 +16,7 @@ export function LeaderboardRow({
   stats,
   name,
   puuid,
+  variant = "default",
 }: {
   ranking: number
   stats: {
@@ -23,10 +24,17 @@ export function LeaderboardRow({
   }
   name: string
   puuid: string
+  variant?: "default" | "highlighted"
 }) {
   return (
     <Link href={`/player/${safeSubstring(puuid, 0, 20)}`}>
-      <Card>
+      <Card
+        className={
+          variant === "highlighted"
+            ? "border-chart-5 bg-chart-3 text-white dark:border-chart-1 dark:bg-chart-2"
+            : ""
+        }
+      >
         <div className="flex items-center gap-8">
           <p className="font-oswald text-xl font-semibold tabular-nums">
             {ranking}

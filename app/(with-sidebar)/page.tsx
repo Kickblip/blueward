@@ -3,18 +3,26 @@ import {
   fetchRecentGames,
   fetchTopLadderPlayers,
   fetchPlayerBannersByPuuids,
+  fetchLeaderboardPositionByPuuid,
 } from "./actions"
 import { PodiumRow } from "@/components/podium-row"
 import { LeaderboardRow } from "@/components/leaderboard-row"
-
+import { currentUser } from "@clerk/nextjs/server"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { safeSubstring } from "@/lib/utils"
 
 export default async function Home() {
-  const [games, players] = await Promise.all([
+  const user = await currentUser()
+  const metadataPuuid = user?.privateMetadata.puuid
+  const puuid = typeof metadataPuuid === "string" ? metadataPuuid : null
+
+  const [games, players, leaderboardPosition] = await Promise.all([
     fetchRecentGames(),
     fetchTopLadderPlayers(),
+    puuid ? fetchLeaderboardPositionByPuuid(puuid) : null,
   ])
 
   const podium = players.slice(0, 3)
@@ -34,7 +42,6 @@ export default async function Home() {
             stats={{
               mmr: player.mmr,
               played: player.gamesPlayed,
-              winrate: (player.winrate * 100).toFixed(0) + "%",
             }}
             name={player.riotIdGameName}
             puuid={player.puuid}
@@ -45,16 +52,29 @@ export default async function Home() {
         {players.slice(3).map((player, index) => (
           <LeaderboardRow
             key={player.riotIdGameName}
+            variant={user && player.puuid === puuid ? "highlighted" : "default"}
             ranking={index + 4}
             stats={{
               mmr: player.mmr,
               played: player.gamesPlayed,
-              winrate: (player.winrate * 100).toFixed(0) + "%",
             }}
             name={player.riotIdGameName}
             puuid={player.puuid}
           />
         ))}
+
+        {user && leaderboardPosition && leaderboardPosition.position > 15 && (
+          <LeaderboardRow
+            variant="highlighted"
+            ranking={leaderboardPosition.position}
+            stats={{
+              mmr: leaderboardPosition.mmr,
+              played: leaderboardPosition.gamesPlayed,
+            }}
+            name={leaderboardPosition.riotIdGameName}
+            puuid={puuid!}
+          />
+        )}
       </div>
       <div className="invisible col-span-1 flex flex-col gap-4 md:visible">
         <Link href="/climb">

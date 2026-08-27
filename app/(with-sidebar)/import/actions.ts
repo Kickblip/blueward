@@ -307,6 +307,7 @@ async function getAuthorizedPendingSubmission(
 function revalidateImportedMatch(puuids: string[]) {
   revalidateTag("recent-games", "max")
   revalidateTag("top-players-by-mmr", "max")
+  revalidateTag("individual-mmr-ladder-positions", "max")
   revalidatePath("/leaderboard/[stat]", "page")
   revalidatePath("/")
 
