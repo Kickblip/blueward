@@ -13,6 +13,7 @@ import { BannerBackground } from "@/components/banner-background"
 import { currentUser } from "@clerk/nextjs/server"
 import { fetchPlayerCardByPuuid } from "@/app/api/player/[puuid]/card/route"
 import { safeSubstring } from "@/lib/utils"
+import Link from "next/link"
 
 export default async function Page() {
   const [leaderboard, user] = await Promise.all([
@@ -123,25 +124,30 @@ export default async function Page() {
 
           <div className="z-50 -mt-32 flex w-full flex-col gap-2">
             {leaderboard.slice(3).map((player, index) => (
-              <Card
+              <Link
                 key={index}
-                className="flex-row items-center justify-between gap-4 font-oswald text-lg font-semibold uppercase"
+                href={`/player/${safeSubstring(player.puuid, 0, 20)}`}
+                className="group"
               >
-                <div className="flex items-center gap-8">
-                  <span className="text-xl italic">
-                    {`${player.netWins > 0 ? "+" : ""}${25 * player.netWins}`}{" "}
-                    Pts
-                  </span>
+                <Card className="flex-row items-center justify-between gap-4 font-oswald text-lg font-semibold uppercase">
+                  <div className="flex items-center gap-8">
+                    <span className="text-xl italic">
+                      {`${player.netWins > 0 ? "+" : ""}${25 * player.netWins}`}{" "}
+                      Pts
+                    </span>
 
-                  <span>{player.riotIdGameName}</span>
-                </div>
+                    <span className="group-hover:text-chart-3 dark:group-hover:text-chart-1">
+                      {player.riotIdGameName}
+                    </span>
+                  </div>
 
-                <div className="flex items-center gap-8">
-                  <span>
-                    {player.wins}W - {player.losses}L
-                  </span>
-                </div>
-              </Card>
+                  <div className="flex items-center gap-8">
+                    <span>
+                      {player.wins}W - {player.losses}L
+                    </span>
+                  </div>
+                </Card>
+              </Link>
             ))}
           </div>
         </div>
@@ -158,36 +164,43 @@ function PodiumCard({
   player: any
 }) {
   return (
-    <div
-      className={`flex flex-col items-center ${variant !== "gold" && "pt-12"}`}
+    <Link
+      href={`/player/${safeSubstring(player.puuid, 0, 20)}`}
+      className="group"
     >
       <div
-        className={`relative w-full ${
-          variant === "gold" ? "md:mb-14" : "md:mb-12"
-        }`}
+        className={`flex flex-col items-center ${variant !== "gold" && "pt-12"}`}
       >
-        <BannerBackground bannerId={player.bannerId}>
-          <div className="hidden aspect-video w-full rounded-md md:block" />
-        </BannerBackground>
+        <div
+          className={`relative w-full ${
+            variant === "gold" ? "md:mb-14" : "md:mb-12"
+          }`}
+        >
+          <BannerBackground bannerId={player.bannerId}>
+            <div className="hidden aspect-video w-full rounded-md md:block" />
+          </BannerBackground>
 
-        <div className="relative z-10 mx-auto w-fit md:absolute md:top-full md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2">
-          <AvatarPodiumBorder
-            src={player.avatarUrl || "/defaultpfp.webp"}
-            size={48}
-            variant={variant}
-          />
+          <div className="relative z-10 mx-auto w-fit md:absolute md:top-full md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2">
+            <AvatarPodiumBorder
+              src={player.avatarUrl || "/defaultpfp.webp"}
+              size={48}
+              variant={variant}
+            />
+          </div>
+        </div>
+        <p className="z-20 text-center font-oswald text-2xl font-semibold uppercase group-hover:text-chart-3 dark:group-hover:text-chart-1">
+          {player.riotIdGameName}
+        </p>
+        <div>
+          <span className="font-oswald font-semibold">
+            {25 * player.netWins}
+          </span>{" "}
+          <span className="text-xs font-medium uppercase">Pts</span>
+          <span className="ml-2 text-sm font-medium">
+            ({player.wins}W - {player.losses}L)
+          </span>
         </div>
       </div>
-      <p className="z-20 text-center font-oswald text-2xl font-semibold uppercase group-hover:text-chart-3 dark:group-hover:text-chart-1">
-        {player.riotIdGameName}
-      </p>
-      <div>
-        <span className="font-oswald font-semibold">{25 * player.netWins}</span>{" "}
-        <span className="text-xs font-medium uppercase">Pts</span>
-        <span className="ml-2 text-sm font-medium">
-          ({player.wins}W - {player.losses}L)
-        </span>
-      </div>
-    </div>
+    </Link>
   )
 }
