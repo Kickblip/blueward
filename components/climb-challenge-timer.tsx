@@ -48,8 +48,10 @@ export function ClimbChallengeTimer({ initialNow }: { initialNow: number }) {
 
   return (
     <div className="flex flex-col gap-1">
-      <h2 className="font-oswald text-2xl font-semibold uppercase">{time}</h2>
-      <p className="text-sm text-muted-foreground">{subtitle}</p>
+      <h2 className="font-oswald text-lg font-semibold uppercase sm:text-2xl">
+        {time}
+      </h2>
+      <p className="text-xs text-muted-foreground sm:text-sm">{subtitle}</p>
     </div>
   )
 }

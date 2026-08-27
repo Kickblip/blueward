@@ -7,7 +7,7 @@ import {
   fetchPlayerProfileByPuuid,
   fetchProfilePictureByAuthId,
 } from "./actions"
-import { calcAverageKDA, calcWinrate, calcWinrateByChampion } from "./helpers"
+import { calcAverageKDA, calcWinrate, calcWinrateByChampion } from "./utils"
 import { currentUser } from "@clerk/nextjs/server"
 import { BannerSelector } from "@/components/banner-selector"
 import { notFound } from "next/navigation"

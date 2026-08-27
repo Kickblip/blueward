@@ -39,7 +39,7 @@ export const joinClimbChallenge = async () => {
   const { userId } = await auth()
 
   if (!userId) {
-    redirect("/signin?redirect_url=/")
+    redirect("/signin?redirect_url=/climb")
   }
 
   const player = await db.query.players.findFirst({

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { statList } from "@/app/(with-sidebar)/leaderboard/[stat]/helpers"
+import { statList } from "@/app/(with-sidebar)/leaderboard/[stat]/actions"
 import { IoPodium } from "react-icons/io5"
 import { FaUserGroup } from "react-icons/fa6"
 import { safeSubstring } from "@/lib/utils"
@@ -159,7 +159,9 @@ export function SearchButton() {
         aria-label="Search"
       >
         <Search className="size-3.5" strokeWidth={2.8} />
-        <span className="font-oswald text-sm uppercase">Search</span>
+        <span className="hidden font-oswald text-sm uppercase sm:inline">
+          Search
+        </span>
       </Button>
 
       <CommandDialog open={open} onOpenChange={handleOpenChange}>

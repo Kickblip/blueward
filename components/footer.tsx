@@ -6,7 +6,7 @@ import { SOCIAL_LINK_CONFIG } from "@/lib/config"
 export function Footer() {
   return (
     <footer className="mx-auto mt-6 mb-8 flex w-full max-w-7xl flex-col gap-6 px-6">
-      <div className="flex justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
             <Logo className="size-8!" />
@@ -71,7 +71,7 @@ export function Footer() {
           &copy; {new Date().getFullYear()} Blueward. All rights reserved.
         </p>
 
-        <p className="text-xs text-muted-foreground">
+        <p className="hidden text-xs text-muted-foreground sm:block">
           Built by{" "}
           <FooterLink
             href={SOCIAL_LINK_CONFIG.wyattwebsite}
@@ -82,7 +82,7 @@ export function Footer() {
         </p>
 
         <div className="flex gap-4">
-          <p className="text-xs">🐝</p>
+          <p className="hidden text-xs sm:block">🐝</p>
           <Link
             href="/terms"
             className="text-xs text-muted-foreground transition-colors duration-200 hover:text-foreground"

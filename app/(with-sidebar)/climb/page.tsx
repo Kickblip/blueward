@@ -10,9 +10,19 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { BannerBackground } from "@/components/banner-background"
+import { currentUser } from "@clerk/nextjs/server"
 
 export default async function Page() {
-  const [leaderboard] = await Promise.all([getClimbLeaderboard()])
+  const [leaderboard, user] = await Promise.all([
+    getClimbLeaderboard(),
+    currentUser(),
+  ])
+
+  const metadataPuuid = user?.privateMetadata.puuid
+
+  const signedInUserIsParticipating =
+    typeof metadataPuuid === "string" &&
+    leaderboard.some((player) => player.puuid === metadataPuuid)
 
   const podium = leaderboard.slice(0, 3)
 
@@ -37,24 +47,26 @@ export default async function Page() {
             alt="Blueward merchandise"
             width={160}
             height={160}
-            className="-my-8 -ml-10 shrink-0 object-contain"
+            className="-my-8 -ml-10 hidden shrink-0 object-contain md:block"
           />
 
           <ClimbChallengeTimer initialNow={Date.now()} />
 
-          <p className="ml-auto text-sm text-muted-foreground">
+          <p className="ml-auto hidden pr-2 text-sm text-muted-foreground md:block">
             Syncs every hour
           </p>
 
-          <form action={joinClimbChallenge}>
-            <Button
-              type="submit"
-              className="h-11 bg-rose-500 font-oswald text-lg font-semibold uppercase hover:bg-rose-600"
-              size="lg"
-            >
-              Join the challenge!
-            </Button>
-          </form>
+          {!signedInUserIsParticipating && (
+            <form action={joinClimbChallenge} className="ml-auto md:ml-0">
+              <Button
+                type="submit"
+                className="h-11 bg-rose-500 font-oswald text-base font-semibold uppercase hover:bg-rose-600 sm:text-lg"
+                size="lg"
+              >
+                Join the challenge!
+              </Button>
+            </form>
+          )}
         </Card>
 
         <div className="flex w-full flex-col items-center gap-4">
@@ -69,7 +81,7 @@ export default async function Page() {
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="absolute top-20 -left-32 isolate z-10 cursor-pointer transition-transform duration-300 hover:scale-115 hover:-rotate-3">
+                <div className="absolute top-20 -left-32 isolate z-10 hidden cursor-pointer transition-transform duration-300 hover:scale-115 hover:-rotate-3 sm:block">
                   {/* glow */}
                   <div
                     aria-hidden="true"
@@ -132,22 +144,24 @@ function PodiumCard({
     <div
       className={`flex flex-col items-center ${variant !== "gold" && "pt-12"}`}
     >
-      <BannerBackground bannerId={player.bannerId}>
-        <div
-          className={`relative aspect-video w-full rounded-md ${
-            variant === "gold" ? "mb-14" : "mb-12"
-          }`}
-        >
-          <div className="absolute top-full left-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
-            <AvatarPodiumBorder
-              src="/defaultpfp.webp"
-              size={48}
-              variant={variant}
-            />
-          </div>
+      <div
+        className={`relative w-full ${
+          variant === "gold" ? "md:mb-14" : "md:mb-12"
+        }`}
+      >
+        <BannerBackground bannerId={player.bannerId}>
+          <div className="hidden aspect-video w-full rounded-md md:block" />
+        </BannerBackground>
+
+        <div className="relative z-10 mx-auto w-fit md:absolute md:top-full md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2">
+          <AvatarPodiumBorder
+            src="/defaultpfp.webp"
+            size={48}
+            variant={variant}
+          />
         </div>
-      </BannerBackground>
-      <p className="z-20 font-oswald text-2xl font-semibold uppercase group-hover:text-chart-3 dark:group-hover:text-chart-1">
+      </div>
+      <p className="z-20 text-center font-oswald text-2xl font-semibold uppercase group-hover:text-chart-3 dark:group-hover:text-chart-1">
         {player.riotIdGameName}
       </p>
       <div>

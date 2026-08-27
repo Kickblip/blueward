@@ -63,13 +63,14 @@ export default async function Home() {
               src="/climb/banner.webp"
               alt=""
               fill
+              sizes="(min-width: 1280px) 416px, (min-width: 768px) 33vw, 100vw"
               className="object-cover"
             />
 
             <div className="absolute inset-x-0 bottom-0 z-10 p-2">
               <Button
                 size="lg"
-                className="w-full bg-rose-500 px-4 font-oswald text-xl font-semibold text-rose-50 uppercase hover:bg-rose-400 hover:text-rose-50"
+                className="w-full bg-zinc-300 px-4 font-oswald text-xl font-semibold text-zinc-800 uppercase opacity-90 hover:bg-zinc-200 hover:text-zinc-800"
               >
                 Go to leaderboard
               </Button>

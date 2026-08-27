@@ -40,7 +40,7 @@ export default async function Layout({
     <SidebarProvider defaultOpen={false}>
       <AppSidebar user={user} />
       <SidebarInset>
-        <header className="z-20 flex h-16 shrink-0 items-center justify-between gap-2">
+        <header className="z-20 flex h-16 shrink-0 items-center justify-between">
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" variant="secondary" />
             {user && <DailyReward claimed={claimed} />}

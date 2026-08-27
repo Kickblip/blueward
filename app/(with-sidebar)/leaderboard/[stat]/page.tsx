@@ -1,5 +1,5 @@
 import { LeaderboardRow } from "@/components/leaderboard-row"
-import { statList, getTopPlayersForStat, StatKey } from "./helpers"
+import { statList, getTopPlayersForStat, StatKey } from "./actions"
 import Link from "next/link"
 import { Card } from "@/components/ui/card"
 import {
