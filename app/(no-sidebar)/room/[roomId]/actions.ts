@@ -27,6 +27,7 @@ import {
   guestDisplayNameSchema,
   saveGuestSession,
 } from "@/lib/guest-session"
+import { safeSubstring } from "@/lib/utils"
 
 const continueAsGuestSchema = z.object({
   roomId: z.uuid("Invalid room"),
@@ -199,7 +200,7 @@ export async function saveLobbyPreferences(
     })
     .where(eq(players.id, participant.playerId))
 
-  updateTag(`player-card:${participant.puuid.slice(0, 20)}`)
+  updateTag(`player-card:${safeSubstring(participant.puuid, 0, 20)}`)
 
   await publishRoomSnapshot(result.data.roomId)
 }

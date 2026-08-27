@@ -4,7 +4,7 @@ import { BLUEWARD_VERSION, SUPPORT_PAYOUT_MULTIPLIER } from "@/lib/config"
 import { calculateMatchXp } from "@/lib/level"
 import { auth, clerkClient } from "@clerk/nextjs/server"
 import { and, eq, inArray, sql } from "drizzle-orm"
-import { revalidatePath, revalidateTag } from "next/cache"
+import { revalidatePath, revalidateTag, updateTag } from "next/cache"
 import { redirect } from "next/navigation"
 import * as z from "zod"
 import {
@@ -312,7 +312,10 @@ function revalidateImportedMatch(puuids: string[]) {
   revalidatePath("/")
 
   for (const puuid of puuids) {
-    revalidateTag(`recent-matches:${safeSubstring(puuid, 0, 20)}`, "max")
+    const shortPuuid = safeSubstring(puuid, 0, 20)
+
+    revalidateTag(`recent-matches:${shortPuuid}`, "max")
+    updateTag(`player-card:${shortPuuid}`)
   }
 }
 

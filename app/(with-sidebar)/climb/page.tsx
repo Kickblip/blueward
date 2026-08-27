@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/tooltip"
 import { BannerBackground } from "@/components/banner-background"
 import { currentUser } from "@clerk/nextjs/server"
+import { fetchPlayerCardByPuuid } from "@/app/api/player/[puuid]/card/route"
+import { safeSubstring } from "@/lib/utils"
 
 export default async function Page() {
   const [leaderboard, user] = await Promise.all([
@@ -24,7 +26,14 @@ export default async function Page() {
     typeof metadataPuuid === "string" &&
     leaderboard.some((player) => player.puuid === metadataPuuid)
 
-  const podium = leaderboard.slice(0, 3)
+  const podium = await Promise.all(
+    leaderboard.slice(0, 3).map(async (player) => ({
+      ...player,
+      avatarUrl: (
+        await fetchPlayerCardByPuuid(safeSubstring(player.puuid, 0, 20))
+      )?.avatarUrl,
+    }))
+  )
 
   return (
     <>
@@ -163,7 +172,7 @@ function PodiumCard({
 
         <div className="relative z-10 mx-auto w-fit md:absolute md:top-full md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2">
           <AvatarPodiumBorder
-            src="/defaultpfp.webp"
+            src={player.avatarUrl || "/defaultpfp.webp"}
             size={48}
             variant={variant}
           />

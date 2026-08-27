@@ -6,6 +6,7 @@ import { db } from "@/lib/db"
 import { players } from "@/lib/schema"
 import { eq } from "drizzle-orm"
 import { safeSubstring } from "@/lib/utils"
+import { updateTag } from "next/cache"
 
 const CPID_TO_PLATFORM: Record<string, string> = {
   NA1: "na1",
@@ -263,6 +264,8 @@ export async function claimProfileByPuuid(args: {
   await client.users.updateUserMetadata(userId, {
     privateMetadata: { puuid },
   })
+
+  updateTag(`player-card:${safeSubstring(puuid, 0, 20)}`)
 
   return { ok: true, puuid }
 }
