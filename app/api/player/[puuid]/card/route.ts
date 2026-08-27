@@ -41,7 +41,7 @@ export function fetchPlayerCardByPuuid(puuid: string) {
     },
     ["player-card", puuid],
     {
-      tags: [`player-card:${puuid}`],
+      tags: ["player-cards", `player-card:${puuid}`],
     }
   )()
 }
