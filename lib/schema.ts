@@ -1,0 +1,713 @@
+import {
+  integer,
+  pgTable,
+  varchar,
+  timestamp,
+  bigint,
+  boolean,
+  pgEnum,
+  real,
+  smallint,
+  index,
+  uniqueIndex,
+  check,
+  primaryKey,
+  date,
+  jsonb,
+} from "drizzle-orm/pg-core"
+import { relations, sql } from "drizzle-orm"
+
+// matches table -> 1 row per game
+// objectives table -> 1 row per team per game (2 rows per game)
+// performances table -> 1 row per player (10 rows per game)
+// players table -> 1 row per player (persistent)
+// transactions table -> 1 row per game (usually) shows how many crystals the players earned (persistent)
+
+export const matches = pgTable("matches", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  matchId: varchar({ length: 32 }).notNull().unique(),
+  tag: varchar({ length: 8 }).notNull().default("INHOUSE"),
+  players: varchar({ length: 128 }).array().notNull(),
+  gameCreation: bigint({ mode: "number" }).notNull(),
+  gameStartTimestamp: bigint({ mode: "number" }).notNull(),
+  gameEndTimestamp: bigint({ mode: "number" }).notNull(),
+  gameDuration: integer().notNull(),
+  gameId: bigint({ mode: "number" }).notNull(),
+  gameMode: varchar({ length: 32 }).notNull(),
+  gameType: varchar({ length: 32 }).notNull(),
+  gameVersion: varchar({ length: 32 }).notNull(),
+  bluewardVersion: varchar({ length: 16 }).notNull(),
+})
+
+export const roleEnum = pgEnum("role", [
+  "TOP",
+  "JUNGLE",
+  "MIDDLE",
+  "BOTTOM",
+  "UTILITY",
+  "FILL",
+])
+
+export const playerPerformances = pgTable(
+  "player_performances",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+    matchRowId: integer()
+      .notNull()
+      .references(() => matches.id, { onDelete: "cascade" }),
+    puuid: varchar({ length: 128 }).notNull(),
+    riotIdGameName: varchar({ length: 32 }).notNull(),
+    riotIdTagline: varchar({ length: 8 }).notNull(),
+    mmr: integer().notNull().default(0),
+    champLevel: integer().notNull(),
+    championId: integer().notNull(),
+    championName: varchar({ length: 32 }).notNull(),
+    profileIcon: integer().notNull(),
+    role: roleEnum("role").notNull().default("FILL"),
+
+    kills: smallint().notNull(),
+    deaths: smallint().notNull(),
+    assists: smallint().notNull(),
+    killParticipation: real().notNull(),
+
+    assistMePings: smallint().notNull(),
+    enemyMissingPings: smallint().notNull(),
+    enemyVisionPings: smallint().notNull(),
+    needVisionPings: smallint().notNull(),
+    onMyWayPings: smallint().notNull(),
+    pushPings: smallint().notNull(),
+
+    doubleKills: smallint().notNull(),
+    tripleKills: smallint().notNull(),
+    quadraKills: smallint().notNull(),
+    pentaKills: smallint().notNull(),
+    killingSprees: smallint().notNull(),
+    soloKills: smallint().notNull(),
+    totalMinionsKilled: smallint().notNull(),
+    teamDamagePercentage: real().notNull(),
+    buffsStolen: smallint().notNull(),
+
+    wardsPlaced: smallint().notNull(),
+    controlWardsPlaced: smallint().notNull(),
+    wardTakedowns: smallint().notNull(),
+    visionScore: smallint().notNull(),
+
+    spell1Casts: smallint().notNull(),
+    spell2Casts: smallint().notNull(),
+    spell3Casts: smallint().notNull(),
+    spell4Casts: smallint().notNull(),
+    summoner1Casts: smallint().notNull(),
+    summoner2Casts: smallint().notNull(),
+
+    totalHeal: integer().notNull(),
+    totalHealsOnTeammates: integer().notNull(),
+    totalDamageShieldedOnTeammates: integer().notNull(),
+    effectiveHealAndShielding: integer().notNull(),
+
+    damageTakenOnTeamPercentage: real().notNull(),
+    epicMonsterSteals: smallint().notNull(),
+    firstTurretKilled: boolean().notNull(),
+    jungleCsBefore10Minutes: smallint().notNull(),
+    killsNearEnemyTurret: smallint().notNull(),
+    laneMinionsFirst10Minutes: smallint().notNull(),
+    scuttleCrabKills: smallint().notNull(),
+    survivedSingleDigitHpCount: smallint().notNull(),
+    turretPlatesTaken: smallint().notNull(),
+    turretTakedowns: smallint().notNull(),
+    voidMonsterKill: smallint().notNull(),
+    damageDealtToObjectives: integer().notNull(),
+    damageDealtToTurrets: integer().notNull(),
+    damageSelfMitigated: integer().notNull(),
+    firstBloodKill: boolean().notNull(),
+    firstTowerAssist: boolean().notNull(),
+    firstTowerKill: boolean().notNull(),
+    goldEarned: integer().notNull(),
+    inhibitorTakedowns: smallint().notNull(),
+    item0: integer().notNull(),
+    item1: integer().notNull(),
+    item2: integer().notNull(),
+    item3: integer().notNull(),
+    item4: integer().notNull(),
+    item5: integer().notNull(),
+    item6: integer().notNull(),
+    roleBoundItem: integer().notNull(),
+    largestCriticalStrike: integer().notNull(),
+    largestKillingSpree: smallint().notNull(),
+    longestTimeSpentLiving: integer().notNull(),
+    magicDamageDealtToChampions: integer().notNull(),
+    magicDamageTaken: integer().notNull(),
+    neutralMinionsKilled: smallint().notNull(),
+    physicalDamageDealtToChampions: integer().notNull(),
+    physicalDamageTaken: integer().notNull(),
+    summoner1Id: smallint().notNull(),
+    summoner2Id: smallint().notNull(),
+    summonerLevel: smallint().notNull(),
+    teamId: smallint().notNull(),
+    totalDamageTaken: integer().notNull(),
+
+    totalTimeCCDealt: integer().notNull(),
+    totalTimeSpentDead: integer().notNull(),
+    trueDamageDealtToChampions: integer().notNull(),
+    trueDamageTaken: integer().notNull(),
+    turretKills: smallint().notNull(),
+    win: boolean().notNull(),
+
+    perkPrimaryStyleId: smallint().notNull(),
+    perkSecondaryStyleId: smallint().notNull(),
+
+    perkStatOffense: smallint().notNull(),
+    perkStatFlex: smallint().notNull(),
+    perkStatDefense: smallint().notNull(),
+
+    perkPrimary1Id: smallint().notNull(),
+    perkPrimary2Id: smallint().notNull(),
+    perkPrimary3Id: smallint().notNull(),
+    perkPrimary4Id: smallint().notNull(),
+
+    perkSecondary1Id: smallint().notNull(),
+    perkSecondary2Id: smallint().notNull(),
+  },
+  (table) => [
+    uniqueIndex("player_performances_match_player_unique").on(
+      table.matchRowId,
+      table.puuid
+    ),
+    index("player_performances_match_row_id_index").on(table.matchRowId),
+    index("player_performances_puuid_index").on(table.puuid),
+  ]
+)
+
+export const teamObjectives = pgTable(
+  "team_objectives",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+    matchRowId: integer()
+      .notNull()
+      .references(() => matches.id, { onDelete: "cascade" }),
+    teamId: smallint().notNull(),
+    win: boolean().notNull(),
+    baronFirst: boolean().notNull(),
+    baronKills: smallint().notNull(),
+    championFirst: boolean().notNull(),
+    championKills: smallint().notNull(),
+    dragonFirst: boolean().notNull(),
+    dragonKills: smallint().notNull(),
+    hordeFirst: boolean().notNull(),
+    hordeKills: smallint().notNull(),
+    inhibitorFirst: boolean().notNull(),
+    inhibitorKills: smallint().notNull(),
+    riftHeraldFirst: boolean().notNull(),
+    riftHeraldKills: smallint().notNull(),
+    towerFirst: boolean().notNull(),
+    towerKills: smallint().notNull(),
+  },
+  (table) => [
+    uniqueIndex("team_objectives_match_team_unique").on(
+      table.matchRowId,
+      table.teamId
+    ),
+    index("team_objectives_match_row_id_index").on(table.matchRowId),
+  ]
+)
+
+export const rankEnum = pgEnum("rank", [
+  "IRON",
+  "BRONZE",
+  "SILVER",
+  "GOLD",
+  "PLATINUM",
+  "EMERALD",
+  "DIAMOND",
+  "MASTER",
+  "GRANDMASTER",
+  "CHALLENGER",
+])
+
+export const players = pgTable("players", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  authId: varchar({ length: 128 }).unique(),
+  bannerId: integer().notNull().default(0),
+  banners: integer("banners")
+    .array()
+    .notNull()
+    .default(sql`ARRAY[0,1,2,3]::int[]`),
+  createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  lastDailyClaimDate: date(),
+  experience: integer().notNull().default(0),
+
+  lobbyRoles: roleEnum("lobby_roles").array(),
+  lobbyRank: rankEnum("lobby_rank"),
+
+  puuid: varchar({ length: 128 }).notNull().unique(),
+  riotIdGameName: varchar({ length: 32 }).notNull(),
+  riotIdTagline: varchar({ length: 8 }).notNull(),
+})
+
+export const playerSettings = pgTable("player_settings", {
+  playerId: integer("player_id")
+    .primaryKey()
+    .references(() => players.id, { onDelete: "cascade" }),
+
+  peakRank: rankEnum("peak_rank").notNull(),
+  seasonsSincePeak: smallint("seasons_since_peak").notNull(),
+  currentRank: rankEnum("current_rank").notNull(),
+
+  topSkillRank: rankEnum("top_skill_rank").notNull(),
+  jungleSkillRank: rankEnum("jungle_skill_rank").notNull(),
+  middleSkillRank: rankEnum("middle_skill_rank").notNull(),
+  bottomSkillRank: rankEnum("bottom_skill_rank").notNull(),
+  supportSkillRank: rankEnum("support_skill_rank").notNull(),
+
+  rejectedRoles: roleEnum("rejected_roles")
+    .array()
+    .notNull()
+    .default(sql`ARRAY[]::role[]`),
+
+  dislikedRoles: roleEnum("disliked_roles")
+    .array()
+    .notNull()
+    .default(sql`ARRAY[]::role[]`),
+})
+
+export const transactionTypeEnum = pgEnum("transaction_type", [
+  "MATCH_EARN",
+  "ADMIN_ADJUST",
+  "SPEND",
+  "MARKET_STAKE",
+  "MARKET_PAYOUT",
+  "MARKET_REFUND",
+  "DAILY_REWARD",
+  "PROMO_CODE",
+])
+export type TransactionType = (typeof transactionTypeEnum.enumValues)[number]
+
+export const transactions = pgTable(
+  "transactions",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+    playerId: integer()
+      .notNull()
+      .references(() => players.id, { onDelete: "cascade" }),
+
+    type: transactionTypeEnum("type").notNull(),
+
+    matchRowId: integer().references(() => matches.id, {
+      onDelete: "set null",
+    }),
+
+    marketId: integer().references(() => markets.id, { onDelete: "set null" }),
+    marketSelectionId: integer().references(() => marketSelections.id, {
+      onDelete: "set null",
+    }),
+
+    amount: integer().notNull(),
+  },
+  (table) => [
+    index("transactions_player_id_index").on(table.playerId),
+    index("transactions_market_id_index").on(table.marketId),
+    index("transactions_match_row_id_index").on(table.matchRowId),
+    index("transactions_market_selection_id_index").on(table.marketSelectionId),
+  ]
+)
+
+export const marketStatusEnum = pgEnum("market_status", [
+  "OPEN",
+  "LOCKED",
+  "RESOLVED",
+  "CANCELLED",
+])
+
+export const marketOutcomeEnum = pgEnum("market_outcome", [
+  "OUTCOME_1",
+  "OUTCOME_2",
+])
+
+export const markets = pgTable(
+  "markets",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+
+    title: varchar({ length: 255 }).notNull(),
+    status: marketStatusEnum("status").notNull().default("OPEN"),
+
+    locksAt: timestamp({ withTimezone: true }),
+    resolvedAt: timestamp({ withTimezone: true }),
+
+    outcome1Title: varchar({ length: 255 }).notNull(),
+    outcome2Title: varchar({ length: 255 }).notNull(),
+
+    resolvedOutcome: marketOutcomeEnum("resolved_outcome"),
+  },
+  (table) => [
+    index("markets_status_index").on(table.status),
+    index("markets_created_at_index").on(table.createdAt),
+  ]
+)
+
+export const marketOrderStatusEnum = pgEnum("market_order_status", [
+  "PLACED",
+  "SETTLED",
+  "REFUNDED",
+  "CANCELLED",
+])
+
+export const marketSelections = pgTable(
+  "market_selections",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+
+    marketId: integer()
+      .notNull()
+      .references(() => markets.id, { onDelete: "cascade" }),
+
+    playerId: integer()
+      .notNull()
+      .references(() => players.id, { onDelete: "cascade" }),
+
+    outcome: marketOutcomeEnum("outcome").notNull(),
+
+    amount: integer().notNull(),
+
+    status: marketOrderStatusEnum("status").notNull().default("PLACED"),
+
+    payoutAmount: integer(),
+    settledAt: timestamp({ withTimezone: true }),
+  },
+  (table) => [
+    index("market_selections_market_id_index").on(table.marketId),
+    index("market_selections_player_id_index").on(table.playerId),
+    index("market_selections_market_player_index").on(
+      table.marketId,
+      table.playerId
+    ),
+    index("market_selections_market_outcome_index").on(
+      table.marketId,
+      table.outcome
+    ),
+  ]
+)
+
+export const rooms = pgTable("rooms", {
+  id: varchar({ length: 36 }).primaryKey(),
+  ownerAuthId: varchar({ length: 128 }).notNull(),
+  createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+})
+
+export const roomParticipants = pgTable(
+  "room_participants",
+  {
+    id: varchar({ length: 36 }).primaryKey(),
+
+    roomId: varchar({ length: 36 })
+      .notNull()
+      .references(() => rooms.id, { onDelete: "cascade" }),
+
+    identityKey: varchar({ length: 160 }).notNull(),
+
+    playerId: integer().references(() => players.id, {
+      onDelete: "set null",
+    }),
+
+    roles: roleEnum()
+      .array()
+      .notNull()
+      .default(sql`ARRAY[]::role[]`),
+    rank: rankEnum(),
+
+    displayName: varchar({ length: 32 }).notNull(),
+
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("room_participants_room_identity_unique").on(
+      table.roomId,
+      table.identityKey
+    ),
+  ]
+)
+
+export const lobbyPhaseEnum = pgEnum("lobby_phase", [
+  "OPEN",
+  "DRAFTING",
+  "READY",
+  "CLOSED",
+])
+
+export const lobbies = pgTable(
+  "lobbies",
+  {
+    id: varchar({ length: 36 }).primaryKey(),
+
+    roomId: varchar({ length: 36 })
+      .notNull()
+      .references(() => rooms.id, { onDelete: "cascade" }),
+
+    ordinal: smallint().notNull(),
+    phase: lobbyPhaseEnum().notNull().default("OPEN"),
+    draftPickIndex: smallint().notNull().default(0),
+
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("lobbies_room_ordinal_unique").on(table.roomId, table.ordinal),
+  ]
+)
+
+export const lobbyPlayers = pgTable(
+  "lobby_players",
+  {
+    lobbyId: varchar({ length: 36 })
+      .notNull()
+      .references(() => lobbies.id, { onDelete: "cascade" }),
+
+    participantId: varchar({ length: 36 })
+      .notNull()
+      .primaryKey()
+      .references(() => roomParticipants.id, { onDelete: "cascade" }),
+
+    teamId: smallint().notNull(),
+    isCaptain: boolean().notNull().default(false),
+  },
+  (table) => [
+    check("lobby_players_team_check", sql`${table.teamId} in (0, 1)`),
+
+    uniqueIndex("lobby_players_captain_unique")
+      .on(table.lobbyId, table.teamId)
+      .where(sql`${table.isCaptain}`),
+  ]
+)
+
+export const clubMemberRoleEnum = pgEnum("club_member_role", [
+  "OWNER",
+  "ADMIN",
+  "MEMBER",
+])
+
+export const clubs = pgTable("clubs", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  name: varchar({ length: 64 }).notNull(),
+  slug: varchar({ length: 64 }).notNull().unique(),
+  bio: varchar({ length: 512 }),
+  createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+})
+
+export const clubMembers = pgTable(
+  "club_members",
+  {
+    clubId: integer()
+      .notNull()
+      .references(() => clubs.id, { onDelete: "cascade" }),
+
+    playerId: integer()
+      .notNull()
+      .references(() => players.id, { onDelete: "cascade" }),
+
+    role: clubMemberRoleEnum("role").notNull().default("MEMBER"),
+    joinedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.clubId, table.playerId] }),
+
+    uniqueIndex("club_members_player_id_unique").on(table.playerId),
+
+    uniqueIndex("club_members_owner_unique")
+      .on(table.clubId)
+      .where(sql`${table.role} = 'OWNER'`),
+  ]
+)
+
+export const matchSubmissionStatusEnum = pgEnum("match_submission_status", [
+  "PENDING",
+  "APPROVED",
+  "REJECTED",
+])
+
+export const matchSubmissions = pgTable(
+  "match_submissions",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+
+    clubId: integer()
+      .notNull()
+      .references(() => clubs.id, { onDelete: "cascade" }),
+
+    matchId: varchar({ length: 32 }).notNull(),
+
+    submittedByPlayerId: integer()
+      .notNull()
+      .references(() => players.id),
+    reviewedByPlayerId: integer().references(() => players.id, {
+      onDelete: "set null",
+    }),
+
+    rawMatch: jsonb().notNull(),
+    status: matchSubmissionStatusEnum().notNull().default("PENDING"),
+
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+    reviewedAt: timestamp({ withTimezone: true }),
+  },
+  (table) => [
+    uniqueIndex("match_submissions_match_id_unique").on(table.matchId),
+    index("match_submissions_club_status_index").on(table.clubId, table.status),
+  ]
+)
+
+export const promoRewardTypeEnum = pgEnum("promo_reward_type", [
+  "BALANCE",
+  "BANNER",
+])
+
+export const promoCodes = pgTable("promo_codes", {
+  code: varchar("code", { length: 64 }).primaryKey(),
+  rewardType: promoRewardTypeEnum("reward_type").notNull(),
+  rewardValue: integer("reward_value").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
+})
+
+export const promoCodeRedemptions = pgTable(
+  "promo_code_redemptions",
+  {
+    promoCode: varchar("promo_code", { length: 64 })
+      .notNull()
+      .references(() => promoCodes.code, { onDelete: "cascade" }),
+
+    playerId: integer("player_id")
+      .notNull()
+      .references(() => players.id, { onDelete: "cascade" }),
+
+    redeemedAt: timestamp("redeemed_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.promoCode, table.playerId],
+    }),
+  ]
+)
+
+export const climbChallengePlayers = pgTable("climb_challenge_players", {
+  playerId: integer()
+    .notNull()
+    .references(() => players.id, { onDelete: "cascade" }),
+  puuid: varchar({ length: 128 }).primaryKey(),
+
+  startingWins: integer(),
+  startingLosses: integer(),
+  wins: integer().notNull().default(0),
+  losses: integer().notNull().default(0),
+  netWins: integer().notNull().default(0),
+})
+
+export const matchSubmissionsRelations = relations(
+  matchSubmissions,
+  ({ one }) => ({
+    club: one(clubs, {
+      fields: [matchSubmissions.clubId],
+      references: [clubs.id],
+    }),
+    submitter: one(players, {
+      fields: [matchSubmissions.submittedByPlayerId],
+      references: [players.id],
+      relationName: "matchSubmissionSubmitter",
+    }),
+    reviewer: one(players, {
+      fields: [matchSubmissions.reviewedByPlayerId],
+      references: [players.id],
+      relationName: "matchSubmissionReviewer",
+    }),
+  })
+)
+
+export const marketsRelations = relations(markets, ({ many }) => ({
+  selections: many(marketSelections),
+  transactions: many(transactions),
+}))
+
+export const playersRelations = relations(players, ({ many }) => ({
+  selections: many(marketSelections),
+  transactions: many(transactions),
+  clubMemberships: many(clubMembers),
+  submittedMatchSubmissions: many(matchSubmissions, {
+    relationName: "matchSubmissionSubmitter",
+  }),
+  reviewedMatchSubmissions: many(matchSubmissions, {
+    relationName: "matchSubmissionReviewer",
+  }),
+}))
+
+export const marketSelectionsRelations = relations(
+  marketSelections,
+  ({ one }) => ({
+    market: one(markets, {
+      fields: [marketSelections.marketId],
+      references: [markets.id],
+    }),
+    player: one(players, {
+      fields: [marketSelections.playerId],
+      references: [players.id],
+    }),
+  })
+)
+
+export const transactionsRelations = relations(transactions, ({ one }) => ({
+  player: one(players, {
+    fields: [transactions.playerId],
+    references: [players.id],
+  }),
+  market: one(markets, {
+    fields: [transactions.marketId],
+    references: [markets.id],
+  }),
+  match: one(matches, {
+    fields: [transactions.matchRowId],
+    references: [matches.id],
+  }),
+}))
+
+export const matchesRelations = relations(matches, ({ many }) => ({
+  objectives: many(teamObjectives),
+  performances: many(playerPerformances),
+}))
+
+export const objectivesRelations = relations(teamObjectives, ({ one }) => ({
+  match: one(matches, {
+    fields: [teamObjectives.matchRowId],
+    references: [matches.id],
+  }),
+}))
+
+export const playerPerformancesRelations = relations(
+  playerPerformances,
+  ({ one }) => ({
+    match: one(matches, {
+      fields: [playerPerformances.matchRowId],
+      references: [matches.id],
+    }),
+  })
+)
+
+export const clubsRelations = relations(clubs, ({ many }) => ({
+  members: many(clubMembers),
+  matchSubmissions: many(matchSubmissions),
+}))
+
+export const clubMembersRelations = relations(clubMembers, ({ one }) => ({
+  club: one(clubs, {
+    fields: [clubMembers.clubId],
+    references: [clubs.id],
+  }),
+  player: one(players, {
+    fields: [clubMembers.playerId],
+    references: [players.id],
+  }),
+}))

@@ -1,0 +1,98 @@
+import { desc, eq, sql } from "drizzle-orm"
+import { db } from "@/lib/db"
+import { players, playerPerformances, matches } from "@/lib/schema"
+import { clerkClient } from "@clerk/nextjs/server"
+import { unstable_cache } from "next/cache"
+
+export async function fetchPlayerProfileByPuuid(puuid: string) {
+  "use server"
+
+  return (
+    (await db.query.players.findFirst({
+      where: eq(sql`left(${players.puuid}, 20)`, puuid),
+      with: {
+        clubMemberships: {
+          with: {
+            club: true,
+          },
+        },
+      },
+    })) ?? null
+  )
+}
+
+export async function fetchProfilePictureByAuthId(
+  authId: string | null | undefined
+): Promise<string | null> {
+  "use server"
+
+  if (!authId) return null
+
+  try {
+    const client = await clerkClient()
+    const user = await client.users.getUser(authId)
+    return user.imageUrl ?? null
+  } catch {
+    return null
+  }
+}
+
+const recentMatchesQuery = (puuid: string) =>
+  db
+    .select({
+      matchRowId: playerPerformances.matchRowId,
+      mmr: playerPerformances.mmr,
+      champLevel: playerPerformances.champLevel,
+      championName: playerPerformances.championName,
+      role: playerPerformances.role,
+      kills: playerPerformances.kills,
+      deaths: playerPerformances.deaths,
+      assists: playerPerformances.assists,
+      goldEarned: playerPerformances.goldEarned,
+      item0: playerPerformances.item0,
+      item1: playerPerformances.item1,
+      item2: playerPerformances.item2,
+      item3: playerPerformances.item3,
+      item4: playerPerformances.item4,
+      item5: playerPerformances.item5,
+      item6: playerPerformances.item6,
+      roleBoundItem: playerPerformances.roleBoundItem,
+      summoner1Id: playerPerformances.summoner1Id,
+      summoner2Id: playerPerformances.summoner2Id,
+      magicDamageDealtToChampions:
+        playerPerformances.magicDamageDealtToChampions,
+      physicalDamageDealtToChampions:
+        playerPerformances.physicalDamageDealtToChampions,
+      neutralMinionsKilled: playerPerformances.neutralMinionsKilled,
+      trueDamageDealtToChampions: playerPerformances.trueDamageDealtToChampions,
+      totalMinionsKilled: playerPerformances.totalMinionsKilled,
+      win: playerPerformances.win,
+      perkPrimary1Id: playerPerformances.perkPrimary1Id,
+      perkSecondaryStyleId: playerPerformances.perkSecondaryStyleId,
+
+      gameEndTimestamp: matches.gameEndTimestamp,
+      gameDuration: matches.gameDuration,
+      tag: matches.tag,
+    })
+    .from(playerPerformances)
+    .innerJoin(matches, eq(matches.id, playerPerformances.matchRowId))
+    .where(eq(sql`left(${playerPerformances.puuid}, 20)`, puuid))
+    .orderBy(desc(matches.gameEndTimestamp), desc(playerPerformances.id))
+
+export type RecentMatchRow = Awaited<
+  ReturnType<typeof recentMatchesQuery>
+>[number]
+
+export const fetchRecentMatchesByPuuid = (puuid: string) => {
+  return unstable_cache(
+    async (): Promise<RecentMatchRow[]> => {
+      "use server"
+      if (!puuid) return []
+      return recentMatchesQuery(puuid)
+    },
+
+    ["recent-matches-by-puuid", puuid],
+
+    { tags: [`recent-matches:${puuid}`, "recent-matches-by-puuid"] }
+  )()
+}
