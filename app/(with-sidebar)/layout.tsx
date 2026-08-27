@@ -15,6 +15,7 @@ import { Footer } from "@/components/footer"
 import { UserBalance } from "@/components/user-balance"
 import { PromoCode } from "@/components/promo-code"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { redirect } from "next/navigation"
 
 export default async function Layout({
   children,
@@ -22,6 +23,10 @@ export default async function Layout({
   children: React.ReactNode
 }>) {
   const user = await currentUser()
+
+  if (user && typeof user.privateMetadata.puuid !== "string") {
+    redirect("/claim-riot")
+  }
 
   let claimed = false
   if (user) {

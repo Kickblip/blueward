@@ -7,6 +7,7 @@ import { players } from "@/lib/schema"
 import { eq } from "drizzle-orm"
 import { safeSubstring } from "@/lib/utils"
 import { updateTag } from "next/cache"
+import { isClerkAPIResponseError } from "@clerk/nextjs/errors"
 
 const CPID_TO_PLATFORM: Record<string, string> = {
   NA1: "na1",
@@ -173,6 +174,20 @@ export async function getCurrentRiotIdentity(): Promise<RiotIdentityResult> {
   }
 }
 
+function formatClerkUsername(gameName: string) {
+  const formatted =
+    gameName
+      .normalize("NFKD")
+      .replace(/\s+/g, "-")
+      .replace(/[^a-zA-Z0-9_-]/g, "")
+      .replace(/-+/g, "-")
+      .replace(/^[-_]+|[-_]+$/g, "")
+      .toLowerCase()
+      .slice(0, 55) || "player"
+
+  return formatted
+}
+
 export async function claimProfileByPuuid(args: {
   puuid: string
   riotIdGameName: string
@@ -212,58 +227,62 @@ export async function claimProfileByPuuid(args: {
       .where(eq(players.id, player.id))
   }
 
-  const summonerRes = await fetchWithRetry(
-    `https://${platform}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/${encodeURIComponent(puuid)}`,
-    {
-      headers: {
-        "X-Riot-Token": process.env.RIOT_API_KEY!,
-      },
-    }
-  )
+  const username = formatClerkUsername(riotIdGameName)
 
-  if (!summonerRes.ok) {
-    return {
-      ok: false,
-      code: summonerRes.status,
-      message: "Failed to fetch League profile.",
-    }
+  try {
+    await client.users.updateUser(userId, { username })
+  } catch (error) {
+    const duplicate =
+      isClerkAPIResponseError(error) &&
+      error.errors.some(({ code }) => code === "form_identifier_exists")
+
+    if (!duplicate) throw error
+
+    await client.users.updateUser(userId, {
+      username: `${username}-${crypto.randomUUID().slice(0, 8)}`,
+    })
   }
-
-  const { profileIconId } = (await summonerRes.json()) as {
-    profileIconId?: number
-  }
-
-  if (typeof profileIconId !== "number") {
-    return {
-      ok: false,
-      code: 500,
-      message: "League profile icon was missing.",
-    }
-  }
-
-  const iconResponse = await fetch(
-    `${process.env.NEXT_PUBLIC_CDN_BASE}/${process.env.NEXT_PUBLIC_PATCH_VERSION}/img/profileicon/${profileIconId}.png`
-  )
-
-  if (!iconResponse.ok) {
-    return {
-      ok: false,
-      code: 502,
-      message: "Failed to download League profile icon.",
-    }
-  }
-
-  await client.users.updateUserProfileImage(userId, {
-    file: await iconResponse.blob(),
-  })
-
-  await client.users.updateUser(userId, {
-    username: riotIdGameName,
-  })
 
   await client.users.updateUserMetadata(userId, {
     privateMetadata: { puuid },
   })
+
+  try {
+    const summonerRes = await fetchWithRetry(
+      `https://${platform}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/${encodeURIComponent(puuid)}`,
+      {
+        headers: {
+          "X-Riot-Token": process.env.RIOT_API_KEY!,
+        },
+      }
+    )
+
+    if (!summonerRes.ok) {
+      throw new Error(`Riot summoner request failed: ${summonerRes.status}`)
+    }
+
+    const { profileIconId } = (await summonerRes.json()) as {
+      profileIconId?: number
+    }
+
+    if (typeof profileIconId !== "number") {
+      throw new Error("League profile icon was missing")
+    }
+
+    const iconResponse = await fetch(
+      `${process.env.NEXT_PUBLIC_CDN_BASE}/${process.env.NEXT_PUBLIC_PATCH_VERSION}/img/profileicon/${profileIconId}.png`
+    )
+
+    if (!iconResponse.ok) {
+      throw new Error(`Profile icon download failed: ${iconResponse.status}`)
+    }
+
+    await client.users.updateUserProfileImage(userId, {
+      file: await iconResponse.blob(),
+    })
+  } catch (error) {
+    console.error("Failed to sync Clerk profile image:", error)
+  }
 
   updateTag(`player-card:${safeSubstring(puuid, 0, 20)}`)
 

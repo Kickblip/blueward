@@ -92,7 +92,10 @@ export function ClaimRiotClient({ destination }: { destination: string }) {
         <div className="flex flex-col items-center gap-2">
           <Spinner />
           <p className="font-oswald font-semibold uppercase">
-            Claiming your profile...
+            Claiming your profile... Do not close this window
+          </p>
+          <p className="text-sm text-muted-foreground">
+            This may take a few moments
           </p>
           <div id="clerk-captcha" />
         </div>

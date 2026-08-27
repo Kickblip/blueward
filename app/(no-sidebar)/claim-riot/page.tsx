@@ -5,11 +5,11 @@ import { ClaimRiotClient } from "./claim-riot-client"
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>
+  searchParams: Promise<{ next?: string | string[] }>
 }) {
-  const { next = "/" } = await searchParams
+  const { next } = await searchParams
   const destination =
-    next.startsWith("/") && !next.startsWith("//") ? next : "/"
+    typeof next === "string" && /^\/(?![\\/])/.test(next) ? next : "/"
 
   const user = await currentUser()
 
