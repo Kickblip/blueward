@@ -30,13 +30,15 @@ export default async function Page() {
     <>
       <div className="pointer-events-none absolute inset-0">
         <div className="sticky top-0 h-svh w-full">
-          <Image
-            src="/climb/background.webp"
-            alt=""
-            fill
-            sizes="100vw"
-            className="rounded-xl object-cover opacity-80"
-          />
+          <div className="relative h-full w-full">
+            <Image
+              src="/climb/background.webp"
+              alt=""
+              fill
+              sizes="100vw"
+              className="rounded-xl object-cover opacity-80"
+            />
+          </div>
         </div>
       </div>
 
@@ -45,9 +47,9 @@ export default async function Page() {
           <Image
             src="/climb/title.svg"
             alt="Blueward merchandise"
-            width={160}
-            height={160}
-            className="-my-8 -ml-10 hidden shrink-0 object-contain md:block"
+            width={846}
+            height={554}
+            className="-my-8 -ml-10 hidden h-auto w-40 shrink-0 object-contain md:block"
           />
 
           <ClimbChallengeTimer initialNow={Date.now()} />
@@ -77,7 +79,13 @@ export default async function Page() {
           </div>
 
           <div className="relative w-fit">
-            <Image src="/podium.svg" alt="" width={512} height={512} />
+            <Image
+              src="/podium.svg"
+              alt=""
+              width={186}
+              height={163}
+              className="h-auto w-128"
+            />
 
             <Tooltip>
               <TooltipTrigger asChild>

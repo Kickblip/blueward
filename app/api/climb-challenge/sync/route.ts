@@ -5,12 +5,25 @@ import { fetchWithRetry } from "@/app/(with-sidebar)/import/actions"
 import { eq } from "drizzle-orm"
 import pLimit from "p-limit"
 import { revalidateTag } from "next/cache"
+import {
+  CLIMB_CHALLENGE_END_DATE,
+  CLIMB_CHALLENGE_START_DATE,
+} from "@/lib/config"
+
+const challengeStart = Date.parse(CLIMB_CHALLENGE_START_DATE)
+const challengeEnd = Date.parse(CLIMB_CHALLENGE_END_DATE)
 
 export async function POST(request: NextRequest) {
   const key = request.headers.get("x-auth-key")
 
   if (key !== process.env.CLIMB_CHALLENGE_SYNC_KEY) {
     return new Response("Unauthorized", { status: 401 })
+  }
+
+  const now = Date.now()
+
+  if (now < challengeStart || now >= challengeEnd) {
+    return new Response("Climb challenge is not live", { status: 409 })
   }
 
   const limit = pLimit(2)
