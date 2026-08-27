@@ -55,7 +55,7 @@ export default async function Page() {
           <ClimbChallengeTimer initialNow={Date.now()} />
 
           <p className="ml-auto hidden pr-2 text-sm text-muted-foreground md:block">
-            Syncs every hour
+            Syncs every four hours
           </p>
 
           {!signedInUserIsParticipating && (

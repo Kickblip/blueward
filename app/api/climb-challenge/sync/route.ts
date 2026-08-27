@@ -1,3 +1,5 @@
+export const maxDuration = 300
+
 import { NextRequest } from "next/server"
 import { db } from "@/lib/db"
 import { climbChallengePlayers } from "@/lib/schema"
@@ -13,10 +15,10 @@ import {
 const challengeStart = Date.parse(CLIMB_CHALLENGE_START_DATE)
 const challengeEnd = Date.parse(CLIMB_CHALLENGE_END_DATE)
 
-export async function POST(request: NextRequest) {
-  const key = request.headers.get("x-auth-key")
+export async function GET(request: NextRequest) {
+  const auth = request.headers.get("authorization")
 
-  if (key !== process.env.CLIMB_CHALLENGE_SYNC_KEY) {
+  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
     return new Response("Unauthorized", { status: 401 })
   }
 
