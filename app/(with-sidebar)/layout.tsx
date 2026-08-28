@@ -16,6 +16,7 @@ import { UserBalance } from "@/components/user-balance"
 import { PromoCode } from "@/components/promo-code"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { redirect } from "next/navigation"
+import { AnnouncementBanner } from "@/components/announcement-banner"
 
 export default async function Layout({
   children,
@@ -45,6 +46,8 @@ export default async function Layout({
     <SidebarProvider defaultOpen={false}>
       <AppSidebar user={user} />
       <SidebarInset>
+        <AnnouncementBanner />
+
         <header className="z-20 flex h-16 shrink-0 items-center justify-between">
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" variant="secondary" />

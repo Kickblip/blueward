@@ -4,6 +4,7 @@ import { useAuth, useSignIn, useSignUp } from "@clerk/nextjs"
 import { useEffect, useRef, useState } from "react"
 import { Spinner } from "@/components/ui/spinner"
 import { autoClaimRiotProfile } from "./actions"
+import { useRouter } from "next/navigation"
 
 export function ClaimRiotClient({ destination }: { destination: string }) {
   const { isLoaded, isSignedIn } = useAuth()
@@ -11,6 +12,7 @@ export function ClaimRiotClient({ destination }: { destination: string }) {
   const { signUp } = useSignUp()
   const started = useRef(false)
   const [error, setError] = useState<string>()
+  const router = useRouter()
 
   useEffect(() => {
     if (!isLoaded || started.current) return
@@ -23,7 +25,13 @@ export function ClaimRiotClient({ destination }: { destination: string }) {
         if (signIn.status === "complete") {
           const { error } = await signIn.finalize({
             navigate: ({ decorateUrl }) => {
-              window.location.replace(decorateUrl(claimUrl))
+              const url = decorateUrl(claimUrl)
+
+              if (url.startsWith("http")) {
+                window.location.href = url
+              } else {
+                router.replace(url)
+              }
             },
           })
 
@@ -34,7 +42,13 @@ export function ClaimRiotClient({ destination }: { destination: string }) {
         if (signUp.status === "complete") {
           const { error } = await signUp.finalize({
             navigate: ({ decorateUrl }) => {
-              window.location.replace(decorateUrl(claimUrl))
+              const url = decorateUrl(claimUrl)
+
+              if (url.startsWith("http")) {
+                window.location.href = url
+              } else {
+                router.replace(url)
+              }
             },
           })
 
@@ -47,24 +61,26 @@ export function ClaimRiotClient({ destination }: { destination: string }) {
 
       try {
         if (!isSignedIn) {
-          if (await finalize()) return
+          let finalized = await finalize()
 
-          if (signUp.isTransferable) {
+          if (!finalized && signUp.isTransferable) {
             const { error } = await signIn.create({ transfer: true })
             if (error) throw error
-            if (await finalize()) return
+            finalized = await finalize()
           }
 
-          if (signIn.isTransferable) {
+          if (!finalized && signIn.isTransferable) {
             const { error } = await signUp.create({ transfer: true })
             if (error) throw error
-            if (await finalize()) return
+            finalized = await finalize()
           }
 
-          window.location.replace(
-            `/signin?redirect_url=${encodeURIComponent(destination)}`
-          )
-          return
+          if (!finalized) {
+            router.replace(
+              `/signin?redirect_url=${encodeURIComponent(destination)}`
+            )
+            return
+          }
         }
 
         const result = await autoClaimRiotProfile()
@@ -74,13 +90,13 @@ export function ClaimRiotClient({ destination }: { destination: string }) {
           return
         }
 
-        window.location.replace(destination)
+        router.replace(destination)
       } catch (error) {
         console.error(error)
         setError("Could not claim your Riot profile.")
       }
     })()
-  }, [destination, isLoaded, isSignedIn, signIn, signUp])
+  }, [destination, isLoaded, isSignedIn, router, signIn, signUp])
 
   return (
     <div className="grid min-h-screen w-full place-items-center">
