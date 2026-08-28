@@ -37,7 +37,7 @@ export function ClimbChallengeTimer({ initialNow }: { initialNow: number }) {
 
   if (now < startTime) {
     time = "Starting soon!"
-    subtitle = "Friday 5:00 PM CST"
+    subtitle = "Monday 5:00 PM CST"
   } else if (now >= endTime) {
     time = "Finished"
     subtitle = "We will be in contact about prizes"

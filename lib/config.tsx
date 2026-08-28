@@ -1,7 +1,7 @@
 import { TransactionType } from "./schema"
 
-export const CLIMB_CHALLENGE_START_DATE = "2026-08-28T17:00:00-05:00" as const
-export const CLIMB_CHALLENGE_END_DATE = "2026-09-11T23:59:59-05:00" as const
+export const CLIMB_CHALLENGE_START_DATE = "2026-08-31T17:00:00-05:00" as const
+export const CLIMB_CHALLENGE_END_DATE = "2026-09-14T23:59:59-05:00" as const
 
 export const BLUEWARD_VERSION = "2.0" as const
 

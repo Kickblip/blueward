@@ -33,7 +33,7 @@ export function AnnouncementBanner() {
           target="_blank"
           className="-mr-1 ml-4 text-xs hover:underline"
         >
-          Read the patch notes
+          Read the update notes
         </Link>
         <ChevronRight size={16} className="mt-0.5" />
       </div>
