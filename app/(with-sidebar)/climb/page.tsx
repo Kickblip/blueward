@@ -11,9 +11,9 @@ import {
 } from "@/components/ui/tooltip"
 import { BannerBackground } from "@/components/banner-background"
 import { currentUser } from "@clerk/nextjs/server"
-import { fetchPlayerCardByPuuid } from "@/app/api/player/[puuid]/card/route"
 import { safeSubstring } from "@/lib/utils"
 import Link from "next/link"
+import { fetchAvatarUrlByAuthId } from "@/lib/avatar-url"
 
 export default async function Page() {
   const [leaderboard, user] = await Promise.all([
@@ -30,9 +30,7 @@ export default async function Page() {
   const podium = await Promise.all(
     leaderboard.slice(0, 3).map(async (player) => ({
       ...player,
-      avatarUrl: (
-        await fetchPlayerCardByPuuid(safeSubstring(player.puuid, 0, 20))
-      )?.avatarUrl,
+      avatarUrl: await fetchAvatarUrlByAuthId(player.authId),
     }))
   )
 

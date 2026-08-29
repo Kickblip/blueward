@@ -21,22 +21,6 @@ export async function fetchPlayerProfileByPuuid(puuid: string) {
   )
 }
 
-export async function fetchProfilePictureByAuthId(
-  authId: string | null | undefined
-): Promise<string | null> {
-  "use server"
-
-  if (!authId) return null
-
-  try {
-    const client = await clerkClient()
-    const user = await client.users.getUser(authId)
-    return user.imageUrl ?? null
-  } catch {
-    return null
-  }
-}
-
 const recentMatchesQuery = (puuid: string) =>
   db
     .select({

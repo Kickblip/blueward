@@ -12,6 +12,7 @@ import Image from "next/image"
 import { fetchPlayerCardByPuuid } from "@/app/api/player/[puuid]/card/route"
 import { Avatar, AvatarGroup, AvatarImage } from "@/components/ui/avatar"
 import { BiSolidCrown } from "react-icons/bi"
+import { fetchAvatarUrlByAuthId } from "@/lib/avatar-url"
 
 export async function generateStaticParams() {
   return Object.keys(statList).map((stat) => ({ stat }))
@@ -40,10 +41,17 @@ export default async function Leaderboard({
   const players = await getTopPlayersForStat(stat, limit)
   const podium = players.slice(0, 3)
 
-  const podiumProfileCards = await Promise.all(
-    podium.map((player) =>
-      fetchPlayerCardByPuuid(safeSubstring(player.puuid, 0, 20))
-    )
+  const podiumProfiles = await Promise.all(
+    podium.map(async (player) => {
+      const card = await fetchPlayerCardByPuuid(
+        safeSubstring(player.puuid, 0, 20)
+      )
+
+      return {
+        card,
+        avatarUrl: await fetchAvatarUrlByAuthId(card?.authId),
+      }
+    })
   )
 
   const buildStatsProp = (value: number, createdAt: string) => ({
@@ -79,18 +87,21 @@ export default async function Leaderboard({
         <div className="grid w-full grid-cols-3 gap-4">
           <PodiumCard
             player={podium[1]}
-            profileCard={podiumProfileCards[1]}
+            profileCard={podiumProfiles[1].card}
+            avatarUrl={podiumProfiles[1].avatarUrl}
             stat={stat}
           />
           <PodiumCard
             player={podium[0]}
-            profileCard={podiumProfileCards[0]}
+            profileCard={podiumProfiles[0].card}
+            avatarUrl={podiumProfiles[0].avatarUrl}
             stat={stat}
             first
           />
           <PodiumCard
             player={podium[2]}
-            profileCard={podiumProfileCards[2]}
+            profileCard={podiumProfiles[2].card}
+            avatarUrl={podiumProfiles[2].avatarUrl}
             stat={stat}
           />
         </div>
@@ -116,11 +127,13 @@ export default async function Leaderboard({
 function PodiumCard({
   player,
   profileCard,
+  avatarUrl,
   stat,
   first = false,
 }: {
   player: Awaited<ReturnType<typeof getTopPlayersForStat>>[number]
   profileCard: Awaited<ReturnType<typeof fetchPlayerCardByPuuid>> | null
+  avatarUrl: string | null
   stat: StatKey
   first?: boolean
 }) {
@@ -148,9 +161,7 @@ function PodiumCard({
                 />
               </Avatar>
               <Avatar className="size-12">
-                <AvatarImage
-                  src={profileCard?.avatarUrl || "/defaultpfp.webp"}
-                />
+                <AvatarImage src={avatarUrl ?? "/defaultpfp.webp"} />
               </Avatar>
             </AvatarGroup>
           </div>

@@ -2,11 +2,8 @@ import { Card } from "@/components/ui/card"
 import { ProfileMatch } from "@/components/profile-match"
 import Image from "next/image"
 import { BasicStatFormat } from "@/components/match-history-widgets"
-import {
-  fetchRecentMatchesByPuuid,
-  fetchPlayerProfileByPuuid,
-  fetchProfilePictureByAuthId,
-} from "./actions"
+import { fetchRecentMatchesByPuuid, fetchPlayerProfileByPuuid } from "./actions"
+import { fetchAvatarUrlByAuthId } from "@/lib/avatar-url"
 import { calcAverageKDA, calcWinrate, calcWinrateByChampion } from "./utils"
 import { currentUser } from "@clerk/nextjs/server"
 import { BannerSelector } from "@/components/banner-selector"
@@ -40,9 +37,7 @@ export default async function PlayerProfile({
     profileRes.status === "fulfilled" ? profileRes.value : null
   const user = userRes.status === "fulfilled" ? userRes.value : null
 
-  const profilePictureUrl = await fetchProfilePictureByAuthId(
-    playerProfile?.authId
-  )
+  const profilePictureUrl = await fetchAvatarUrlByAuthId(playerProfile?.authId)
 
   let userOwnsProfile = false
   if (user && playerProfile?.authId) {

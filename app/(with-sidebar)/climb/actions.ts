@@ -11,6 +11,7 @@ export const getClimbLeaderboard = unstable_cache(
     const rows = await db
       .select({
         playerId: climbChallengePlayers.playerId,
+        authId: players.authId,
         puuid: climbChallengePlayers.puuid,
         riotIdGameName: players.riotIdGameName,
         riotIdTagline: players.riotIdTagline,

@@ -4,12 +4,9 @@ import { db } from "@/lib/db"
 import { players } from "@/lib/schema"
 import { eq, InferSelectModel, sql } from "drizzle-orm"
 import { unstable_cache } from "next/cache"
-import { clerkClient } from "@clerk/nextjs/server"
 import { NextRequest } from "next/server"
 
-export type PlayerCard = InferSelectModel<typeof players> & {
-  avatarUrl: string | null
-}
+export type PlayerCard = InferSelectModel<typeof players>
 
 export function fetchPlayerCardByPuuid(puuid: string) {
   return unstable_cache(
@@ -20,24 +17,7 @@ export function fetchPlayerCardByPuuid(puuid: string) {
         .where(eq(sql`left(${players.puuid}, 20)`, puuid))
         .limit(1)
 
-      if (!player) return null
-
-      let avatarUrl: string | null = null
-
-      if (player.authId) {
-        try {
-          const clerk = await clerkClient()
-          const user = await clerk.users.getUser(player.authId)
-          avatarUrl = user.imageUrl ?? null
-        } catch {
-          avatarUrl = null
-        }
-      }
-
-      return {
-        ...player,
-        avatarUrl,
-      }
+      return player ?? null
     },
     ["player-card", puuid],
     {

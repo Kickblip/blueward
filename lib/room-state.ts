@@ -15,11 +15,16 @@ import {
   type PlayerCard,
 } from "@/app/api/player/[puuid]/card/route"
 import { safeSubstring } from "./utils"
+import { fetchAvatarUrlByAuthId } from "./avatar-url"
+
+type PlayerCardWithAvatar = PlayerCard & {
+  avatarUrl: string | null
+}
 
 export type RoomParticipant = {
   id: string
   displayName: string
-  player: PlayerCard | null
+  player: PlayerCardWithAvatar | null
   roles: NonNullable<PlayerCard["lobbyRoles"]>
   rank: PlayerCard["lobbyRank"]
 }
@@ -115,14 +120,21 @@ export async function getRoomSnapshot(
         playerPuuid,
         ...assignment
       }) => {
-        const player =
+        const playerCard =
           playerPuuid === null
             ? null
             : await fetchPlayerCardByPuuid(safeSubstring(playerPuuid, 0, 20))
 
-        if (playerPuuid !== null && !player) {
+        if (playerPuuid !== null && !playerCard) {
           throw new Error(`Assigned Riot player ${playerPuuid} not found`)
         }
+
+        const player = playerCard
+          ? {
+              ...playerCard,
+              avatarUrl: await fetchAvatarUrlByAuthId(playerCard.authId),
+            }
+          : null
 
         return {
           ...assignment,
