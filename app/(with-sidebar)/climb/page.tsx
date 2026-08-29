@@ -14,6 +14,7 @@ import { currentUser } from "@clerk/nextjs/server"
 import { safeSubstring } from "@/lib/utils"
 import Link from "next/link"
 import { fetchAvatarUrlByAuthId } from "@/lib/avatar-url"
+import { Avatar, AvatarImage } from "@/components/ui/avatar"
 
 export default async function Page() {
   const [leaderboard, user] = await Promise.all([
@@ -27,12 +28,14 @@ export default async function Page() {
     typeof metadataPuuid === "string" &&
     leaderboard.some((player) => player.puuid === metadataPuuid)
 
-  const podium = await Promise.all(
-    leaderboard.slice(0, 3).map(async (player) => ({
+  const leaderboardWithAvatars = await Promise.all(
+    leaderboard.map(async (player) => ({
       ...player,
       avatarUrl: await fetchAvatarUrlByAuthId(player.authId),
     }))
   )
+
+  const podium = leaderboardWithAvatars.slice(0, 3)
 
   return (
     <>
@@ -121,25 +124,36 @@ export default async function Page() {
           </div>
 
           <div className="z-50 -mt-32 flex w-full flex-col gap-2">
-            {leaderboard.slice(3).map((player, index) => (
+            {leaderboardWithAvatars.slice(3).map((player, index) => (
               <Link
                 key={index}
                 href={`/player/${safeSubstring(player.puuid, 0, 20)}`}
                 className="group"
               >
                 <Card className="flex-row items-center justify-between gap-4 font-oswald text-lg font-semibold uppercase">
-                  <div className="flex items-center gap-8">
-                    <span className="text-xl italic">
-                      {`${player.netWins > 0 ? "+" : ""}${25 * player.netWins}`}{" "}
-                      Pts
+                  <div className="flex items-center gap-4">
+                    <span className="w-6 shrink-0 text-right text-xl tabular-nums">
+                      {index + 4}
                     </span>
+
+                    <Avatar className="size-8">
+                      <AvatarImage
+                        src={player.avatarUrl ?? "/defaultpfp.webp"}
+                        alt={`${player.riotIdGameName} profile picture`}
+                      />
+                    </Avatar>
 
                     <span className="group-hover:text-chart-3 dark:group-hover:text-chart-1">
                       {player.riotIdGameName}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-8">
+                  <div className="flex items-center gap-4 sm:gap-8">
+                    <span className="text-xl italic">
+                      {`${player.netWins > 0 ? "+" : ""}${25 * player.netWins}`}{" "}
+                      Pts
+                    </span>
+
                     <span>
                       {player.wins}W - {player.losses}L
                     </span>
