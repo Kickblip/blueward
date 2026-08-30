@@ -39,6 +39,7 @@ export async function GET(request: NextRequest) {
       losses: climbChallengePlayers.losses,
       hotStreak: climbChallengePlayers.hotStreak,
       points: climbChallengePlayers.points,
+      inactive: climbChallengePlayers.inactive,
     })
     .from(climbChallengePlayers)
 
@@ -83,7 +84,10 @@ export async function GET(request: NextRequest) {
         const newWins = wins - participant.wins
         const newLosses = losses - participant.losses
         const hotStreak = solo.hotStreak === true
-        const winValue = hotStreak ? 35 : 25
+        const inactive = solo.inactive === true
+        const winValue = Math.ceil(
+          25 * (hotStreak ? 1.4 : 1) * (inactive ? 0.8 : 1)
+        )
         const points = participant.points + newWins * winValue - newLosses * 25
 
         await db
@@ -95,6 +99,7 @@ export async function GET(request: NextRequest) {
             losses,
             netWins,
             hotStreak,
+            inactive,
             points,
           })
           .where(eq(climbChallengePlayers.puuid, participant.puuid))

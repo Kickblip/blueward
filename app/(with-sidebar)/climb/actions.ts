@@ -21,6 +21,7 @@ export const getClimbLeaderboard = unstable_cache(
         losses: climbChallengePlayers.losses,
         hotStreak: climbChallengePlayers.hotStreak,
         points: climbChallengePlayers.points,
+        inactive: climbChallengePlayers.inactive,
       })
       .from(climbChallengePlayers)
       .innerJoin(players, eq(climbChallengePlayers.playerId, players.id))
@@ -88,6 +89,7 @@ export const joinClimbChallenge = async () => {
       startingWins: solo?.wins ?? 0,
       startingLosses: solo?.losses ?? 0,
       hotStreak: solo?.hotStreak === true,
+      inactive: solo?.inactive === true,
     })
     .onConflictDoNothing({
       target: climbChallengePlayers.puuid,

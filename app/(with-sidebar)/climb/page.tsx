@@ -147,6 +147,26 @@ export default async function Page() {
                       {player.riotIdGameName}
                     </span>
 
+                    {player.inactive && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center gap-0.5">
+                            <Image
+                              src="/climb/ice.webp"
+                              alt=""
+                              width={24}
+                              height={24}
+                              className="hidden sm:block"
+                            />
+                            <span className="font-oswald text-xs font-semibold text-chart-2 sm:text-sm dark:text-chart-1">
+                              0.8x
+                            </span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>Decayed account penalty</TooltipContent>
+                      </Tooltip>
+                    )}
+
                     {player.hotStreak && (
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -154,18 +174,16 @@ export default async function Page() {
                             <Image
                               src="/climb/fire.webp"
                               alt=""
-                              width={28}
-                              height={28}
-                              className="mb-0.5"
+                              width={24}
+                              height={24}
+                              className="mb-0.5 hidden sm:block"
                             />
-                            <span className="hidden font-oswald text-sm font-semibold text-red-500 sm:block dark:text-red-400">
+                            <span className="font-oswald text-xs font-semibold text-red-500 sm:text-sm dark:text-red-400">
                               1.4x
                             </span>
                           </div>
                         </TooltipTrigger>
-                        <TooltipContent>
-                          Earning increased points for winstreak
-                        </TooltipContent>
+                        <TooltipContent>Winstreak point bonus</TooltipContent>
                       </Tooltip>
                     )}
                   </div>
@@ -243,27 +261,41 @@ function PodiumCard({
           </span>
         </div>
 
-        {player.hotStreak && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="mr-0.5 flex items-center gap-0.5">
-                <Image
-                  src="/climb/fire.webp"
-                  alt=""
-                  width={22}
-                  height={22}
-                  className="mb-0.5"
-                />
-                <span className="font-oswald text-sm font-semibold text-red-200">
-                  1.4x
-                </span>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              Earning increased points for winstreak
-            </TooltipContent>
-          </Tooltip>
-        )}
+        <div className="flex items-center gap-2">
+          {player.inactive && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center gap-0.5">
+                  <Image src="/climb/ice.webp" alt="" width={24} height={24} />
+                  <span className="font-oswald text-sm font-semibold text-chart-2 dark:text-chart-1">
+                    0.8x
+                  </span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>Decayed account penalty</TooltipContent>
+            </Tooltip>
+          )}
+
+          {player.hotStreak && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="mr-0.5 flex items-center gap-0.5">
+                  <Image
+                    src="/climb/fire.webp"
+                    alt=""
+                    width={22}
+                    height={22}
+                    className="mb-0.5"
+                  />
+                  <span className="font-oswald text-sm font-semibold text-red-200">
+                    1.4x
+                  </span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>Winstreak point bonus</TooltipContent>
+            </Tooltip>
+          )}
+        </div>
       </div>
     </Link>
   )
