@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/tooltip"
 import { BannerBackground } from "@/components/banner-background"
 import { currentUser } from "@clerk/nextjs/server"
-import { safeSubstring } from "@/lib/utils"
+import { cn, safeSubstring } from "@/lib/utils"
 import Link from "next/link"
 import { fetchAvatarUrlByAuthId } from "@/lib/avatar-url"
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
@@ -66,7 +66,7 @@ export default async function Page() {
           <ClimbChallengeTimer initialNow={Date.now()} />
 
           <p className="ml-auto hidden pr-2 text-sm text-muted-foreground md:block">
-            Syncs every four hours
+            Syncs every hour
           </p>
 
           {!signedInUserIsParticipating && (
@@ -131,7 +131,7 @@ export default async function Page() {
                 className="group"
               >
                 <Card className="flex-row items-center justify-between gap-4 font-oswald text-lg font-semibold uppercase">
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3 sm:gap-4">
                     <span className="w-6 shrink-0 text-right text-xl tabular-nums">
                       {index + 4}
                     </span>
@@ -143,18 +143,48 @@ export default async function Page() {
                       />
                     </Avatar>
 
-                    <span className="group-hover:text-chart-3 dark:group-hover:text-chart-1">
+                    <span className="text-sm group-hover:text-chart-3 sm:text-lg dark:group-hover:text-chart-1">
                       {player.riotIdGameName}
                     </span>
+
+                    {player.hotStreak && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center gap-0.5">
+                            <Image
+                              src="/climb/fire.webp"
+                              alt=""
+                              width={28}
+                              height={28}
+                              className="mb-0.5"
+                            />
+                            <span className="hidden font-oswald text-sm font-semibold text-red-500 sm:block dark:text-red-400">
+                              1.4x
+                            </span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          Earning increased points for winstreak
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-4 sm:gap-8">
-                    <span className="text-xl italic">
-                      {`${player.netWins > 0 ? "+" : ""}${25 * player.netWins}`}{" "}
-                      Pts
+                    <span
+                      className={cn(
+                        "text-sm italic sm:text-xl",
+                        player.points > 0
+                          ? "text-chart-3 dark:text-chart-1"
+                          : player.points < 0
+                            ? "text-rose-500"
+                            : ""
+                      )}
+                    >
+                      {`${player.points > 0 ? "+" : ""}${player.points}`} Pts
                     </span>
 
-                    <span>
+                    <span className="text-xs sm:text-sm">
                       {player.wins}W - {player.losses}L
                     </span>
                   </div>
@@ -204,14 +234,36 @@ function PodiumCard({
           {player.riotIdGameName}
         </p>
         <div>
-          <span className="font-oswald font-semibold">
-            {25 * player.netWins}
+          <span className="font-oswald font-semibold text-yellow-400">
+            {player.points}
           </span>{" "}
           <span className="text-xs font-medium uppercase">Pts</span>
           <span className="ml-2 text-sm font-medium">
             ({player.wins}W - {player.losses}L)
           </span>
         </div>
+
+        {player.hotStreak && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="mr-0.5 flex items-center gap-0.5">
+                <Image
+                  src="/climb/fire.webp"
+                  alt=""
+                  width={22}
+                  height={22}
+                  className="mb-0.5"
+                />
+                <span className="font-oswald text-sm font-semibold text-red-200">
+                  1.4x
+                </span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              Earning increased points for winstreak
+            </TooltipContent>
+          </Tooltip>
+        )}
       </div>
     </Link>
   )

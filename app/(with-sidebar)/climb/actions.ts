@@ -19,10 +19,12 @@ export const getClimbLeaderboard = unstable_cache(
         netWins: climbChallengePlayers.netWins,
         wins: climbChallengePlayers.wins,
         losses: climbChallengePlayers.losses,
+        hotStreak: climbChallengePlayers.hotStreak,
+        points: climbChallengePlayers.points,
       })
       .from(climbChallengePlayers)
       .innerJoin(players, eq(climbChallengePlayers.playerId, players.id))
-      .orderBy(desc(climbChallengePlayers.netWins), asc(players.riotIdGameName))
+      .orderBy(desc(climbChallengePlayers.points), asc(players.riotIdGameName))
 
     return rows.map((player, index) => ({
       rank: index + 1,
@@ -85,6 +87,7 @@ export const joinClimbChallenge = async () => {
       puuid: player.puuid,
       startingWins: solo?.wins ?? 0,
       startingLosses: solo?.losses ?? 0,
+      hotStreak: solo?.hotStreak === true,
     })
     .onConflictDoNothing({
       target: climbChallengePlayers.puuid,

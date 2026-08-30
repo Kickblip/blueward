@@ -28,13 +28,17 @@ export async function GET(request: NextRequest) {
     return new Response("Climb challenge is not live", { status: 409 })
   }
 
-  const limit = pLimit(2)
+  const limit = pLimit(5)
 
   const participants = await db
     .select({
       puuid: climbChallengePlayers.puuid,
       startingWins: climbChallengePlayers.startingWins,
       startingLosses: climbChallengePlayers.startingLosses,
+      wins: climbChallengePlayers.wins,
+      losses: climbChallengePlayers.losses,
+      hotStreak: climbChallengePlayers.hotStreak,
+      points: climbChallengePlayers.points,
     })
     .from(climbChallengePlayers)
 
@@ -57,7 +61,7 @@ export async function GET(request: NextRequest) {
 
         const entries = await response.json().catch(() => null)
 
-        if (!entries) {
+        if (!Array.isArray(entries)) {
           return { puuid: participant.puuid, updated: false }
         }
 
@@ -76,6 +80,12 @@ export async function GET(request: NextRequest) {
         const losses = solo.losses - startingLosses
         const netWins = wins - losses
 
+        const newWins = wins - participant.wins
+        const newLosses = losses - participant.losses
+        const hotStreak = solo.hotStreak === true
+        const winValue = hotStreak ? 35 : 25
+        const points = participant.points + newWins * winValue - newLosses * 25
+
         await db
           .update(climbChallengePlayers)
           .set({
@@ -84,6 +94,8 @@ export async function GET(request: NextRequest) {
             wins,
             losses,
             netWins,
+            hotStreak,
+            points,
           })
           .where(eq(climbChallengePlayers.puuid, participant.puuid))
 

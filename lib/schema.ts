@@ -606,6 +606,8 @@ export const climbChallengePlayers = pgTable("climb_challenge_players", {
   wins: integer().notNull().default(0),
   losses: integer().notNull().default(0),
   netWins: integer().notNull().default(0),
+  hotStreak: boolean().notNull().default(false),
+  points: integer().notNull().default(0),
 })
 
 export const matchSubmissionsRelations = relations(
