@@ -184,7 +184,7 @@ export default async function Page() {
                       {`${player.points > 0 ? "+" : ""}${player.points}`} Pts
                     </span>
 
-                    <span className="text-xs sm:text-sm">
+                    <span className="text-xs sm:text-lg">
                       {player.wins}W - {player.losses}L
                     </span>
                   </div>
