@@ -1,7 +1,7 @@
 "use client"
 
 import { Logo } from "@/components/logo"
-import { Button, buttonVariants } from "@/components/ui/button"
+import { Button } from "@/components/ui/button"
 import Link from "next/link"
 // import { RiRobot3Fill } from "react-icons/ri"
 import { MdOutlineShuffleOn } from "react-icons/md"
@@ -110,10 +110,19 @@ export function Toolbar() {
   const [isResettingLobby, startResettingLobby] = useTransition()
   const { resolvedTheme, setTheme } = useTheme()
 
+  const currentAssignment = activeLobby?.players.find(
+    ({ player }) => player.id === currentParticipant.id
+  )
+
+  const isTeamCaptain = currentAssignment?.isCaptain === true
+
   const pickingTeam =
     activeLobby?.phase === "DRAFTING"
       ? (DRAFT_PICK_ORDER[activeLobby.draftPickIndex] ?? null)
       : null
+
+  const isYourPick =
+    pickingTeam !== null && currentAssignment?.teamId === pickingTeam
 
   const phaseLabel =
     activeLobby?.phase === "OPEN"
@@ -121,7 +130,9 @@ export function Toolbar() {
         ? "Starting draft"
         : "Waiting to start"
       : pickingTeam !== null
-        ? `Team ${pickingTeam + 1} picking`
+        ? isYourPick
+          ? "Your pick"
+          : "Other team pick"
         : null
 
   const selectedRankLabel =
@@ -656,24 +667,19 @@ export function Toolbar() {
           </div>
         )}
 
-        {phaseLabel && (
-          <div
+        {isTeamCaptain && phaseLabel && (
+          <Button
+            type="button"
+            size="lg"
+            disabled={!isYourPick}
             className={cn(
-              "gap-2 px-6! font-oswald text-lg! font-semibold uppercase",
-              buttonVariants({ size: "lg" }),
-              activeLobby?.phase === "OPEN" && "text-muted-foreground",
-              pickingTeam === 0 && "text-blue-500",
-              pickingTeam === 1 && "text-rose-500"
+              "px-6! font-oswald text-lg! font-semibold uppercase",
+              isYourPick && "animate-bounce"
             )}
           >
             {phaseLabel}
-            {activeLobby?.phase === "OPEN" &&
-              (isStartingDraft ? (
-                <Spinner />
-              ) : (
-                <span className="ml-1 size-2.5 animate-pulse rounded-full bg-current" />
-              ))}
-          </div>
+            {activeLobby?.phase === "OPEN" && isStartingDraft && <Spinner />}
+          </Button>
         )}
       </div>
     </header>

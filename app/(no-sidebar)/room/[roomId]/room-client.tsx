@@ -23,12 +23,7 @@ import { LevelBadge } from "@/components/level-badge"
 import { EllipsisIcon } from "lucide-react"
 import { FaTrash, FaX } from "react-icons/fa6"
 import { PiCrownSimpleFill } from "react-icons/pi"
-import {
-  FaArrowCircleLeft,
-  FaArrowCircleRight,
-  FaUser,
-  FaCheckCircle,
-} from "react-icons/fa"
+import { FaArrowCircleLeft, FaArrowCircleRight, FaUser } from "react-icons/fa"
 import Link from "next/link"
 import {
   makeParticipantCaptain,
@@ -240,6 +235,32 @@ export function PoolCard({
   participant: RoomParticipant
   useOwnerView: boolean
 }) {
+  const { activeLobby, currentParticipant } = useRoom()
+  const [isDrafting, startDraftTransition] = useTransition()
+
+  const currentAssignment = activeLobby?.players.find(
+    ({ player }) => player.id === currentParticipant.id
+  )
+
+  const isTeamCaptain = currentAssignment?.isCaptain === true
+
+  const canDraft =
+    activeLobby?.phase === "DRAFTING" &&
+    isTeamCaptain &&
+    currentAssignment?.teamId === DRAFT_PICK_ORDER[activeLobby.draftPickIndex]
+
+  function draft() {
+    if (!activeLobby || !canDraft) return
+
+    startDraftTransition(async () => {
+      try {
+        await draftParticipant(activeLobby.id, participant.id)
+      } catch {
+        toast.error("Could not draft this player")
+      }
+    })
+  }
+
   const content = (
     <div className="relative min-h-0 flex-1 overflow-hidden rounded-md border bg-secondary">
       {participant.player && (
@@ -262,10 +283,24 @@ export function PoolCard({
             />
           </div>
 
-          <PlayerDropdownMenu
-            useOwnerView={useOwnerView}
-            participant={participant}
-          />
+          <div className="flex flex-wrap items-center gap-2">
+            {activeLobby?.phase === "DRAFTING" && isTeamCaptain && (
+              <Button
+                type="button"
+                size="sm"
+                className="font-oswald font-semibold uppercase"
+                disabled={!canDraft || isDrafting}
+                onClick={draft}
+              >
+                {isDrafting ? "Adding…" : "Add to team"}
+              </Button>
+            )}
+
+            <PlayerDropdownMenu
+              useOwnerView={useOwnerView}
+              participant={participant}
+            />
+          </div>
         </div>
 
         <h2 className="font-oswald text-4xl font-semibold uppercase">
@@ -379,38 +414,11 @@ export function PlayerDropdownMenu({
   participant: RoomParticipant
 }) {
   const { activeLobby, currentParticipant, roomId } = useRoom()
-  const [isDrafting, startDraftTransition] = useTransition()
 
   const assignment = activeLobby?.players.find(
     ({ player: assignedParticipant }) =>
       assignedParticipant.id === participant.id
   )
-
-  const currentAssignment = activeLobby?.players.find(
-    ({ player }) => player.id === currentParticipant.id
-  )
-
-  const pickingTeam =
-    activeLobby?.phase === "DRAFTING"
-      ? DRAFT_PICK_ORDER[activeLobby.draftPickIndex]
-      : undefined
-
-  const canDraft =
-    !assignment &&
-    currentAssignment?.isCaptain === true &&
-    currentAssignment.teamId === pickingTeam
-
-  function draft() {
-    if (!activeLobby || !canDraft) return
-
-    startDraftTransition(async () => {
-      try {
-        await draftParticipant(activeLobby.id, participant.id)
-      } catch {
-        toast.error("Could not draft this player")
-      }
-    })
-  }
 
   function move(teamId: 0 | 1) {
     if (!activeLobby) return
@@ -476,16 +484,11 @@ export function PlayerDropdownMenu({
                   20
                 )}`}
                 target="_blank"
+                className="font-oswald font-semibold uppercase"
               >
                 <FaUser className="text-chart-3 dark:text-chart-1" />
                 View Profile
               </Link>
-            </DropdownMenuItem>
-          )}
-          {canDraft && (
-            <DropdownMenuItem disabled={isDrafting} onSelect={draft}>
-              <FaCheckCircle className="text-chart-3 dark:text-chart-1" />
-              {isDrafting ? "Drafting…" : "Draft Player"}
             </DropdownMenuItem>
           )}
         </DropdownMenuGroup>
@@ -497,26 +500,34 @@ export function PlayerDropdownMenu({
               <DropdownMenuItem
                 disabled={!activeLobby || assignment?.teamId === 0}
                 onSelect={() => move(0)}
+                className="font-oswald font-semibold uppercase"
               >
                 <FaArrowCircleLeft className="text-chart-3 dark:text-chart-1" />
-                Move to Team 1
+                Move Team 1
               </DropdownMenuItem>
               <DropdownMenuItem
                 disabled={!activeLobby || assignment?.teamId === 1}
                 onSelect={() => move(1)}
+                className="font-oswald font-semibold uppercase"
               >
                 <FaArrowCircleRight className="text-chart-3 dark:text-chart-1" />
-                Move to Team 2
+                Move Team 2
               </DropdownMenuItem>
 
               {assignment ? (
                 assignment.isCaptain ? (
-                  <DropdownMenuItem onSelect={() => demoteCaptain()}>
+                  <DropdownMenuItem
+                    onSelect={() => demoteCaptain()}
+                    className="font-oswald font-semibold uppercase"
+                  >
                     <FaX className="text-chart-3 dark:text-chart-1" />
                     Demote Captain
                   </DropdownMenuItem>
                 ) : (
-                  <DropdownMenuItem onSelect={() => makeCaptain()}>
+                  <DropdownMenuItem
+                    onSelect={() => makeCaptain()}
+                    className="font-oswald font-semibold uppercase"
+                  >
                     <PiCrownSimpleFill className="text-chart-3 dark:text-chart-1" />
                     Make Captain
                   </DropdownMenuItem>
@@ -524,7 +535,10 @@ export function PlayerDropdownMenu({
               ) : null}
 
               {assignment && (
-                <DropdownMenuItem onSelect={returnToPool}>
+                <DropdownMenuItem
+                  onSelect={returnToPool}
+                  className="font-oswald font-semibold uppercase"
+                >
                   <FaTrash className="text-chart-3 dark:text-chart-1" />
                   Return to Pool
                 </DropdownMenuItem>
@@ -540,6 +554,7 @@ export function PlayerDropdownMenu({
                   participant.id === currentParticipant.id
                 }
                 onSelect={makeOwner}
+                className="font-oswald font-semibold uppercase"
               >
                 <PiCrownSimpleFill />
                 Make Owner
@@ -551,6 +566,7 @@ export function PlayerDropdownMenu({
                   (Boolean(assignment) && activeLobby?.phase !== "OPEN")
                 }
                 onSelect={kick}
+                className="font-oswald font-semibold uppercase"
               >
                 <FaTrash />
                 Kick Player
