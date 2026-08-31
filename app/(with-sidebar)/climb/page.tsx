@@ -15,6 +15,15 @@ import { cn, safeSubstring } from "@/lib/utils"
 import Link from "next/link"
 import { fetchAvatarUrlByAuthId } from "@/lib/avatar-url"
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { IoIosGift } from "react-icons/io"
+import { BsPatchQuestionFill } from "react-icons/bs"
 
 export default async function Page() {
   const [leaderboard, user] = await Promise.all([
@@ -57,7 +66,7 @@ export default async function Page() {
         <Card className="mb-4 flex-row items-center gap-4 overflow-visible">
           <Image
             src="/climb/title.svg"
-            alt="Blueward merchandise"
+            alt=""
             width={846}
             height={554}
             className="-my-8 -ml-10 hidden h-auto w-40 shrink-0 object-contain md:block"
@@ -81,6 +90,192 @@ export default async function Page() {
             </form>
           )}
         </Card>
+        <div className="-mt-4 flex w-full items-center justify-center gap-4">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                className="font-oswald font-semibold uppercase"
+                variant="secondary"
+              >
+                <IoIosGift className="text-chart-3 dark:text-chart-1" />
+                View Prizes
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-3xl">
+              <DialogHeader>
+                <DialogTitle className="font-oswald font-semibold uppercase">
+                  Available Prizes
+                </DialogTitle>
+              </DialogHeader>
+
+              <Image
+                src="/climb/prizes.webp"
+                alt=""
+                width={600}
+                height={400}
+                className="mx-auto"
+              />
+
+              <div className="space-y-5 text-sm">
+                <section>
+                  <h3 className="mb-2 font-semibold">Prize Pool A</h3>
+                  <ul className="list-disc space-y-1 pl-5">
+                    <li>1 Epic skin (up to 1350 RP value)</li>
+                    <li>Season 3: Act 1 Pass</li>
+                    <li>575 RP credit</li>
+                    <li>Convert to 5 Prize Pool B prizes</li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h3 className="mb-2 font-semibold">Prize Pool B</h3>
+                  <ul className="list-disc space-y-1 pl-5">
+                    <li>1 Skin Orb</li>
+                    <li>Hextech Chest and Key</li>
+                    <li>Summoner Icon</li>
+                    <li>Into the Sanctum Bundle (limit 1 per account)</li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h3 className="mb-1 font-semibold">1st Place</h3>
+                  <p>
+                    Select 1 prize from Prize Pool A and 2 prizes from Prize
+                    Pool B. Additionally, win 200,000 Blueward Crystals and an
+                    exclusive Climb Challenge banner on Blueward.
+                  </p>
+                </section>
+
+                <section>
+                  <h3 className="mb-1 font-semibold">2nd and 3rd Place</h3>
+                  <p>
+                    Select 1 prize from Prize Pool A and 1 prize from Prize Pool
+                    B. Additionally, win 150,000 Blueward Crystals and an
+                    exclusive Climb Challenge banner on Blueward.
+                  </p>
+                </section>
+
+                <section>
+                  <h3 className="mb-1 font-semibold">4th and 5th Place</h3>
+                  <p>
+                    Select 2 prizes from Prize Pool B. Additionally, win 45,000
+                    Blueward Crystals.
+                  </p>
+                </section>
+
+                <section>
+                  <h3 className="mb-1 font-semibold">
+                    Team Liquid Merch Raffle
+                  </h3>
+                  <p>
+                    Earn 1 raffle ticket for every 5 games played. Three winners
+                    will be drawn at the end of the tournament. Each winner may
+                    select one item from the available merch, including hoodies,
+                    jerseys, and hats. The same player cannot win twice.
+                  </p>
+                </section>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                className="font-oswald font-semibold uppercase"
+                variant="secondary"
+              >
+                <BsPatchQuestionFill className="text-chart-3 dark:text-chart-1" />
+                View Details
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-3xl">
+              <DialogHeader>
+                <DialogTitle className="font-oswald font-semibold uppercase">
+                  Details and Definitions
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-5 text-sm">
+                <section>
+                  <h3 className="mb-1 font-semibold">Challenge Period</h3>
+                  <p>
+                    The Fall Climb Challenge runs from{" "}
+                    <strong>Monday, August 31 at 5:00 PM CST</strong> through{" "}
+                    <strong>Monday, September 14 at 11:59 PM CST</strong>.
+                  </p>
+                  <p className="mt-2">
+                    Games that end after the cutoff are not eligible for points.
+                  </p>
+                </section>
+
+                <section>
+                  <h3 className="mb-2 font-semibold">Scoring</h3>
+                  <p className="mb-2">
+                    Points are awarded for Ranked Solo/Duo games played during
+                    the challenge:
+                  </p>
+                  <ul className="list-disc space-y-1 pl-5">
+                    <li>
+                      <strong>Win:</strong> +25 points
+                    </li>
+                    <li>
+                      <strong>Loss:</strong> −25 points
+                    </li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h3 className="mb-2 font-semibold">Winstreak Bonus</h3>
+                  <ul className="list-disc space-y-1 pl-5">
+                    <li>A winstreak begins after 3 consecutive wins.</li>
+                    <li>
+                      Wins during an active winstreak receive a 1.4× point
+                      multiplier, increasing the reward from +25 to +35 points
+                      per win.
+                    </li>
+                    <li>
+                      Wins earned before the winstreak do not receive the bonus.
+                    </li>
+                    <li>
+                      A loss ends the bonus and resets the streak counter.
+                    </li>
+                    <li>
+                      Winstreaks obtained before the challenge may carry into
+                      the challenge period.
+                    </li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h3 className="mb-2 font-semibold">
+                    Decayed or Inactive High-Elo Accounts
+                  </h3>
+                  <p>
+                    Some accounts may be flagged as decayed or inactive high-elo
+                    accounts. These players are still welcome to participate but
+                    will receive a 0.8× multiplier on points earned from wins
+                    while continuing to lose the full number of points for
+                    losses.
+                  </p>
+                  <ul className="mt-2 list-disc space-y-1 pl-5">
+                    <li>
+                      <strong>Win:</strong> 0.8× points
+                    </li>
+                    <li>
+                      <strong>Loss:</strong> 1.0× points
+                    </li>
+                    <li>
+                      Debuffed accounts will be marked on the leaderboard.
+                    </li>
+                    <li>
+                      The debuff may be removed after the player completes a
+                      sufficient number of games.
+                    </li>
+                  </ul>
+                </section>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
 
         <div className="flex w-full flex-col items-center gap-4">
           <div className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-4">
@@ -117,7 +312,7 @@ export default async function Page() {
                   />
                 </div>
               </TooltipTrigger>
-              <TooltipContent className="text-center text-lg">
+              <TooltipContent className="text-center">
                 Earn raffle tickets for Team Liquid merch by playing!
               </TooltipContent>
             </Tooltip>
