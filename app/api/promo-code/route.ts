@@ -10,6 +10,8 @@ import {
   transactions,
 } from "@/lib/schema"
 import { z } from "zod"
+import { safeSubstring } from "@/lib/utils"
+import { revalidateTag } from "next/cache"
 
 const promoCodeRequestSchema = z.object({
   code: z
@@ -47,6 +49,7 @@ export async function POST(request: Request) {
         .select({
           id: players.id,
           banners: players.banners,
+          puuid: players.puuid,
         })
         .from(players)
         .where(eq(players.authId, userId))
@@ -139,6 +142,7 @@ export async function POST(request: Request) {
 
         return {
           ok: true as const,
+          puuid: player.puuid,
           reward: {
             type: "CRYSTALS" as const,
             amount: promoCode.rewardValue,
@@ -155,6 +159,7 @@ export async function POST(request: Request) {
 
       return {
         ok: true as const,
+        puuid: player.puuid,
         reward: {
           type: "BANNER" as const,
           bannerId: promoCode.rewardValue,
@@ -192,6 +197,12 @@ export async function POST(request: Request) {
             { status: 500 }
           )
       }
+    }
+
+    if (result.reward.type === "BANNER") {
+      revalidateTag(`player-card:${safeSubstring(result.puuid, 0, 20)}`, {
+        expire: 0,
+      })
     }
 
     return Response.json({

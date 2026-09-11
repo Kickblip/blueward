@@ -2,20 +2,26 @@ import { NextResponse } from "next/server"
 import { currentUser } from "@clerk/nextjs/server"
 import { db } from "@/lib/db"
 import { players } from "@/lib/schema"
-import { eq, InferSelectModel, sql } from "drizzle-orm"
+import { eq, sql } from "drizzle-orm"
 import { unstable_cache } from "next/cache"
 import { NextRequest } from "next/server"
 
-export type PlayerCard = InferSelectModel<typeof players>
-
 export function fetchPlayerCardByPuuid(puuid: string) {
   return unstable_cache(
-    async (): Promise<PlayerCard | null> => {
-      const [player] = await db
-        .select()
-        .from(players)
-        .where(eq(sql`left(${players.puuid}, 20)`, puuid))
-        .limit(1)
+    async () => {
+      const player = await db.query.players.findFirst({
+        where: eq(sql`left(${players.puuid}, 20)`, puuid),
+        with: {
+          clubMemberships: {
+            columns: { clubId: true, role: true },
+            with: {
+              club: {
+                columns: { id: true, name: true, slug: true },
+              },
+            },
+          },
+        },
+      })
 
       return player ?? null
     },
@@ -25,6 +31,10 @@ export function fetchPlayerCardByPuuid(puuid: string) {
     }
   )()
 }
+
+export type PlayerCard = NonNullable<
+  Awaited<ReturnType<typeof fetchPlayerCardByPuuid>>
+>
 
 export async function GET(
   _req: NextRequest,

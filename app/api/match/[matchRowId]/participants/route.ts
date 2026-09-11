@@ -2,6 +2,24 @@ import { eq } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { playerPerformances } from "@/lib/schema"
 import { NextResponse } from "next/server"
+import { unstable_cache } from "next/cache"
+
+class MatchNotFoundError extends Error {}
+
+const fetchCachedMatchParticipants = unstable_cache(
+  async (matchRowId: number) => {
+    const rows = await matchParticipantsPerformancesQuery(matchRowId)
+
+    // don't permanently cache an ID that hasn't been imported yet
+    if (rows.length === 0) {
+      throw new MatchNotFoundError("Match not found")
+    }
+
+    return rows
+  },
+  ["match-participants"],
+  { revalidate: false }
+)
 
 export const matchParticipantsPerformancesQuery = (matchRowId: number) =>
   db
@@ -74,13 +92,38 @@ export async function GET(
   { params }: { params: Promise<{ matchRowId: string }> }
 ) {
   const { matchRowId } = await params
-
-  if (!matchRowId) {
-    return NextResponse.json({ error: "matchRowId required" }, { status: 400 })
-  }
-
   const id = Number(matchRowId)
 
-  const rows = await matchParticipantsPerformancesQuery(id)
-  return NextResponse.json(rows)
+  if (!Number.isSafeInteger(id) || id <= 0) {
+    return NextResponse.json(
+      { error: "Invalid matchRowId" },
+      {
+        status: 400,
+        headers: { "Cache-Control": "no-store" },
+      }
+    )
+  }
+
+  try {
+    const rows = await fetchCachedMatchParticipants(id)
+
+    return NextResponse.json(rows, {
+      headers: {
+        "Cache-Control":
+          "public, max-age=31536000, s-maxage=31536000, immutable",
+      },
+    })
+  } catch (error) {
+    if (error instanceof MatchNotFoundError) {
+      return NextResponse.json(
+        { error: "Match not found" },
+        {
+          status: 404,
+          headers: { "Cache-Control": "no-store" },
+        }
+      )
+    }
+
+    throw error
+  }
 }

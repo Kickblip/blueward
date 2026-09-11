@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card"
 import { ProfileMatch } from "@/components/profile-match"
 import Image from "next/image"
 import { BasicStatFormat } from "@/components/match-history-widgets"
-import { fetchRecentMatchesByPuuid, fetchPlayerProfileByPuuid } from "./actions"
+import { fetchRecentMatchesByPuuid } from "./actions"
 import { fetchAvatarUrlByAuthId } from "@/lib/avatar-url"
 import { calcAverageKDA, calcWinrate, calcWinrateByChampion } from "./utils"
 import { currentUser } from "@clerk/nextjs/server"
@@ -18,57 +18,109 @@ import {
 } from "@/components/ui/tooltip"
 import { OPGGLogo } from "@/lib/icons"
 import Link from "next/link"
+import { fetchPlayerCardByPuuid } from "@/app/api/player/[puuid]/card/route"
+import { Button } from "@/components/ui/button"
+import { ChevronRight, ChevronLeft } from "lucide-react"
 
 export default async function PlayerProfile({
   params,
+  searchParams,
 }: {
   params: Promise<{ pid: string }>
+  searchParams: Promise<{ page?: string | string[] }>
 }) {
   const { pid } = await params
+  const { page: pageParam } = await searchParams
+  const requestedPage = typeof pageParam === "string" ? Number(pageParam) : 1
 
   const [matchesRes, profileRes, userRes] = await Promise.allSettled([
     fetchRecentMatchesByPuuid(pid),
-    fetchPlayerProfileByPuuid(pid),
+    fetchPlayerCardByPuuid(pid),
     currentUser(),
   ])
 
   const matches = matchesRes.status === "fulfilled" ? matchesRes.value : []
-  const playerProfile =
-    profileRes.status === "fulfilled" ? profileRes.value : null
+  const profile = profileRes.status === "fulfilled" ? profileRes.value : null
   const user = userRes.status === "fulfilled" ? userRes.value : null
 
-  const profilePictureUrl = await fetchAvatarUrlByAuthId(playerProfile?.authId)
+  const pageSize = 10
+  const totalPages = Math.max(1, Math.ceil(matches.length / pageSize))
+
+  const page =
+    Number.isSafeInteger(requestedPage) && requestedPage > 0
+      ? Math.min(requestedPage, totalPages)
+      : 1
+
+  const start = (page - 1) * pageSize
+  const visibleMatches = matches.slice(start, start + pageSize)
+
+  const profilePictureUrl = await fetchAvatarUrlByAuthId(profile?.authId)
 
   let userOwnsProfile = false
-  if (user && playerProfile?.authId) {
-    userOwnsProfile = playerProfile.authId === user.id
+  if (user && profile?.authId) {
+    userOwnsProfile = profile.authId === user.id
   }
   const avgKDA = calcAverageKDA(matches)
   const { wins, losses, total, winrate } = calcWinrate(matches)
   const winrateByChampion = calcWinrateByChampion(matches)
 
-  if (!playerProfile) {
+  if (!profile) {
     notFound()
   }
 
-  const club = playerProfile.clubMemberships[0]?.club
+  const club = profile.clubMemberships[0]?.club
 
   return (
     <div className="grid min-h-screen grid-cols-1 gap-4 md:grid-cols-3">
-      <div className="col-span-2 flex flex-col gap-4">
-        {matches.map((match, index) => (
-          <ProfileMatch key={index} match={match} />
+      <div id="match-history" className="col-span-2 flex flex-col gap-4">
+        {visibleMatches.map((match) => (
+          <ProfileMatch key={match.matchRowId} match={match} />
         ))}
+
+        {totalPages > 1 && (
+          <nav
+            aria-label="Match history pagination"
+            className="flex items-center justify-center gap-4 py-4"
+          >
+            {page > 1 && (
+              <Button variant="ghost" size="icon-sm" asChild>
+                <Link
+                  href={`/player/${pid}?page=${page - 1}#match-history`}
+                  prefetch={false}
+                  className="text-sm underline"
+                >
+                  <ChevronLeft />
+                </Link>
+              </Button>
+            )}
+
+            <span className="text-sm text-muted-foreground">
+              Page {page} of {totalPages}
+            </span>
+
+            {page < totalPages && (
+              <Button variant="ghost" size="icon-sm" asChild>
+                <Link
+                  href={`/player/${pid}?page=${page + 1}#match-history`}
+                  prefetch={false}
+                  className="text-sm"
+                >
+                  <ChevronRight />
+                </Link>
+              </Button>
+            )}
+          </nav>
+        )}
       </div>
 
       <div className="col-span-1 flex flex-col gap-4">
         <Card className="p-0">
-          <BannerBackground bannerId={playerProfile.bannerId ?? 0}>
+          <BannerBackground bannerId={profile.bannerId ?? 0}>
             <div className="relative aspect-[2/1] w-full rounded-t-md">
               {userOwnsProfile && (
                 <BannerSelector
                   puuid={pid}
-                  playerBanners={playerProfile.banners ?? []}
+                  playerBanners={profile.banners ?? []}
                 />
               )}
 
@@ -88,7 +140,7 @@ export default async function PlayerProfile({
             <div className="flex items-center gap-2">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <LevelBadge experience={playerProfile.experience} />
+                  <LevelBadge experience={profile.experience} />
                 </TooltipTrigger>
                 <TooltipContent>Blueward Player Level</TooltipContent>
               </Tooltip>
@@ -109,7 +161,7 @@ export default async function PlayerProfile({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Link
-                    href={`https://op.gg/lol/summoners/na/${playerProfile.riotIdGameName}-${playerProfile.riotIdTagline}`}
+                    href={`https://op.gg/lol/summoners/na/${profile.riotIdGameName}-${profile.riotIdTagline}`}
                     target="_blank"
                   >
                     <div className="rounded-full bg-blue-600 px-2 py-1.5 hover:bg-blue-500">
@@ -122,10 +174,10 @@ export default async function PlayerProfile({
             </div>
             <div className="flex items-end gap-1">
               <p className="scale-y-150 font-oswald text-4xl font-semibold">
-                {playerProfile.riotIdGameName}
+                {profile.riotIdGameName}
               </p>
               <p className="text-sm text-muted-foreground">
-                #{playerProfile.riotIdTagline}
+                #{profile.riotIdTagline}
               </p>
             </div>
           </div>

@@ -2,9 +2,9 @@
 
 import { auth } from "@clerk/nextjs/server"
 import { eq } from "drizzle-orm"
-import { revalidatePath, unstable_cache } from "next/cache"
+import { revalidatePath, unstable_cache, updateTag } from "next/cache"
 import { redirect } from "next/navigation"
-
+import { safeSubstring } from "@/lib/utils"
 import { db } from "@/lib/db"
 import { clubMembers, clubs, players } from "@/lib/schema"
 
@@ -33,7 +33,7 @@ export async function createClub(formData: FormData) {
 
   const player = await db.query.players.findFirst({
     where: eq(players.authId, userId),
-    columns: { id: true },
+    columns: { id: true, puuid: true },
   })
 
   if (!player) {
@@ -53,6 +53,9 @@ export async function createClub(formData: FormData) {
     })
   })
 
+  updateTag(`player-card:${safeSubstring(player.puuid, 0, 20)}`)
+  updateTag(`club:${slug}`)
+  updateTag("clubs")
   revalidatePath("/clubs")
   redirect(`/clubs/${slug}`)
 }

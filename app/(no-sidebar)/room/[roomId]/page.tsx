@@ -9,6 +9,22 @@ import { randomUUID } from "node:crypto"
 import { db } from "@/lib/db"
 import { getRoomSnapshot, type RoomParticipant } from "@/lib/room-state"
 import { roomParticipants } from "@/lib/schema"
+import type { Metadata } from "next"
+
+const title = "Join Lobby | BLUEWARD"
+
+export const metadata: Metadata = {
+  title,
+  openGraph: {
+    title,
+    images: ["/room-og-image.jpg"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    images: ["/room-og-image.jpg"],
+  },
+}
 
 export default async function Page({
   params,

@@ -358,7 +358,7 @@ export function Toolbar() {
                     <FaGear className="size-5 text-chart-3 dark:text-chart-1" />
                   )}
                   <span className="font-oswald text-lg font-semibold uppercase">
-                    Settings
+                    Rank & Roles
                   </span>
                 </Button>
               </DropdownMenuTrigger>

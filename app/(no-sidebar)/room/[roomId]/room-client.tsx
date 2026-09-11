@@ -21,7 +21,7 @@ import {
 import { BannerBackground } from "@/components/banner-background"
 import { LevelBadge } from "@/components/level-badge"
 import { EllipsisIcon } from "lucide-react"
-import { FaTrash, FaX } from "react-icons/fa6"
+import { FaTrash, FaX, FaClipboard } from "react-icons/fa6"
 import { PiCrownSimpleFill } from "react-icons/pi"
 import { FaArrowCircleLeft, FaArrowCircleRight, FaUser } from "react-icons/fa"
 import Link from "next/link"
@@ -159,13 +159,15 @@ function RoomContents() {
               {participantPool.length + (activeLobby?.players.length ?? 0)}{" "}
               Players
             </p>
-            {participantPool.map((participant) => (
-              <PoolCard
-                key={participant.id}
-                participant={participant}
-                useOwnerView={isOwner}
-              />
-            ))}
+            <div className="space-y-1.5">
+              {participantPool.map((participant) => (
+                <PoolCard
+                  key={participant.id}
+                  participant={participant}
+                  useOwnerView={isOwner}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -489,6 +491,28 @@ export function PlayerDropdownMenu({
                 <FaUser className="text-chart-3 dark:text-chart-1" />
                 View Profile
               </Link>
+            </DropdownMenuItem>
+          )}
+
+          {participant.player && (
+            <DropdownMenuItem
+              className="font-oswald font-semibold uppercase"
+              onSelect={async () => {
+                if (!participant.player) return
+
+                try {
+                  await navigator.clipboard.writeText(
+                    `${participant.player.riotIdGameName}#${participant.player.riotIdTagline}`
+                  )
+
+                  toast.success("Copied username to clipboard")
+                } catch {
+                  toast.error("Could not copy username to clipboard")
+                }
+              }}
+            >
+              <FaClipboard className="text-chart-3 dark:text-chart-1" />
+              Copy Username
             </DropdownMenuItem>
           )}
         </DropdownMenuGroup>

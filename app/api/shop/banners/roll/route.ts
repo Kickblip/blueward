@@ -11,6 +11,8 @@ import { db } from "@/lib/db"
 import { eq } from "drizzle-orm"
 import { players, transactions } from "@/lib/schema"
 import { sql } from "drizzle-orm"
+import { safeSubstring } from "@/lib/utils"
+import { revalidateTag } from "next/cache"
 
 function pickWeightedRarity(): Rarity {
   const roll = Math.random()
@@ -107,6 +109,12 @@ export async function POST() {
         },
         { status: 400 }
       )
+    }
+
+    if (!result.owned) {
+      revalidateTag(`player-card:${safeSubstring(player.puuid, 0, 20)}`, {
+        expire: 0,
+      })
     }
 
     return NextResponse.json({

@@ -3,6 +3,7 @@ import { currentUser } from "@clerk/nextjs/server"
 import { db } from "@/lib/db"
 import { players } from "@/lib/schema"
 import { and, eq, sql } from "drizzle-orm"
+import { revalidateTag } from "next/cache"
 
 export async function POST(
   req: Request,
@@ -38,6 +39,8 @@ export async function POST(
       { status: 404 }
     )
   }
+
+  revalidateTag(`player-card:${puuid}`, { expire: 0 })
 
   return NextResponse.json(updated[0])
 }

@@ -1,25 +1,7 @@
 import { desc, eq, sql } from "drizzle-orm"
 import { db } from "@/lib/db"
-import { players, playerPerformances, matches } from "@/lib/schema"
-import { clerkClient } from "@clerk/nextjs/server"
+import { playerPerformances, matches } from "@/lib/schema"
 import { unstable_cache } from "next/cache"
-
-export async function fetchPlayerProfileByPuuid(puuid: string) {
-  "use server"
-
-  return (
-    (await db.query.players.findFirst({
-      where: eq(sql`left(${players.puuid}, 20)`, puuid),
-      with: {
-        clubMemberships: {
-          with: {
-            club: true,
-          },
-        },
-      },
-    })) ?? null
-  )
-}
 
 const recentMatchesQuery = (puuid: string) =>
   db

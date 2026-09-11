@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server"
 import { and, eq, inArray } from "drizzle-orm"
 import { revalidatePath, revalidateTag } from "next/cache"
 import * as z from "zod"
-
+import { safeSubstring } from "@/lib/utils"
 import { db } from "@/lib/db"
 import { clubMembers, clubs, players } from "@/lib/schema"
 
@@ -77,8 +77,24 @@ export async function PATCH(
         bio: clubs.bio,
       })
 
-    revalidateTag(`club:${access.previousSlug}`, "max")
-    revalidateTag(`club:${club.slug}`, "max")
+    // find the players whose cached cards contain this club
+    const memberPlayers = await db
+      .select({ puuid: players.puuid })
+      .from(clubMembers)
+      .innerJoin(players, eq(players.id, clubMembers.playerId))
+      .where(eq(clubMembers.clubId, club.id))
+
+    // expire each player's cached card
+    for (const player of memberPlayers) {
+      revalidateTag(`player-card:${safeSubstring(player.puuid, 0, 20)}`, {
+        expire: 0,
+      })
+    }
+
+    // expire the club's cached member lists and club directory
+    revalidateTag(`club:${access.previousSlug}`, { expire: 0 })
+    revalidateTag(`club:${club.slug}`, { expire: 0 })
+    revalidateTag("clubs", { expire: 0 })
     revalidatePath("/clubs")
 
     return Response.json({ club })

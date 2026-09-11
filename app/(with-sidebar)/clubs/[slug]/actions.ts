@@ -57,10 +57,7 @@ export async function fetchClubMembersBySlug(slug: string) {
         playerCard: card
           ? {
               id: card.id,
-              puuid: card.puuid,
               riotIdGameName: card.riotIdGameName,
-              riotIdTagline: card.riotIdTagline,
-              bannerId: card.bannerId,
               experience: card.experience,
             }
           : null,
@@ -93,7 +90,7 @@ export async function joinClub(slug: string) {
   const [player, club] = await Promise.all([
     db.query.players.findFirst({
       where: eq(players.authId, userId),
-      columns: { id: true },
+      columns: { id: true, puuid: true },
     }),
     db.query.clubs.findFirst({
       where: eq(clubs.slug, slug),
@@ -123,5 +120,6 @@ export async function joinClub(slug: string) {
     throw new Error("You already belong to a club.")
   }
 
+  updateTag(`player-card:${safeSubstring(player.puuid, 0, 20)}`)
   updateTag(`club:${slug}`)
 }

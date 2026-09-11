@@ -1,11 +1,11 @@
 "use server"
 
 import { auth } from "@clerk/nextjs/server"
-import { and, eq, ne } from "drizzle-orm"
+import { and, eq, ne, inArray } from "drizzle-orm"
 import { updateTag } from "next/cache"
 import { redirect } from "next/navigation"
 import * as z from "zod"
-
+import { safeSubstring } from "@/lib/utils"
 import { db } from "@/lib/db"
 import { clubMembers, clubs, players } from "@/lib/schema"
 
@@ -17,6 +17,17 @@ const memberTargetSchema = z.object({
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
   targetPlayerId: z.coerce.number().int().positive(),
 })
+
+async function invalidatePlayerCards(playerIds: number[]) {
+  const affectedPlayers = await db
+    .select({ puuid: players.puuid })
+    .from(players)
+    .where(inArray(players.id, playerIds))
+
+  for (const player of affectedPlayers) {
+    updateTag(`player-card:${safeSubstring(player.puuid, 0, 20)}`)
+  }
+}
 
 async function requireOwner(slug: unknown, targetPlayerId: unknown) {
   const input = memberTargetSchema.safeParse({ slug, targetPlayerId })
@@ -79,6 +90,7 @@ export async function promoteToAdmin(slug: string, targetPlayerId: number) {
     throw new Error("Only regular members can be promoted.")
   }
 
+  await invalidatePlayerCards([context.targetPlayerId])
   updateTag(`club:${context.slug}`)
 }
 
@@ -124,6 +136,8 @@ export async function makeOwner(slug: string, targetPlayerId: number) {
     }
   })
 
+  await invalidatePlayerCards([context.ownerPlayerId, context.targetPlayerId])
+
   updateTag(`club:${context.slug}`)
 }
 
@@ -145,5 +159,6 @@ export async function removeMember(slug: string, targetPlayerId: number) {
     throw new Error("Member not found or cannot be removed.")
   }
 
+  await invalidatePlayerCards([context.targetPlayerId])
   updateTag(`club:${context.slug}`)
 }

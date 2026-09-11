@@ -27,10 +27,7 @@ export const getClimbLeaderboard = unstable_cache(
       .innerJoin(players, eq(climbChallengePlayers.playerId, players.id))
       .orderBy(desc(climbChallengePlayers.points), asc(players.riotIdGameName))
 
-    return rows.map((player, index) => ({
-      rank: index + 1,
-      ...player,
-    }))
+    return rows
   },
   ["climb-challenge-leaderboard"],
   {

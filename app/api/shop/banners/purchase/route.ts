@@ -3,6 +3,8 @@ import { currentUser } from "@clerk/nextjs/server"
 import { eq, sql } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { players, transactions } from "@/lib/schema"
+import { safeSubstring } from "@/lib/utils"
+import { revalidateTag } from "next/cache"
 import {
   BANNER_CONFIG,
   HORIZONS_SET_LIST,
@@ -130,6 +132,10 @@ export async function POST(req: NextRequest) {
         )
       }
     }
+
+    revalidateTag(`player-card:${safeSubstring(player.puuid, 0, 20)}`, {
+      expire: 0,
+    })
 
     return NextResponse.json({
       bannerId: result.bannerId,
