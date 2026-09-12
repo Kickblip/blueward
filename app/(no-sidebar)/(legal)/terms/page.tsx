@@ -55,7 +55,7 @@ export default function Page() {
         <header className="my-10 space-y-3">
           <p className="text-sm">
             <span className="font-semibold">Last Updated:</span>{" "}
-            <time dateTime="2025-12-13">12 / 13 / 2025</time>
+            <time dateTime="2026-09-12">09 / 12 / 2026</time>
           </p>
           <h1 className="scale-y-150 font-oswald text-5xl font-semibold">
             Terms of Service
@@ -64,15 +64,16 @@ export default function Page() {
 
         <article className="space-y-8">
           <p className="text-sm leading-6">
-            These Terms of Service describe how Blueward&apos;s ("we," "us," or
-            "our") services may be used, including our website at{" "}
+            These Terms of Service describe how the services provided by
+            Blueward (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;) may be
+            used, including our website at{" "}
             <TextLink href="/">blueward.lol</TextLink>. By using our services,
             you agree to these terms. These Terms are governed by Texas law in
             the United States. Blueward is not endorsed by Riot Games and does
             not reflect the views or opinions of Riot Games or anyone officially
             involved in producing or managing Riot Games properties. Riot Games
             and all associated properties are trademarks or registered
-            trademarks of Riot Games, Inc
+            trademarks of Riot Games, Inc.
           </p>
 
           <Section title="1. Our Services">
@@ -83,20 +84,35 @@ export default function Page() {
 
           <Section title="2. Data Collection and Privacy">
             <p>
-              We collect and store user data (including player usernames League
-              of Legends match data) to provide our services.
+              We collect and store user data, including player usernames and
+              League of Legends match data, to provide our services. This may
+              include data from custom games or tournaments related to Longhorn
+              League of Legends (&quot;Longhorn LoL&quot;). We also use
+              analytics and cookies or similar technologies to operate and
+              improve Blueward. When advertising is enabled, advertising
+              providers may use these technologies to serve and measure ads.
               <TextLink href="/privacy">
                 Please review our Privacy Policy
-              </TextLink>
-              . We also collect data for basic analytics and to track interest
-              in our services. We do not use cookies. By participating in custom
-              games or tournaments related to Longhorn League of Legends
-              (“Longhorn LoL”), you consent to the collection and use of your
-              data as described in these Terms and our Privacy Policy.
+              </TextLink>{" "}
+              for details about data collection, sharing, cookies, and your
+              choices. Accepting these Terms or participating in games or
+              tournaments does not by itself constitute consent to advertising
+              cookies or personalized advertising where separate consent is
+              required.
             </p>
           </Section>
 
-          <Section title="3. Updates and Contact">
+          <Section title="3. Advertising and Third-Party Links">
+            <p>
+              Blueward may display third-party advertisements, including ads
+              provided through Google AdSense. Displaying an advertisement does
+              not constitute our endorsement of the advertiser or its products
+              or services. Third-party websites and services linked through ads
+              have their own terms and privacy policies.
+            </p>
+          </Section>
+
+          <Section title="4. Updates and Contact">
             <p>
               Updates to these Terms will be reflected on this page. For
               questions,
