@@ -115,6 +115,16 @@ export const BANNER_CONFIG = {
   2: { name: "Infernal Dragons", description: "", rarity: "common" },
   3: { name: "Stacked Deck", description: "", rarity: "common" },
 
+  // ================= PROMOS =================
+
+  120: {
+    name: "Climbed",
+    description: "Placed top 3 in the 2026 Fall Climb Challenge",
+    rarity: "ultimate",
+    video: "/banners/video/120.webm",
+    mediaPosition: "center 50%",
+  },
+
   // ================= LAUNCH EVENT =================
   5: {
     name: "Beta Tester",
