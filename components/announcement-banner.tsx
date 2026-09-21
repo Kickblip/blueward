@@ -44,6 +44,7 @@ export function AnnouncementBanner() {
         width={3840}
         height={471}
         className="hidden h-full w-auto max-w-none shrink-0 object-contain sm:block"
+        loading="eager"
       />
 
       <div className="flex hidden items-center gap-2 font-oswald font-semibold text-white uppercase sm:block">

@@ -21,6 +21,7 @@ import Link from "next/link"
 import { fetchPlayerCardByPuuid } from "@/app/api/player/[puuid]/card/route"
 import { Button } from "@/components/ui/button"
 import { ChevronRight, ChevronLeft } from "lucide-react"
+import { NoteBubble } from "@/components/note-bubble"
 
 export default async function PlayerProfile({
   params,
@@ -133,6 +134,12 @@ export default async function PlayerProfile({
                   className="h-full w-full object-cover"
                 />
               </div>
+
+              <NoteBubble
+                puuid={pid}
+                note={profile.note}
+                userOwnsProfile={userOwnsProfile}
+              />
             </div>
           </BannerBackground>
 
@@ -172,7 +179,8 @@ export default async function PlayerProfile({
                 <TooltipContent>View on OP.GG</TooltipContent>
               </Tooltip>
             </div>
-            <div className="flex items-end gap-1">
+
+            <div className="mt-1 flex items-end gap-1">
               <p className="scale-y-150 font-oswald text-4xl font-semibold">
                 {profile.riotIdGameName}
               </p>

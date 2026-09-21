@@ -16,6 +16,7 @@ import {
   jsonb,
 } from "drizzle-orm/pg-core"
 import { relations, sql } from "drizzle-orm"
+import { MAX_NOTE_LENGTH } from "./config"
 
 // matches table -> 1 row per game
 // objectives table -> 1 row per team per game (2 rows per game)
@@ -244,6 +245,8 @@ export const players = pgTable("players", {
   puuid: varchar({ length: 128 }).notNull().unique(),
   riotIdGameName: varchar({ length: 32 }).notNull(),
   riotIdTagline: varchar({ length: 8 }).notNull(),
+
+  note: varchar({ length: MAX_NOTE_LENGTH }),
 })
 
 export const playerSettings = pgTable("player_settings", {

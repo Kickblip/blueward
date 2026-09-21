@@ -16,6 +16,8 @@ export const SOCIAL_LINK_CONFIG = {
   clubsite: "https://www.longhornlol.com",
 } as const
 
+export const MAX_NOTE_LENGTH = 75 as const
+
 export const SUPPORT_PAYOUT_MULTIPLIER = 1.2 as const
 
 export const FAVORED_ROLE_MMR_DEBUFF = 0.9 as const
