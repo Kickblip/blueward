@@ -44,7 +44,7 @@ export function ClubSettingsForm({ club }: ClubSettingsFormProps) {
     <form action={updateClub}>
       <FieldGroup>
         <Field>
-          <FieldLabel htmlFor="club-name">Club name</FieldLabel>
+          <FieldLabel htmlFor="club-name">Club Name</FieldLabel>
           <Input id="club-name" name="name" defaultValue={club.name} />
         </Field>
 

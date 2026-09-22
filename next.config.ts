@@ -21,6 +21,12 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: new URL(process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL!).hostname,
+        port: "",
+        pathname: "/**",
+      },
     ],
     minimumCacheTTL: 2678400,
   },

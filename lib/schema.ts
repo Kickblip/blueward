@@ -498,6 +498,8 @@ export const clubs = pgTable("clubs", {
   slug: varchar({ length: 64 }).notNull().unique(),
   bio: varchar({ length: 512 }),
   createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  logoKey: varchar({ length: 255 }),
+  bannerKey: varchar({ length: 255 }),
 })
 
 export const clubMembers = pgTable(

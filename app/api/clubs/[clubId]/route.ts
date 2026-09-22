@@ -5,6 +5,7 @@ import * as z from "zod"
 import { safeSubstring } from "@/lib/utils"
 import { db } from "@/lib/db"
 import { clubMembers, clubs, players } from "@/lib/schema"
+import { NextRequest } from "next/server"
 
 const clubIdSchema = z.coerce.number().int().positive()
 
@@ -24,7 +25,7 @@ const clubSettingsSchema = z.object({
 })
 
 export async function PATCH(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ clubId: string }> }
 ) {
   const { userId } = await auth()

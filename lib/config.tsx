@@ -16,6 +16,20 @@ export const SOCIAL_LINK_CONFIG = {
   clubsite: "https://www.longhornlol.com",
 } as const
 
+export const MAX_CLUB_LOGO_SIZE_BYTES = 2 * 1024 * 1024
+export const MAX_CLUB_BANNER_SIZE_BYTES = 5 * 1024 * 1024
+export const IMAGE_UPLOAD_EXPIRES_SECONDS = 5 * 60
+export const IMAGE_MIME_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+] as const
+export const FILE_EXTENSIONS = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+} as const satisfies Record<(typeof IMAGE_MIME_TYPES)[number], string>
+
 export const MAX_NOTE_LENGTH = 75 as const
 
 export const SUPPORT_PAYOUT_MULTIPLIER = 1.2 as const
