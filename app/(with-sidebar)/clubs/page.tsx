@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { PlusIcon } from "lucide-react"
@@ -14,6 +13,7 @@ import {
 } from "@/components/ui/field"
 import { createClub, fetchClubs } from "./actions"
 import Link from "next/link"
+import { ClubInfoCard } from "@/components/club-info-card"
 
 export default async function Page() {
   const clubs = await fetchClubs()
@@ -81,18 +81,11 @@ export default async function Page() {
         </Dialog>
       </div>
 
-      <div className="mt-4 flex flex-col">
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
         {clubs.map((club) => (
-          <Card key={club.id}>
-            <Link
-              href={`/clubs/${club.slug}`}
-              className="hover:text-chart-3 dark:hover:text-chart-1"
-            >
-              <h2 className="font-oswald text-xl font-semibold uppercase">
-                {club.name}
-              </h2>
-            </Link>
-          </Card>
+          <Link key={club.id} href={`/clubs/${club.slug}`} className="group">
+            <ClubInfoCard club={club} />
+          </Link>
         ))}
       </div>
     </div>

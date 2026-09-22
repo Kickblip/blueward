@@ -1,12 +1,12 @@
 import { fetchClubBySlug, fetchClubMembersBySlug } from "./actions"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
 import { notFound } from "next/navigation"
 import { safeSubstring } from "@/lib/utils"
 import { currentUser } from "@clerk/nextjs/server"
 import { joinClub } from "./actions"
 import { LevelBadge } from "@/components/level-badge"
 import { fetchPlayerCardByPuuid } from "@/app/api/player/[puuid]/card/route"
+import { ClubInfoCard } from "@/components/club-info-card"
 
 export default async function Page({
   params,
@@ -25,7 +25,8 @@ export default async function Page({
 
   if (!members || !club) return notFound()
 
-  const canJoin = Boolean(player && !player.clubMemberships.length)
+  const canJoin =
+    !user || Boolean(player && player.clubMemberships.length === 0)
 
   return (
     <div className="grid grid-cols-3 gap-4">
@@ -49,19 +50,21 @@ export default async function Page({
         ))}
       </div>
 
-      <Card>
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="font-oswald text-2xl font-semibold uppercase">
-            {club.name}
-          </h2>
-        </div>
+      <div className="col-span-1 flex flex-col gap-2">
+        <ClubInfoCard club={club} />
 
         {canJoin && (
           <form action={joinClub.bind(null, slug)}>
-            <Button type="submit">Join club</Button>
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full font-oswald font-semibold uppercase"
+            >
+              Join club
+            </Button>
           </form>
         )}
-      </Card>
+      </div>
     </div>
   )
 }
