@@ -40,7 +40,7 @@ export function PurchaseableBannerCard({ bannerId }: { bannerId: number }) {
       const data = await res.json()
 
       if (!res.ok) {
-        throw new Error(data.message || "Failed to purchase banner")
+        throw new Error(data.error || "Failed to purchase banner")
       }
 
       await mutate("/api/shop/balance", { balance: data.balance }, false)
@@ -48,9 +48,12 @@ export function PurchaseableBannerCard({ bannerId }: { bannerId: number }) {
       setIsDialogOpen(false)
       setShowPopup(true)
     } catch (error) {
-      toast.error("Something went wrong while purchasing your banner", {
-        position: "top-center",
-      })
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while purchasing your banner",
+        { position: "top-center" }
+      )
     } finally {
       setIsPurchasing(false)
     }
@@ -66,6 +69,7 @@ export function PurchaseableBannerCard({ bannerId }: { bannerId: number }) {
                 src={`/banners/compressed/${bannerId}.webp`}
                 alt={banner.name}
                 fill
+                sizes="(max-width: 767px) 100vw, (max-width: 1279px) 33vw, 416px"
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/15 to-transparent" />

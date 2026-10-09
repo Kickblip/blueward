@@ -3,14 +3,14 @@
 import { useRef, useState } from "react"
 import { motion } from "framer-motion"
 import Image from "next/image"
-import { toNumberWithCommas } from "@/lib/utils"
+import { cn, toNumberWithCommas } from "@/lib/utils"
 import {
   BANNER_CONFIG,
-  HORIZONS_SET_LIST,
+  BANNER_SETS,
   ROLL_PRICE,
-  RARITY_RATES,
-  type Rarity,
   RARITY_COLORS,
+  type BannerSetId,
+  type Rarity,
 } from "@/lib/config"
 import { CrystalIcon } from "@/lib/icons"
 import { mutate } from "swr"
@@ -19,7 +19,7 @@ import { BannerOwnershipPopup } from "./banner-ownership-popup"
 import { CardBody, CardContainer, CardItem } from "./ui/3d-card"
 import { Button } from "./ui/button"
 import { toast } from "sonner"
-import { FaCircleInfo } from "react-icons/fa6"
+import { FaCircleInfo, FaCircleArrowUp } from "react-icons/fa6"
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
 import { HiMiniSquare2Stack } from "react-icons/hi2"
 import {
@@ -29,6 +29,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog"
+import Link from "next/link"
 
 type RollResponse = {
   rarity: Rarity
@@ -39,7 +40,7 @@ type RollResponse = {
   balance: number
 }
 
-const RARITY_KEYS = Object.keys(RARITY_RATES) as Rarity[]
+const RARITY_KEYS = Object.keys(RARITY_COLORS) as Rarity[]
 const DISPLAY_RARITIES = [...RARITY_KEYS].reverse()
 const CELL_COUNT = 12
 const CELL_SWEEP = 360 / CELL_COUNT
@@ -57,23 +58,24 @@ const DOT_RINGS = [
   { radius: 394, count: 76, size: 1.1, opacity: 0.28 },
 ] as const
 
-function rarityForRoll(roll: number) {
+function rarityForRoll(
+  roll: number,
+  rates: Readonly<Record<Rarity, number>>
+): Rarity {
   let cumulative = 0
 
   for (const rarity of RARITY_KEYS) {
-    cumulative += RARITY_RATES[rarity]
+    cumulative += rates[rarity]
     if (roll < cumulative) return rarity
   }
 
   return "common"
 }
 
-const INITIAL_CELLS = Array.from({ length: CELL_COUNT }, (_, index) =>
-  rarityForRoll((((index * 7) % CELL_COUNT) + 0.5) / CELL_COUNT)
-)
-
-function buildRandomCells() {
-  return Array.from({ length: CELL_COUNT }, () => rarityForRoll(Math.random()))
+function buildRandomCells(rates: Readonly<Record<Rarity, number>>) {
+  return Array.from({ length: CELL_COUNT }, () =>
+    rarityForRoll(Math.random(), rates)
+  )
 }
 
 function isCellFullyHidden(index: number, rotation: number) {
@@ -91,9 +93,15 @@ function makeWheelGradient(cells: Rarity[]) {
     .join(", ")})`
 }
 
-export function BannerRoll() {
+export function BannerRoll({ variant = "default" }: { variant?: BannerSetId }) {
+  const set = BANNER_SETS[variant]
+  const rates = set.rates
   const [rotation, setRotation] = useState(0)
-  const [cells, setCells] = useState<Rarity[]>(INITIAL_CELLS)
+  const [cells, setCells] = useState<Rarity[]>(() =>
+    Array.from({ length: CELL_COUNT }, (_, index) =>
+      rarityForRoll((((index * 7) % CELL_COUNT) + 0.5) / CELL_COUNT, rates)
+    )
+  )
   const [isRolling, setIsRolling] = useState(false)
   const [popupData, setPopupData] = useState<RollResponse | null>(null)
   const activeSpin = useRef<{
@@ -130,7 +138,7 @@ export function BannerRoll() {
           return spin.winner
         }
         if (advanced && isCellFullyHidden(index, currentRotation)) {
-          return rarityForRoll(Math.random())
+          return rarityForRoll(Math.random(), rates)
         }
         return rarity
       })
@@ -143,7 +151,10 @@ export function BannerRoll() {
     setIsRolling(true)
 
     try {
-      const res = await fetch("/api/shop/banners/roll", { method: "POST" })
+      const res = await fetch("/api/shop/banners/roll", {
+        method: "POST",
+        body: JSON.stringify({ variant }),
+      })
 
       const parse = await res.json()
 
@@ -176,7 +187,7 @@ export function BannerRoll() {
         lastCellStep: 0,
         winnerInjected: false,
       }
-      setCells(buildRandomCells())
+      setCells(buildRandomCells(rates))
       setRotation(nextRotation)
 
       window.setTimeout(() => {
@@ -205,22 +216,47 @@ export function BannerRoll() {
         </h2>
 
         <p className="text-sm text-muted-foreground">
-          New ultimate animated banner on base set
+          {`New ultimate animated banner on ${set.name}`}
         </p>
 
         <Button
           onClick={handleRoll}
           disabled={isRolling}
           size="lg"
-          className="mt-4 w-full"
+          className={cn("mt-4 w-full", set.buttonClassName)}
         >
-          <CrystalIcon size={25} className="text-white" />
+          <CrystalIcon size={25} className="text-white dark:text-white" />
           <p className="font-oswald text-xl font-semibold text-white uppercase">
             {isRolling
               ? "Rolling..."
               : `${toNumberWithCommas(ROLL_PRICE)} ROLL`}
           </p>
         </Button>
+
+        <nav className="mx-auto mt-4 flex w-fit gap-1 rounded-md border bg-muted p-1">
+          {Object.entries(BANNER_SETS).map(([id, option]) => (
+            <Button
+              key={id}
+              asChild
+              variant="ghost"
+              className={cn(
+                "h-16 w-36 rounded-lg px-3",
+                id === variant &&
+                  "bg-background hover:bg-background dark:hover:bg-background"
+              )}
+            >
+              <Link href={option.href}>
+                <Image
+                  src={option.image}
+                  alt={option.name}
+                  width={120}
+                  height={58}
+                  className="h-12 w-full object-contain"
+                />
+              </Link>
+            </Button>
+          ))}
+        </nav>
       </div>
 
       <div className="absolute top-4 right-4 z-50 flex flex-col gap-2">
@@ -244,7 +280,7 @@ export function BannerRoll() {
 
             <div className="min-h-0 overflow-y-auto px-6 py-6">
               {DISPLAY_RARITIES.map((rarity) => {
-                const banners = HORIZONS_SET_LIST[rarity].map((id) => ({
+                const banners = set[rarity].map((id) => ({
                   id,
                   ...BANNER_CONFIG[id],
                 }))
@@ -305,7 +341,7 @@ export function BannerRoll() {
           </TooltipTrigger>
           <TooltipContent side="bottom">
             <div className="flex flex-col gap-1">
-              {Object.entries(RARITY_RATES).map(([rarity, rate]) => (
+              {Object.entries(rates).map(([rarity, rate]) => (
                 <div
                   key={rarity}
                   className="flex justify-between gap-6 capitalize"
@@ -317,6 +353,27 @@ export function BannerRoll() {
             </div>
           </TooltipContent>
         </Tooltip>
+
+        {set.rateUp && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                className={cn(
+                  "font-oswald font-semibold uppercase",
+                  set.accentClassName
+                )}
+              >
+                <FaCircleArrowUp />
+                Rate Up
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="max-w-3xs text-center">
+              Increased chances to pull higher tier banners during this limited
+              time event
+            </TooltipContent>
+          </Tooltip>
+        )}
       </div>
 
       <div className="flex items-center justify-center px-4 pt-8">
@@ -340,8 +397,8 @@ export function BannerRoll() {
                 return (
                   <circle
                     key={`${ring.radius}-${index}`}
-                    cx={319 + Math.cos(angle) * ring.radius}
-                    cy={319 + Math.sin(angle) * ring.radius}
+                    cx={(319 + Math.cos(angle) * ring.radius).toFixed(3)}
+                    cy={(319 + Math.sin(angle) * ring.radius).toFixed(3)}
                     r={ring.size}
                     fill="var(--secondary)"
                     opacity={ring.opacity}
@@ -396,8 +453,19 @@ export function BannerRoll() {
           >
             <CardBody className="relative h-auto w-full">
               <CardItem className="w-full" translateZ={60}>
-                <BannerBackground bannerId={HORIZONS_SET_LIST.featured}>
-                  <div className="relative aspect-[2/1] w-full overflow-hidden rounded-xl border-1 border-yellow-100/60 shadow-[0_0_60px_rgba(245,241,11,0.35),0_24px_60px_rgba(0,0,0,0.55)]" />
+                <BannerBackground bannerId={set.featured}>
+                  <div
+                    className={cn(
+                      "relative aspect-[2/1] w-full overflow-hidden rounded-xl border-1",
+                      set.featuredClassName
+                    )}
+                  >
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-4 pt-12 pb-4">
+                      <p className="font-oswald text-5xl font-semibold text-white uppercase">
+                        {BANNER_CONFIG[set.featured].name}
+                      </p>
+                    </div>
+                  </div>
                 </BannerBackground>
               </CardItem>
             </CardBody>
@@ -411,14 +479,7 @@ export function BannerRoll() {
         bannerId={popupData?.bannerId ?? null}
         rarity={popupData?.rarity ?? null}
         owned={popupData?.owned}
-        refundAmount={
-          popupData?.owned
-            ? Math.round(
-                (popupData.charged * popupData.rakeback) /
-                  (1 - popupData.rakeback || 1)
-              )
-            : 0
-        }
+        refundAmount={popupData?.owned ? ROLL_PRICE - popupData.charged : 0}
       />
     </div>
   )

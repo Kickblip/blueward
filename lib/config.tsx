@@ -102,6 +102,14 @@ export const RARITY_RATES = {
   ultimate: 0.005,
 } as const
 
+export const EVENT_RARITY_RATES = {
+  common: 0.48,
+  rare: 0.3,
+  epic: 0.12,
+  legendary: 0.08,
+  ultimate: 0.02,
+} as const
+
 export const OWNERSHIP_RAKEBACK = {
   common: 0.3,
   rare: 0.4,
@@ -110,19 +118,47 @@ export const OWNERSHIP_RAKEBACK = {
   ultimate: 1.0,
 } as const
 
-export const HORIZONS_SET_LIST = {
-  featured: 119,
-  rollable: [
-    34, 119, 56, 105, 60, 85, 112, 117, 111, 24, 118, 116, 94, 84, 8, 44, 48,
-    91, 46, 37, 89, 62, 65, 69, 80, 113, 20, 11, 14, 15, 18, 106,
-  ],
-  buyable: [39, 16, 23, 40, 61, 81],
-  ultimate: [119],
-  legendary: [34, 56, 105, 60, 85, 112],
-  epic: [117, 111, 24, 118, 116, 94, 84],
-  rare: [8, 44, 48, 91, 46, 37, 89],
-  common: [62, 65, 69, 80, 113, 20, 11, 14, 15, 18, 106],
+export const BANNER_SETS = {
+  default: {
+    name: "Horizons",
+    href: "/shop",
+    image: "/horizons.webp",
+    rates: RARITY_RATES,
+    rateUp: false,
+    buttonClassName: "",
+    accentClassName: "",
+    featuredClassName:
+      "border-yellow-300 shadow-[0_0_60px_rgba(245,241,11,0.35),0_24px_60px_rgba(0,0,0,0.55)]",
+    featured: 119,
+    buyable: [39, 16, 23, 40, 61, 81],
+    ultimate: [119],
+    legendary: [34, 56, 105, 60, 85, 112],
+    epic: [117, 111, 24, 118, 116, 94, 84],
+    rare: [8, 44, 48, 91, 46, 37, 89],
+    common: [62, 65, 69, 80, 113, 20, 11, 14, 15, 18, 106],
+  },
+  halloween: {
+    name: "Dark Harvest",
+    href: "/shop/limited",
+    image: "/dark-harvest.webp",
+    rates: EVENT_RARITY_RATES,
+    rateUp: true,
+    buttonClassName: "bg-orange-600 hover:bg-orange-700",
+    accentClassName:
+      "text-orange-600 hover:text-orange-600 dark:text-orange-300 dark:hover:text-orange-300",
+    featuredClassName:
+      "border-red-300 shadow-[0_0_60px_rgba(239,68,68,0.35),0_24px_60px_rgba(0,0,0,0.55)]",
+    featured: 121,
+    buyable: [96, 87, 67],
+    ultimate: [121],
+    legendary: [63],
+    epic: [58, 55],
+    rare: [57, 29],
+    common: [21],
+  },
 } as const
+
+export type BannerSetId = keyof typeof BANNER_SETS
 
 export const BANNER_CONFIG = {
   // ================= DEFAULT =================
@@ -158,7 +194,7 @@ export const BANNER_CONFIG = {
     rarity: "legendary",
   },
 
-  // ================= SET 1 ROLLABLE =================
+  // ================= HORIZONS ROLLABLE =================
 
   119: {
     name: "Crystal Rose",
@@ -203,13 +239,33 @@ export const BANNER_CONFIG = {
   18: { name: "Too Easy", description: "", rarity: "common" },
   106: { name: "Poro Parade", description: "", rarity: "common" },
 
-  // ================= SET 1 PURCHASEABLE =================
+  // ================= HORIZONS PURCHASEABLE =================
   39: { name: "The Order of Shadows", description: "", rarity: "legendary" },
   16: { name: "Lux Discovery", description: "", rarity: "legendary" },
   23: { name: "Braum is Here", description: "", rarity: "legendary" },
   40: { name: "Wanderer", description: "", rarity: "epic" },
   61: { name: "Together Forever", description: "", rarity: "epic" },
   81: { name: "Voluntary Participant", description: "", rarity: "epic" },
+
+  // ================= DARK HARVEST ROLLABLE =================
+  121: {
+    name: "Little Devil",
+    description: "",
+    rarity: "ultimate",
+    video: "/banners/video/121.webm",
+    mediaPosition: "center 25%",
+  },
+  21: { name: "Drunken Alarm", description: "", rarity: "common" },
+  29: { name: "Peculiar Stranger", description: "", rarity: "rare" },
+  57: { name: "Come Out", description: "", rarity: "rare" },
+  58: { name: "Frightly Friends", description: "", rarity: "epic" },
+  55: { name: "Toadstool Thief", description: "", rarity: "epic" },
+  63: { name: "Sea Warden", description: "", rarity: "legendary" },
+
+  // ================= DARK HARVEST PURCHASEABLE =================
+  96: { name: "A New Weapon", description: "", rarity: "legendary" },
+  87: { name: "Unfathomable Evil", description: "", rarity: "epic" },
+  67: { name: "All You Can Eat", description: "", rarity: "epic" },
 
   /**
    *
@@ -221,29 +277,23 @@ export const BANNER_CONFIG = {
    * */
 
   // 12: { name: "Shadow", description: "", rarity: "rare" },
-
   // 109: { name: "Forged in Flame", description: "", rarity: "legendary" },
   // 99: { name: "Poro King", description: "", rarity: "common" },
   // 86: { name: "Encore", description: "", rarity: "rare" },
-  // 67: { name: "All You Can Eat", description: "", rarity: "rare" },
-
   // 17: { name: "Final Spark", description: "", rarity: "common" },
   // 19: { name: "No Competition", description: "", rarity: "common" },
-  // 21: { name: "Drunken Alarm", description: "", rarity: "common" },
   // 22: { name: "My Mountain", description: "", rarity: "common" },
   // 25: { name: "Most Comfortable Slumber", description: "", rarity: "common" },
   // 26: { name: "Freljord Hound", description: "", rarity: "common" },
   // 27: { name: "Poro Shepherd", description: "", rarity: "common" },
   // 28: { name: "Sunrise", description: "", rarity: "common" },
-  // 29: { name: "Peculiar Stranger", description: "", rarity: "common" },
   // 30: { name: "Wynnstones", description: "", rarity: "common" },
   // 31: { name: "Stepping Stones", description: "", rarity: "common" },
   // 32: { name: "Alliance", description: "", rarity: "common" },
   // 33: { name: "Undying Rage", description: "", rarity: "common" },
   // 35: { name: "The Wolf and the Hare", description: "", rarity: "common" },
   // 36: { name: "Poro Hero", description: "", rarity: "common" },
-
-  // 38: { name: "The Master of Shadows", description: "", rarity: "epic" },
+  // 38: { name: "The Master of Shadows", description: "", rarity: "legendary" },
   // 41: { name: "Empyrean", description: "", rarity: "common" },
   // 42: { name: "Focused Blade", description: "", rarity: "common" },
   // 43: { name: "The Enlightened", description: "", rarity: "common" },
@@ -255,11 +305,8 @@ export const BANNER_CONFIG = {
   // 52: { name: "Laying Down the Gauntlet", description: "", rarity: "common" },
   // 53: { name: "Woke up in Paradise", description: "", rarity: "common" },
   // 54: { name: "Fashionable Arrival", description: "", rarity: "common" },
-  // 55: { name: "Toadstool Thief", description: "", rarity: "common" },
-  // 57: { name: "Come Out", description: "", rarity: "common" },
-  // 58: { name: "Frightly Friends", description: "", rarity: "common" },
   // 59: { name: "Master of the Sea", description: "", rarity: "common" },
-  // 63: { name: "Sea Warden", description: "", rarity: "rare" },
+
   // 64: { name: "The Grand General", description: "", rarity: "common" },
   // 70: { name: "Mischevious Fun", description: "", rarity: "common" },
   // 71: { name: "Drums of War", description: "", rarity: "common" },
@@ -274,11 +321,9 @@ export const BANNER_CONFIG = {
   // 81: { name: "Voluntary Participant", description: "", rarity: "common" },
   // 82: { name: "Breaking Out", description: "", rarity: "common" },
   // 83: { name: "Immeasurable Greed", description: "", rarity: "common" },
-  // 87: { name: "Unfathomable Evil", description: "", rarity: "common" },
   // 88: { name: "Reluctant Soldier", description: "", rarity: "common" },
   // 92: { name: "Ahri Discovery", description: "", rarity: "common" },
   // 93: { name: "Unwelcomed Entrance", description: "", rarity: "common" },
-  // 96: { name: "A New Weapon", description: "", rarity: "common" },
   // 97: { name: "Thunderous Applause", description: "", rarity: "common" },
   // 98: { name: "Icathian Mage", description: "", rarity: "common" },
   // 100: { name: "Frolicking Friends", description: "", rarity: "common" },

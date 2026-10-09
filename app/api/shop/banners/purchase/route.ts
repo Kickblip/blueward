@@ -7,7 +7,7 @@ import { safeSubstring } from "@/lib/utils"
 import { revalidateTag } from "next/cache"
 import {
   BANNER_CONFIG,
-  HORIZONS_SET_LIST,
+  BANNER_SETS,
   RARITY_PRICES,
   type Rarity,
 } from "@/lib/config"
@@ -28,8 +28,8 @@ export async function POST(req: NextRequest) {
     }
 
     if (
-      !HORIZONS_SET_LIST.buyable.includes(
-        bannerId as (typeof HORIZONS_SET_LIST.buyable)[number]
+      !Object.values(BANNER_SETS).some((set) =>
+        set.buyable.some((id) => id === bannerId)
       )
     ) {
       return NextResponse.json(

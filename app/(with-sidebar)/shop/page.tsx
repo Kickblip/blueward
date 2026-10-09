@@ -1,5 +1,5 @@
 import { BannerRoll } from "@/components/banner-roll"
-import { HORIZONS_SET_LIST } from "@/lib/config"
+import { BANNER_SETS } from "@/lib/config"
 import { PurchaseableBannerCard } from "@/components/purchaseable-banner-card"
 import { ShopTitleSvg } from "@/lib/icons"
 
@@ -12,13 +12,13 @@ export default function Page() {
         </div>
 
         <div className="col-span-1 flex flex-col items-center gap-8 py-4 md:col-span-3 md:flex-row">
-          <ShopTitleSvg />
+          <ShopTitleSvg className={BANNER_SETS.default.accentClassName} />
 
           <p className="font-oswald text-3xl font-semibold uppercase">
             Purchase without rolling
           </p>
         </div>
-        {HORIZONS_SET_LIST.buyable.map((bannerId) => (
+        {BANNER_SETS.default.buyable.map((bannerId) => (
           <PurchaseableBannerCard key={bannerId} bannerId={bannerId} />
         ))}
       </div>

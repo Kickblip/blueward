@@ -48,7 +48,7 @@ export function ClubInfoCard({ club }: { club: typeof clubs.$inferSelect }) {
           {club.name}
         </h2>
 
-        <p className="font-medium text-muted-foreground">
+        <p className="text-sm font-medium text-muted-foreground">
           {club.bio ?? "No description provided."}
         </p>
       </div>

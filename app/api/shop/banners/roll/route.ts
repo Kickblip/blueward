@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server"
+import { z } from "zod"
 import {
-  HORIZONS_SET_LIST,
-  RARITY_RATES,
+  BANNER_SETS,
   ROLL_PRICE,
   OWNERSHIP_RAKEBACK,
+  type BannerSetId,
   type Rarity,
 } from "@/lib/config"
 import { currentUser } from "@clerk/nextjs/server"
@@ -14,14 +15,11 @@ import { sql } from "drizzle-orm"
 import { safeSubstring } from "@/lib/utils"
 import { revalidateTag } from "next/cache"
 
-function pickWeightedRarity(): Rarity {
+function pickWeightedRarity(rates: Readonly<Record<Rarity, number>>): Rarity {
   const roll = Math.random()
   let cumulative = 0
 
-  for (const [rarity, rate] of Object.entries(RARITY_RATES) as [
-    Rarity,
-    number,
-  ][]) {
+  for (const [rarity, rate] of Object.entries(rates) as [Rarity, number][]) {
     cumulative += rate
     if (roll < cumulative) return rarity
   }
@@ -33,13 +31,33 @@ function pickRandom<T>(arr: readonly T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]!
 }
 
-export async function POST() {
+export async function POST(req: Request) {
   const user = await currentUser()
 
   if (!user)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
   try {
+    const body = req.body === null ? {} : await req.json().catch(() => null)
+    const parsed = z
+      .object({
+        variant: z
+          .enum(Object.keys(BANNER_SETS) as BannerSetId[])
+          .default("default"),
+      })
+      .safeParse(body)
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid roll request" },
+        { status: 400 }
+      )
+    }
+
+    const { variant } = parsed.data
+    const setList = BANNER_SETS[variant]
+    const rates = setList.rates
+
     const player = await db.query.players.findFirst({
       where: eq(players.authId, user.id),
     })
@@ -65,8 +83,8 @@ export async function POST() {
         }
       }
 
-      const rarity = pickWeightedRarity()
-      const bannerId = pickRandom(HORIZONS_SET_LIST[rarity])
+      const rarity = pickWeightedRarity(rates)
+      const bannerId = pickRandom<number>(setList[rarity])
       const owned = player.banners.includes(bannerId)
 
       const rakeback = owned ? OWNERSHIP_RAKEBACK[rarity] : 0
