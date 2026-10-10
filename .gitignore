@@ -1,5 +1,8 @@
 # dependencies
 /node_modules
+**/node_modules/
+/spacetimedb/dist/
+/spacetimedb/target/
 /.pnp
 .pnp.*
 .yarn/*

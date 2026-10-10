@@ -4,17 +4,23 @@ import { Button } from "@/components/ui/button"
 import { PlusIcon } from "lucide-react"
 import { useRoom } from "./room-context"
 import { useTransition } from "react"
-import { createLobby } from "./actions"
+import { toast } from "sonner"
 
 export function Footer() {
-  const { roomId, lobbies, activeLobby, selectLobby, isOwner } = useRoom()
+  const { roomId, lobbies, activeLobby, selectLobby, isOwner, actions } =
+    useRoom()
 
   const [isCreatingLobby, startTransition] = useTransition()
 
   function handleCreateLobby() {
     startTransition(async () => {
-      const lobbyId = await createLobby(roomId)
-      selectLobby(lobbyId)
+      try {
+        const lobbyId = crypto.randomUUID()
+        await actions.createLobby({ roomId, lobbyId })
+        selectLobby(lobbyId)
+      } catch {
+        toast.error("Could not create a lobby")
+      }
     })
   }
 

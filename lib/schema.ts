@@ -10,7 +10,6 @@ import {
   smallint,
   index,
   uniqueIndex,
-  check,
   primaryKey,
   date,
   jsonb,
@@ -239,9 +238,6 @@ export const players = pgTable("players", {
   lastDailyClaimDate: date(),
   experience: integer().notNull().default(0),
 
-  lobbyRoles: roleEnum("lobby_roles").array(),
-  lobbyRank: rankEnum("lobby_rank"),
-
   puuid: varchar({ length: 128 }).notNull().unique(),
   riotIdGameName: varchar({ length: 32 }).notNull(),
   riotIdTagline: varchar({ length: 8 }).notNull(),
@@ -393,96 +389,6 @@ export const marketSelections = pgTable(
       table.marketId,
       table.outcome
     ),
-  ]
-)
-
-export const rooms = pgTable("rooms", {
-  id: varchar({ length: 36 }).primaryKey(),
-  ownerAuthId: varchar({ length: 128 }).notNull(),
-  createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
-})
-
-export const roomParticipants = pgTable(
-  "room_participants",
-  {
-    id: varchar({ length: 36 }).primaryKey(),
-
-    roomId: varchar({ length: 36 })
-      .notNull()
-      .references(() => rooms.id, { onDelete: "cascade" }),
-
-    identityKey: varchar({ length: 160 }).notNull(),
-
-    playerId: integer().references(() => players.id, {
-      onDelete: "set null",
-    }),
-
-    roles: roleEnum()
-      .array()
-      .notNull()
-      .default(sql`ARRAY[]::role[]`),
-    rank: rankEnum(),
-
-    displayName: varchar({ length: 32 }).notNull(),
-
-    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
-  },
-  (table) => [
-    uniqueIndex("room_participants_room_identity_unique").on(
-      table.roomId,
-      table.identityKey
-    ),
-  ]
-)
-
-export const lobbyPhaseEnum = pgEnum("lobby_phase", [
-  "OPEN",
-  "DRAFTING",
-  "READY",
-  "CLOSED",
-])
-
-export const lobbies = pgTable(
-  "lobbies",
-  {
-    id: varchar({ length: 36 }).primaryKey(),
-
-    roomId: varchar({ length: 36 })
-      .notNull()
-      .references(() => rooms.id, { onDelete: "cascade" }),
-
-    ordinal: smallint().notNull(),
-    phase: lobbyPhaseEnum().notNull().default("OPEN"),
-    draftPickIndex: smallint().notNull().default(0),
-
-    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
-  },
-  (table) => [
-    uniqueIndex("lobbies_room_ordinal_unique").on(table.roomId, table.ordinal),
-  ]
-)
-
-export const lobbyPlayers = pgTable(
-  "lobby_players",
-  {
-    lobbyId: varchar({ length: 36 })
-      .notNull()
-      .references(() => lobbies.id, { onDelete: "cascade" }),
-
-    participantId: varchar({ length: 36 })
-      .notNull()
-      .primaryKey()
-      .references(() => roomParticipants.id, { onDelete: "cascade" }),
-
-    teamId: smallint().notNull(),
-    isCaptain: boolean().notNull().default(false),
-  },
-  (table) => [
-    check("lobby_players_team_check", sql`${table.teamId} in (0, 1)`),
-
-    uniqueIndex("lobby_players_captain_unique")
-      .on(table.lobbyId, table.teamId)
-      .where(sql`${table.isCaptain}`),
   ]
 )
 

@@ -1,13 +1,13 @@
 "use client"
 
 import { cn, safeSubstring } from "@/lib/utils"
-import type { RoomParticipant, RoomSnapshot } from "@/lib/room-state"
+import type { RoomParticipant } from "@/lib/room-types"
 import { Toolbar } from "./toolbar"
 import { Footer } from "./footer"
-import { Realtime } from "ably"
-import { AblyProvider, ChannelProvider } from "ably/react"
-import { useEffect, useState, useTransition } from "react"
-import { RoomProvider, useRoom } from "./room-context"
+import { useTransition } from "react"
+import { useRoom } from "./room-context"
+import dynamic from "next/dynamic"
+
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -26,15 +26,6 @@ import { PiCrownSimpleFill } from "react-icons/pi"
 import { FaArrowCircleLeft, FaArrowCircleRight, FaUser } from "react-icons/fa"
 import Link from "next/link"
 import {
-  makeParticipantCaptain,
-  makeParticipantOwner,
-  moveParticipantToTeam,
-  returnParticipantToPool,
-  demoteParticipantCaptain,
-  draftParticipant,
-  kickParticipant,
-} from "./actions"
-import {
   BottomRoleIcon,
   JungleRoleIcon,
   MiddleRoleIcon,
@@ -48,43 +39,32 @@ import {
 } from "@/components/ui/tooltip"
 import { DRAFT_PICK_ORDER } from "@/lib/draft"
 import { toast } from "sonner"
+import { Spinner } from "@/components/ui/spinner"
 
-export function RoomClient({
-  initialSnapshot,
-  viewerAuthId,
-  participant,
-}: {
-  initialSnapshot: RoomSnapshot
+const RoomProvider = dynamic(() => import("./room-provider"), {
+  ssr: false,
+  loading: () => (
+    <div
+      role="status"
+      className="flex min-h-dvh w-full items-center justify-center gap-2 font-oswald font-semibold uppercase"
+    >
+      <Spinner aria-hidden="true" />
+      <span>Loading...</span>
+    </div>
+  ),
+})
+
+export function RoomClient(props: {
+  roomId: string
   viewerAuthId: string | null
-  participant: RoomParticipant
 }) {
-  const roomId = initialSnapshot.roomId
-  const channel = `room:${roomId}`
-  const [client, setClient] = useState<Realtime | null>(null)
-
-  useEffect(() => {
-    const realtime = new Realtime({
-      authUrl: `/api/ably/token?roomId=${encodeURIComponent(roomId)}`,
-    })
-
-    setClient(realtime)
-    return () => realtime.close()
-  }, [roomId])
-
-  if (!client) return <aside>Connecting…</aside>
-
   return (
-    <AblyProvider client={client}>
-      <ChannelProvider channelName={channel}>
-        <RoomProvider
-          initialSnapshot={initialSnapshot}
-          currentParticipant={participant}
-          viewerAuthId={viewerAuthId}
-        >
-          <RoomContents />
-        </RoomProvider>
-      </ChannelProvider>
-    </AblyProvider>
+    <RoomProvider
+      key={`${props.roomId}:${props.viewerAuthId ?? "guest"}`}
+      {...props}
+    >
+      <RoomContents />
+    </RoomProvider>
   )
 }
 
@@ -237,7 +217,7 @@ export function PoolCard({
   participant: RoomParticipant
   useOwnerView: boolean
 }) {
-  const { activeLobby, currentParticipant } = useRoom()
+  const { activeLobby, currentParticipant, actions } = useRoom()
   const [isDrafting, startDraftTransition] = useTransition()
 
   const currentAssignment = activeLobby?.players.find(
@@ -256,7 +236,10 @@ export function PoolCard({
 
     startDraftTransition(async () => {
       try {
-        await draftParticipant(activeLobby.id, participant.id)
+        await actions.draftParticipant({
+          lobbyId: activeLobby.id,
+          participantId: participant.id,
+        })
       } catch {
         toast.error("Could not draft this player")
       }
@@ -294,7 +277,7 @@ export function PoolCard({
                 disabled={!canDraft || isDrafting}
                 onClick={draft}
               >
-                {isDrafting ? "Adding…" : "Add to team"}
+                {isDrafting ? "Adding..." : "Add to team"}
               </Button>
             )}
 
@@ -415,7 +398,7 @@ export function PlayerDropdownMenu({
   useOwnerView: boolean
   participant: RoomParticipant
 }) {
-  const { activeLobby, currentParticipant, roomId } = useRoom()
+  const { activeLobby, currentParticipant, roomId, actions } = useRoom()
 
   const assignment = activeLobby?.players.find(
     ({ player: assignedParticipant }) =>
@@ -425,33 +408,64 @@ export function PlayerDropdownMenu({
   function move(teamId: 0 | 1) {
     if (!activeLobby) return
 
-    void moveParticipantToTeam(activeLobby.id, participant.id, teamId)
+    void actions
+      .moveParticipantToTeam({
+        lobbyId: activeLobby.id,
+        participantId: participant.id,
+        teamId,
+      })
+      .catch(() => {
+        toast.error("Could not move this player")
+      })
   }
 
   function makeCaptain() {
     if (!activeLobby || !assignment) return
 
-    void makeParticipantCaptain(activeLobby.id, participant.id)
+    void actions
+      .makeParticipantCaptain({
+        lobbyId: activeLobby.id,
+        participantId: participant.id,
+      })
+      .catch(() => {
+        toast.error("Could not promote this captain")
+      })
   }
 
   function demoteCaptain() {
     if (!activeLobby || !assignment) return
 
-    void demoteParticipantCaptain(activeLobby.id, participant.id)
+    void actions
+      .demoteParticipantCaptain({
+        lobbyId: activeLobby.id,
+        participantId: participant.id,
+      })
+      .catch(() => {
+        toast.error("Could not demote this captain")
+      })
   }
 
   function returnToPool() {
     if (!activeLobby || !assignment) return
 
-    void returnParticipantToPool(activeLobby.id, participant.id)
+    void actions
+      .returnParticipantToPool({
+        lobbyId: activeLobby.id,
+        participantId: participant.id,
+      })
+      .catch(() => {
+        toast.error("Could not return this player to the pool")
+      })
   }
 
   function makeOwner() {
     if (!participant.player || participant.id === currentParticipant.id) return
 
-    void makeParticipantOwner(roomId, participant.id).catch(() => {
-      toast.error("Could not transfer room ownership")
-    })
+    void actions
+      .makeParticipantOwner({ roomId, participantId: participant.id })
+      .catch(() => {
+        toast.error("Could not transfer room ownership")
+      })
   }
 
   function kick() {
@@ -461,9 +475,11 @@ export function PlayerDropdownMenu({
       return
     }
 
-    void kickParticipant(roomId, participant.id).catch(() => {
-      toast.error("Could not kick this player")
-    })
+    void actions
+      .kickParticipant({ roomId, participantId: participant.id })
+      .catch(() => {
+        toast.error("Could not kick this player")
+      })
   }
 
   return (

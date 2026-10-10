@@ -28,13 +28,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { useState, useTransition } from "react"
-import {
-  adjustDraftPickIndex,
-  saveLobbyPreferences,
-  startDraft,
-  addDummy,
-  resetLobby,
-} from "./actions"
 import { Spinner } from "@/components/ui/spinner"
 import { FaPlay } from "react-icons/fa"
 import {
@@ -58,7 +51,7 @@ import {
   TopRoleIcon,
   UtilityRoleIcon,
 } from "@/lib/icons"
-import type { RoomParticipant } from "@/lib/room-state"
+import { ROOM_RANKS, type RoomParticipant } from "@/lib/room-types"
 import { toast } from "sonner"
 import { DRAFT_PICK_ORDER } from "@/lib/draft"
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
@@ -74,18 +67,10 @@ const ROLE_OPTIONS = [
   { value: "UTILITY", label: "Support", Icon: UtilityRoleIcon },
 ] as const
 
-const RANK_OPTIONS = [
-  { value: "IRON", label: "Iron" },
-  { value: "BRONZE", label: "Bronze" },
-  { value: "SILVER", label: "Silver" },
-  { value: "GOLD", label: "Gold" },
-  { value: "PLATINUM", label: "Platinum" },
-  { value: "EMERALD", label: "Emerald" },
-  { value: "DIAMOND", label: "Diamond" },
-  { value: "MASTER", label: "Master" },
-  { value: "GRANDMASTER", label: "Grandmaster" },
-  { value: "CHALLENGER", label: "Challenger" },
-] as const
+const RANK_OPTIONS = ROOM_RANKS.map((value) => ({
+  value,
+  label: value[0] + value.slice(1).toLowerCase(),
+}))
 
 export function Toolbar() {
   const {
@@ -93,9 +78,9 @@ export function Toolbar() {
     presentParticipants,
     participantPool,
     currentParticipant,
-    updateCurrentParticipant,
     activeLobby,
     isOwner,
+    actions,
   } = useRoom()
 
   const [randomPlayer, setRandomPlayer] = useState<string | null>(null)
@@ -157,7 +142,11 @@ export function Toolbar() {
     const lobbyId = activeLobby.id
 
     startTransition(async () => {
-      await startDraft(lobbyId)
+      try {
+        await actions.startDraft({ lobbyId })
+      } catch {
+        toast.error("Could not start the draft")
+      }
     })
   }
 
@@ -166,7 +155,10 @@ export function Toolbar() {
 
     startAdjustingPickOrder(async () => {
       try {
-        await adjustDraftPickIndex(activeLobby.id, direction)
+        await actions.adjustDraftPickIndex({
+          lobbyId: activeLobby.id,
+          direction,
+        })
       } catch {
         toast.error("Could not adjust the picking order")
       }
@@ -176,17 +168,15 @@ export function Toolbar() {
   function commitPreferences(
     preferences: Pick<RoomParticipant, "roles" | "rank">
   ) {
-    void updateCurrentParticipant(preferences).catch(() => {
-      toast.error("Could not update your live lobby preferences")
-    })
-
-    if (!currentParticipant.player) return
-
     startSavingPreferences(async () => {
       try {
-        await saveLobbyPreferences(roomId, preferences)
+        await actions.saveLobbyPreferences({
+          roomId,
+          roles: preferences.roles,
+          rank: preferences.rank ?? undefined,
+        })
       } catch {
-        toast.error("Preferences are live, but could not be saved")
+        toast.error("Could not update your lobby preferences")
       }
     })
   }
@@ -220,7 +210,7 @@ export function Toolbar() {
 
     startResettingLobby(async () => {
       try {
-        await resetLobby(activeLobby.id)
+        await actions.resetLobby({ lobbyId: activeLobby.id })
         setResetConfirmationOpen(false)
       } catch {
         toast.error("Could not reset the lobby")
@@ -231,7 +221,13 @@ export function Toolbar() {
   function handleAddDummy(formData: FormData) {
     startAddingDummy(async () => {
       try {
-        await addDummy(roomId, formData)
+        await actions.addDummy({
+          roomId,
+          participantId: crypto.randomUUID(),
+          displayName: String(formData.get("displayName") ?? ""),
+          roles: formData.getAll("roles").map(String),
+          rank: String(formData.get("rank") ?? ""),
+        })
         setDummyDialogOpen(false)
       } catch {
         toast.error("Could not add dummy")
@@ -398,6 +394,7 @@ export function Toolbar() {
                       variant={selected ? "default" : "secondary"}
                       aria-label={label}
                       aria-pressed={selected}
+                      disabled={isSavingPreferences}
                       onClick={() => handleRoleToggle(value)}
                     >
                       <Icon />
@@ -408,7 +405,7 @@ export function Toolbar() {
 
               <DropdownMenuLabel>Rank</DropdownMenuLabel>
               <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
+                <DropdownMenuSubTrigger disabled={isSavingPreferences}>
                   {selectedRankLabel}
                 </DropdownMenuSubTrigger>
 
@@ -419,7 +416,11 @@ export function Toolbar() {
                       onValueChange={handleRankChange}
                     >
                       {RANK_OPTIONS.map(({ value, label }) => (
-                        <DropdownMenuRadioItem key={value} value={value}>
+                        <DropdownMenuRadioItem
+                          key={value}
+                          value={value}
+                          disabled={isSavingPreferences}
+                        >
                           {label}
                         </DropdownMenuRadioItem>
                       ))}

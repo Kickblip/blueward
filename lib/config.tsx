@@ -105,9 +105,9 @@ export const RARITY_RATES = {
 export const EVENT_RARITY_RATES = {
   common: 0.48,
   rare: 0.3,
-  epic: 0.12,
+  epic: 0.13,
   legendary: 0.08,
-  ultimate: 0.02,
+  ultimate: 0.01,
 } as const
 
 export const OWNERSHIP_RAKEBACK = {
