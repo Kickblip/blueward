@@ -25,7 +25,6 @@ async function request(path: string, body: string, contentType: string) {
     signal: AbortSignal.timeout(15_000),
   })
   if (!response.ok) {
-    // Do not surface upstream bodies: they may contain private ticket arguments.
     throw new Error(`Room service request failed (${response.status})`)
   }
   return response

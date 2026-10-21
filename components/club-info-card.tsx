@@ -1,6 +1,9 @@
 import { Card } from "@/components/ui/card"
 import { clubs } from "@/lib/schema"
 import Image from "next/image"
+import { Button } from "./ui/button"
+import Link from "next/link"
+import { FaDiscord } from "react-icons/fa6"
 
 export function ClubInfoCard({ club }: { club: typeof clubs.$inferSelect }) {
   return (
@@ -39,6 +42,21 @@ export function ClubInfoCard({ club }: { club: typeof clubs.$inferSelect }) {
             <div className="flex h-full w-full items-center justify-center bg-blue-950 text-3xl font-semibold text-white">
               {club.name.trim().charAt(0).toUpperCase()}
             </div>
+          )}
+        </div>
+
+        <div className="absolute right-2 bottom-2">
+          {club.discordInvite && (
+            <Button variant="secondary" size="sm" asChild>
+              <Link
+                href={`https://discord.gg/${club.discordInvite}`}
+                className="flex items-center gap-1 font-oswald font-semibold uppercase"
+                target="_blank"
+              >
+                <FaDiscord className="mt-[1px]" />
+                <span className="text-xs">Join on Discord</span>
+              </Link>
+            </Button>
           )}
         </div>
       </div>

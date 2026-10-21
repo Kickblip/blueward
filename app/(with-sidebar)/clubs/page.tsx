@@ -14,6 +14,7 @@ import {
 import { createClub, fetchClubs } from "./actions"
 import Link from "next/link"
 import { ClubInfoCard } from "@/components/club-info-card"
+import { Show } from "@clerk/nextjs"
 
 export default async function Page() {
   const clubs = await fetchClubs()
@@ -27,58 +28,81 @@ export default async function Page() {
             Clubs
           </h1>
         </div>
+        <Show when="signed-in">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                size="lg"
+                className="gap-1 px-4 font-oswald font-semibold uppercase"
+              >
+                <PlusIcon className="size-4" />
+                Create new club
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <form action={createClub}>
+                <FieldGroup>
+                  <FieldSet>
+                    <FieldLegend className="font-oswald font-semibold uppercase">
+                      Create a new Blueward club
+                    </FieldLegend>
+                    <FieldDescription>
+                      Create a new club to manage members and track statistics
+                      within your club.
+                    </FieldDescription>
+                    <FieldGroup>
+                      <Field>
+                        <FieldLabel
+                          htmlFor="new-club-name"
+                          className="font-oswald font-semibold uppercase"
+                        >
+                          Name
+                        </FieldLabel>
+                        <Input
+                          id="new-club-name"
+                          name="name"
+                          placeholder="SK Telecom"
+                          required
+                          minLength={2}
+                          maxLength={64}
+                        />
+                      </Field>
 
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button
-              size="lg"
-              className="gap-1 px-4 font-oswald font-semibold uppercase"
-            >
-              <PlusIcon className="size-4" />
-              Create new club
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <form action={createClub}>
-              <FieldGroup>
-                <FieldSet>
-                  <FieldLegend className="font-oswald font-semibold uppercase">
-                    Create a new Blueward club
-                  </FieldLegend>
-                  <FieldDescription>
-                    Create a new club to manage members and track statistics
-                    within your club.
-                  </FieldDescription>
-                  <FieldGroup>
-                    <Field>
-                      <FieldLabel
-                        htmlFor="club-name"
-                        className="font-oswald font-semibold uppercase"
-                      >
-                        Name
-                      </FieldLabel>
-                      <Input
-                        id="club-name"
-                        name="name"
-                        placeholder="My Club"
-                        required
-                        minLength={2}
-                        maxLength={64}
-                      />
-                    </Field>
-                  </FieldGroup>
-                </FieldSet>
+                      <Field>
+                        <FieldLabel
+                          htmlFor="new-club-tag"
+                          className="font-oswald font-semibold uppercase"
+                        >
+                          Tag
+                        </FieldLabel>
+                        <Input
+                          id="new-club-tag"
+                          name="tag"
+                          placeholder="SKT"
+                          required
+                          minLength={1}
+                          maxLength={6}
+                          pattern="[A-Za-z0-9]{1,6}"
+                          className="uppercase"
+                        />
+                        <FieldDescription>
+                          Displayed on member profiles
+                        </FieldDescription>
+                      </Field>
+                    </FieldGroup>
+                  </FieldSet>
 
-                <Button
-                  type="submit"
-                  className="font-oswald font-semibold uppercase"
-                >
-                  Create club
-                </Button>
-              </FieldGroup>
-            </form>
-          </DialogContent>
-        </Dialog>
+                  <Button
+                    type="submit"
+                    className="font-oswald font-semibold uppercase"
+                  >
+                    Create club
+                  </Button>
+                </FieldGroup>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </Show>
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">

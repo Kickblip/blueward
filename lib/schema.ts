@@ -403,6 +403,8 @@ export const clubs = pgTable("clubs", {
   name: varchar({ length: 64 }).notNull(),
   slug: varchar({ length: 64 }).notNull().unique(),
   bio: varchar({ length: 512 }),
+  discordInvite: varchar({ length: 128 }),
+  tag: varchar({ length: 6 }).notNull().default("CLUB"),
   createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
   logoKey: varchar({ length: 255 }),
   bannerKey: varchar({ length: 255 }),
@@ -425,7 +427,7 @@ export const clubMembers = pgTable(
   (table) => [
     primaryKey({ columns: [table.clubId, table.playerId] }),
 
-    uniqueIndex("club_members_player_id_unique").on(table.playerId),
+    index("club_members_player_id_index").on(table.playerId),
 
     uniqueIndex("club_members_owner_unique")
       .on(table.clubId)

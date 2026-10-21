@@ -15,17 +15,15 @@ import {
 } from "@/components/ui/input-group"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import type { clubs } from "@/lib/schema"
+import { toast } from "sonner"
+import { discordInviteLinkToCode } from "@/lib/utils"
 
-type ClubSettingsFormProps = {
-  club: {
-    id: number
-    name: string
-    slug: string
-    bio: string | null
-  }
-}
-
-export function ClubSettingsForm({ club }: ClubSettingsFormProps) {
+export function ClubSettingsForm({
+  club,
+}: {
+  club: typeof clubs.$inferSelect
+}) {
   async function updateClub(formData: FormData) {
     const response = await fetch(`/api/clubs/${club.id}`, {
       method: "PATCH",
@@ -35,9 +33,13 @@ export function ClubSettingsForm({ club }: ClubSettingsFormProps) {
       body: JSON.stringify(Object.fromEntries(formData)),
     })
 
-    const { club: updatedClub } = await response.json()
+    const data = await response.json()
+    if (!response.ok) {
+      toast.error(data.error ?? "Failed to update club.")
+      return
+    }
 
-    window.location.assign(`/clubs/${updatedClub.slug}`)
+    window.location.assign(`/clubs/${data.club.slug}`)
   }
 
   return (
@@ -66,6 +68,33 @@ export function ClubSettingsForm({ club }: ClubSettingsFormProps) {
           <FieldDescription>
             URL slugs can only contain letters, numbers, and hyphens.
           </FieldDescription>
+        </Field>
+
+        <Field>
+          <FieldLabel htmlFor="club-tag">Club Name</FieldLabel>
+          <Input id="club-tag" name="tag" defaultValue={club.tag} />
+        </Field>
+
+        <Field>
+          <FieldLabel htmlFor="club-discord">Discord invite</FieldLabel>
+
+          <InputGroup>
+            <InputGroupAddon>
+              <InputGroupText>https://discord.gg/</InputGroupText>
+            </InputGroupAddon>
+
+            <InputGroupInput
+              id="club-discord"
+              name="discordInvite"
+              placeholder="Invite code or link"
+              defaultValue={discordInviteLinkToCode(club.discordInvite ?? "")}
+              onChange={(event) => {
+                event.currentTarget.value = discordInviteLinkToCode(
+                  event.currentTarget.value
+                )
+              }}
+            />
+          </InputGroup>
         </Field>
 
         <Field>

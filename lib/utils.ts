@@ -75,3 +75,12 @@ export function safeSubstring(
 
   return value.substring(from, to)
 }
+
+export function discordInviteLinkToCode(value: string) {
+  const input = value.trim()
+  const match = input.match(
+    /^(?:https?:\/\/)?(?:www\.)?(?:discord\.gg\/|discord(?:app)?\.com\/invite\/)([^/?#\s]+)\/?(?:[?#].*)?$/i
+  )
+
+  return match?.[1] ?? input
+}

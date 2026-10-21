@@ -17,6 +17,12 @@ export async function createClub(formData: FormData) {
 
   const value = formData.get("name")
   const name = typeof value === "string" ? value.trim() : ""
+  const tagValue = formData.get("tag")
+  const tag = typeof tagValue === "string" ? tagValue.trim().toUpperCase() : ""
+
+  if (!/^[A-Z0-9]{1,6}$/.test(tag)) {
+    throw new Error("Club tag must contain 1-6 letters or numbers.")
+  }
 
   if (name.length < 2 || name.length > 64) {
     throw new Error("Club name must be between 2 and 64 characters.")
@@ -43,7 +49,7 @@ export async function createClub(formData: FormData) {
   await db.transaction(async (tx) => {
     const [club] = await tx
       .insert(clubs)
-      .values({ name, slug })
+      .values({ name, slug, tag })
       .returning({ id: clubs.id })
 
     await tx.insert(clubMembers).values({

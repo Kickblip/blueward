@@ -69,7 +69,9 @@ export default async function PlayerProfile({
     notFound()
   }
 
-  const club = profile.clubMemberships[0]?.club
+  const clubs = profile.clubMemberships
+    .map(({ club }) => club)
+    .sort((a, b) => a.name.localeCompare(b.name) || a.id - b.id)
 
   return (
     <div className="grid min-h-screen grid-cols-1 gap-4 md:grid-cols-3">
@@ -144,7 +146,7 @@ export default async function PlayerProfile({
           </BannerBackground>
 
           <div className="mb-2 flex flex-col gap-4 px-4 pt-10">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <LevelBadge experience={profile.experience} />
@@ -152,8 +154,8 @@ export default async function PlayerProfile({
                 <TooltipContent>Blueward Player Level</TooltipContent>
               </Tooltip>
 
-              {club && (
-                <Tooltip>
+              {clubs.map((club) => (
+                <Tooltip key={club.id}>
                   <TooltipTrigger asChild>
                     <Link href={`/clubs/${club.slug}`}>
                       <div className="rounded-full border bg-secondary px-2 py-0.5 font-oswald text-sm font-semibold uppercase">
@@ -163,7 +165,7 @@ export default async function PlayerProfile({
                   </TooltipTrigger>
                   <TooltipContent>Club</TooltipContent>
                 </Tooltip>
-              )}
+              ))}
 
               <Tooltip>
                 <TooltipTrigger asChild>

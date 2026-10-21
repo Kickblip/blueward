@@ -1,6 +1,6 @@
 "use server"
 
-import { eq } from "drizzle-orm"
+import { and, eq, ne } from "drizzle-orm"
 import { unstable_cache, updateTag } from "next/cache"
 import { fetchPlayerCardByPuuid } from "@/app/api/player/[puuid]/card/route"
 import { db } from "@/lib/db"
@@ -106,20 +106,64 @@ export async function joinClub(slug: string) {
     throw new Error("Club not found.")
   }
 
-  const [joined] = await db
+  await db
     .insert(clubMembers)
     .values({
       clubId: club.id,
       playerId: player.id,
       role: "MEMBER",
     })
-    .onConflictDoNothing()
-    .returning({ clubId: clubMembers.clubId })
-
-  if (!joined) {
-    throw new Error("You already belong to a club.")
-  }
+    .onConflictDoNothing({ target: [clubMembers.clubId, clubMembers.playerId] })
 
   updateTag(`player-card:${safeSubstring(player.puuid, 0, 20)}`)
+  updateTag(`club:${slug}`)
+}
+
+export async function leaveClub(slug: string) {
+  if (slug.length > 64 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+    throw new Error("Invalid club.")
+  }
+
+  const { userId } = await auth()
+
+  if (!userId) {
+    redirect(`/signin?redirect_url=/clubs/${slug}`)
+  }
+
+  const [membership] = await db
+    .select({
+      clubId: clubMembers.clubId,
+      playerId: players.id,
+      puuid: players.puuid,
+      role: clubMembers.role,
+    })
+    .from(clubMembers)
+    .innerJoin(players, eq(players.id, clubMembers.playerId))
+    .innerJoin(clubs, eq(clubs.id, clubMembers.clubId))
+    .where(and(eq(clubs.slug, slug), eq(players.authId, userId)))
+    .limit(1)
+
+  if (!membership) return
+
+  if (membership.role === "OWNER") {
+    throw new Error("Transfer club ownership before leaving.")
+  }
+
+  const [left] = await db
+    .delete(clubMembers)
+    .where(
+      and(
+        eq(clubMembers.clubId, membership.clubId),
+        eq(clubMembers.playerId, membership.playerId),
+        ne(clubMembers.role, "OWNER")
+      )
+    )
+    .returning({ playerId: clubMembers.playerId })
+
+  if (!left) {
+    throw new Error("Membership changed. Refresh and try again.")
+  }
+
+  updateTag(`player-card:${safeSubstring(membership.puuid, 0, 20)}`)
   updateTag(`club:${slug}`)
 }

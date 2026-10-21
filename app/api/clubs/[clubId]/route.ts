@@ -6,6 +6,7 @@ import { safeSubstring } from "@/lib/utils"
 import { db } from "@/lib/db"
 import { clubMembers, clubs, players } from "@/lib/schema"
 import { NextRequest } from "next/server"
+import { discordInviteLinkToCode } from "@/lib/utils"
 
 const clubIdSchema = z.coerce.number().int().positive()
 
@@ -21,6 +22,23 @@ const clubSettingsSchema = z.object({
     .string()
     .trim()
     .max(512)
+    .transform((value) => value || null),
+  tag: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .min(1)
+    .max(6)
+    .regex(/^[A-Z0-9]+$/, "Club tags must contain letters or numbers only."),
+  discordInvite: z
+    .string()
+    .transform(discordInviteLinkToCode)
+    .pipe(
+      z
+        .string()
+        .max(128)
+        .regex(/^[A-Za-z0-9_-]*$/, "Enter a Discord invite link or code.")
+    )
     .transform((value) => value || null),
 })
 
@@ -76,6 +94,8 @@ export async function PATCH(
         name: clubs.name,
         slug: clubs.slug,
         bio: clubs.bio,
+        tag: clubs.tag,
+        discordInvite: clubs.discordInvite,
       })
 
     // find the players whose cached cards contain this club

@@ -3,10 +3,15 @@ import { Button } from "@/components/ui/button"
 import { notFound } from "next/navigation"
 import { safeSubstring } from "@/lib/utils"
 import { currentUser } from "@clerk/nextjs/server"
-import { joinClub } from "./actions"
+import { joinClub, leaveClub } from "./actions"
 import { LevelBadge } from "@/components/level-badge"
 import { fetchPlayerCardByPuuid } from "@/app/api/player/[puuid]/card/route"
 import { ClubInfoCard } from "@/components/club-info-card"
+import {
+  TooltipContent,
+  Tooltip,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 export default async function Page({
   params,
@@ -25,8 +30,11 @@ export default async function Page({
 
   if (!members || !club) return notFound()
 
-  const canJoin =
-    !user || Boolean(player && player.clubMemberships.length === 0)
+  const membership = player?.clubMemberships.find(
+    ({ clubId }) => clubId === club.id
+  )
+  const canJoin = !user || Boolean(player && !membership)
+  const isOwner = membership?.role === "OWNER"
 
   return (
     <div className="grid grid-cols-3 gap-4">
@@ -63,6 +71,32 @@ export default async function Page({
               Join club
             </Button>
           </form>
+        )}
+
+        {membership && (
+          <Tooltip>
+            <TooltipTrigger>
+              <form
+                action={leaveClub.bind(null, slug)}
+                className="flex flex-col gap-2"
+              >
+                <Button
+                  type="submit"
+                  size="lg"
+                  variant="destructive"
+                  disabled={isOwner}
+                  className="w-full font-oswald font-semibold uppercase"
+                >
+                  Leave club
+                </Button>
+              </form>
+            </TooltipTrigger>
+            {isOwner && (
+              <TooltipContent>
+                You must transfer ownership before leaving this club
+              </TooltipContent>
+            )}
+          </Tooltip>
         )}
       </div>
     </div>

@@ -28,7 +28,7 @@ export function RoomEntryDialog({ roomId }: { roomId: string }) {
       >
         {mode === "guest" && (
           <DialogHeader>
-            <DialogTitle className="text-center">
+            <DialogTitle className="text-center font-oswald text-lg font-semibold uppercase">
               Fill in some additional information
             </DialogTitle>
           </DialogHeader>
@@ -82,7 +82,11 @@ export function RoomEntryDialog({ roomId }: { roomId: string }) {
                 Back
               </Button>
 
-              <Button type="submit" disabled={pending}>
+              <Button
+                type="submit"
+                disabled={pending}
+                className="font-oswald font-semibold uppercase"
+              >
                 {pending ? <Spinner /> : "Join lobby"}
               </Button>
             </DialogFooter>
