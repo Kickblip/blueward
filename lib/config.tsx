@@ -162,10 +162,10 @@ export type BannerSetId = keyof typeof BANNER_SETS
 
 export const BANNER_CONFIG = {
   // ================= DEFAULT =================
-  0: { name: "New Horizons", description: "", rarity: "common" },
-  1: { name: "Fine Print", description: "", rarity: "common" },
-  2: { name: "Infernal Dragons", description: "", rarity: "common" },
-  3: { name: "Stacked Deck", description: "", rarity: "common" },
+  0: { name: "New Horizons", description: "", rarity: "common", mediaPosition: "center 40%" },
+  1: { name: "Fine Print", description: "", rarity: "common", mediaPosition: "center 20%" },
+  2: { name: "Infernal Dragons", description: "", rarity: "common", mediaPosition: "center 80%" },
+  3: { name: "Stacked Deck", description: "", rarity: "common", mediaPosition: "center 10%"},
 
   // ================= PROMOS =================
 
@@ -182,16 +182,19 @@ export const BANNER_CONFIG = {
     name: "Beta Tester",
     description: "Submit feedback or a bug report during the beta period",
     rarity: "epic",
+    mediaPosition: "center 50%",
   },
   6: {
     name: "Souls Collide",
     description: "Participate in the Blueward launch event",
     rarity: "epic",
+    mediaPosition: "center 20%",
   },
   13: {
     name: "Should Have Bought Anti-heal",
     description: "",
     rarity: "legendary",
+    mediaPosition: "center 30%"
   },
 
   // ================= HORIZONS ROLLABLE =================
@@ -204,48 +207,48 @@ export const BANNER_CONFIG = {
     mediaPosition: "center 25%",
   },
 
-  34: { name: "Look Out Below", description: "", rarity: "legendary" },
-  56: { name: "A Grand Agendum", description: "", rarity: "legendary" },
-  105: { name: "Lux Illuminated", description: "", rarity: "legendary" },
-  60: { name: "Nine-tailed Fox", description: "", rarity: "legendary" },
-  85: { name: "Eye of the Storm", description: "", rarity: "legendary" },
-  112: { name: "Last Caress", description: "", rarity: "legendary" },
+  34: { name: "Look Out Below", description: "", rarity: "legendary", mediaPosition: "center 20%" },
+  56: { name: "A Grand Agendum", description: "", rarity: "legendary", mediaPosition: "center 40%"},
+  105: { name: "Lux Illuminated", description: "", rarity: "legendary", mediaPosition: "center 10%"},
+  60: { name: "Nine-tailed Fox", description: "", rarity: "legendary", mediaPosition: "center 30%"},
+  85: { name: "Eye of the Storm", description: "", rarity: "legendary", mediaPosition: "center 30%" },
+  112: { name: "Last Caress", description: "", rarity: "legendary", mediaPosition: "center 10%" },
 
-  117: { name: "Experiment Gone Awry", description: "", rarity: "epic" },
-  111: { name: "Call of the Forge God", description: "", rarity: "epic" },
-  24: { name: "Welcome Back", description: "", rarity: "epic" },
-  118: { name: "Fluffiest Bed", description: "", rarity: "epic" },
-  116: { name: "The Boss", description: "", rarity: "epic" },
-  94: { name: "Planning Ahead", description: "", rarity: "epic" },
-  84: { name: "Minefield Deployed", description: "", rarity: "epic" },
+  117: { name: "Experiment Gone Awry", description: "", rarity: "epic", mediaPosition: "center 10%"},
+  111: { name: "Call of the Forge God", description: "", rarity: "epic", mediaPosition: "center 70%"},
+  24: { name: "Welcome Back", description: "", rarity: "epic", mediaPosition: "center 20%" },
+  118: { name: "Fluffiest Bed", description: "", rarity: "epic", mediaPosition: "center 40%" },
+  116: { name: "The Boss", description: "", rarity: "epic", mediaPosition: "center 30%" },
+  94: { name: "Planning Ahead", description: "", rarity: "epic", mediaPosition: "center 20%"},
+  84: { name: "Minefield Deployed", description: "", rarity: "epic", mediaPosition: "center 30%"},
 
-  8: { name: "The Wandering Caretaker", description: "", rarity: "rare" },
-  44: { name: "Crowd Favorite", description: "", rarity: "rare" },
-  48: { name: "Troublesome Troupe", description: "", rarity: "rare" },
-  91: { name: "Bubbly Buddies", description: "", rarity: "rare" },
-  46: { name: "Valuable Sidekick", description: "", rarity: "rare" },
-  37: { name: "Unlikely Warrior", description: "", rarity: "rare" },
-  89: { name: "Joyful Day Off", description: "", rarity: "rare" },
+  8: { name: "The Wandering Caretaker", description: "", rarity: "rare", mediaPosition: "center 40%"},
+  44: { name: "Crowd Favorite", description: "", rarity: "rare", mediaPosition: "center 10%"},
+  48: { name: "Troublesome Troupe", description: "", rarity: "rare", mediaPosition: "center 40%"},
+  91: { name: "Bubbly Buddies", description: "", rarity: "rare", mediaPosition: "center 40%"},
+  46: { name: "Valuable Sidekick", description: "", rarity: "rare", mediaPosition: "center 20%" },
+  37: { name: "Unlikely Warrior", description: "", rarity: "rare", mediaPosition: "center 10%" },
+  89: { name: "Joyful Day Off", description: "", rarity: "rare", mediaPosition: "center 30%"},
 
-  62: { name: "Big Grin", description: "", rarity: "common" },
-  65: { name: "Sorry About That", description: "", rarity: "common" },
-  69: { name: "Floral Surprise", description: "", rarity: "common" },
-  80: { name: "The Climb", description: "", rarity: "common" },
-  113: { name: "Next Challenger", description: "", rarity: "common" },
-  20: { name: "Stalwart Poro", description: "", rarity: "common" },
-  11: { name: "Spritelings", description: "", rarity: "common" },
-  14: { name: "Aerial Assault", description: "", rarity: "common" },
-  15: { name: "Faceless Knight", description: "", rarity: "common" },
-  18: { name: "Too Easy", description: "", rarity: "common" },
-  106: { name: "Poro Parade", description: "", rarity: "common" },
+  62: { name: "Big Grin", description: "", rarity: "common", mediaPosition: "center 30%"},
+  65: { name: "Sorry About That", description: "", rarity: "common", mediaPosition: "center 20%"},
+  69: { name: "Floral Surprise", description: "", rarity: "common", mediaPosition: "center 30%"},
+  80: { name: "The Climb", description: "", rarity: "common", mediaPosition: "center 60%"},
+  113: { name: "Next Challenger", description: "", rarity: "common", mediaPosition: "center 20%"},
+  20: { name: "Stalwart Poro", description: "", rarity: "common", mediaPosition: "center 50%"},
+  11: { name: "Spritelings", description: "", rarity: "common", mediaPosition: "center 35%"},
+  14: { name: "Aerial Assault", description: "", rarity: "common", mediaPosition: "center 60%"},
+  15: { name: "Faceless Knight", description: "", rarity: "common", mediaPosition: "center 30%"},
+  18: { name: "Too Easy", description: "", rarity: "common", mediaPosition: "center 40%"},
+  106: { name: "Poro Parade", description: "", rarity: "common", mediaPosition: "center 30%"},
 
   // ================= HORIZONS PURCHASEABLE =================
-  39: { name: "The Order of Shadows", description: "", rarity: "legendary" },
-  16: { name: "Lux Discovery", description: "", rarity: "legendary" },
-  23: { name: "Braum is Here", description: "", rarity: "legendary" },
-  40: { name: "Wanderer", description: "", rarity: "epic" },
-  61: { name: "Together Forever", description: "", rarity: "epic" },
-  81: { name: "Voluntary Participant", description: "", rarity: "epic" },
+  39: { name: "The Order of Shadows", description: "", rarity: "legendary", mediaPosition: "center 10%" },
+  16: { name: "Lux Discovery", description: "", rarity: "legendary", mediaPosition: "center 20%"},
+  23: { name: "Braum is Here", description: "", rarity: "legendary", mediaPosition: "center 30%"},
+  40: { name: "Wanderer", description: "", rarity: "epic", mediaPosition: "center 20%"},
+  61: { name: "Together Forever", description: "", rarity: "epic", mediaPosition: "center 30%"},
+  81: { name: "Voluntary Participant", description: "", rarity: "epic", mediaPosition: "center 20%"},
 
   // ================= DARK HARVEST ROLLABLE =================
   121: {
@@ -255,17 +258,17 @@ export const BANNER_CONFIG = {
     video: "/banners/video/121.webm",
     mediaPosition: "center 25%",
   },
-  21: { name: "Drunken Alarm", description: "", rarity: "common" },
-  29: { name: "Peculiar Stranger", description: "", rarity: "rare" },
-  57: { name: "Come Out", description: "", rarity: "rare" },
-  58: { name: "Frightly Friends", description: "", rarity: "epic" },
-  55: { name: "Toadstool Thief", description: "", rarity: "epic" },
-  63: { name: "Sea Warden", description: "", rarity: "legendary" },
+  21: { name: "Drunken Alarm", description: "", rarity: "common", mediaPosition: "center 40%"},
+  29: { name: "Peculiar Stranger", description: "", rarity: "rare", mediaPosition: "center 20%"},
+  57: { name: "Come Out", description: "", rarity: "rare", mediaPosition: "center 10%"},
+  58: { name: "Frightly Friends", description: "", rarity: "epic", mediaPosition: "center 40%"},
+  55: { name: "Toadstool Thief", description: "", rarity: "epic", mediaPosition: "center 50%"},
+  63: { name: "Sea Warden", description: "", rarity: "legendary", mediaPosition: "center 10%"},
 
   // ================= DARK HARVEST PURCHASEABLE =================
-  96: { name: "A New Weapon", description: "", rarity: "legendary" },
-  87: { name: "Unfathomable Evil", description: "", rarity: "epic" },
-  67: { name: "All You Can Eat", description: "", rarity: "epic" },
+  96: { name: "A New Weapon", description: "", rarity: "legendary", mediaPosition: "center 20%"},
+  87: { name: "Unfathomable Evil", description: "", rarity: "epic" , mediaPosition: "center 30%"},
+  67: { name: "All You Can Eat", description: "", rarity: "epic", mediaPosition: "center 20%"},
 
   /**
    *
