@@ -68,23 +68,6 @@ export async function AppSidebar({
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild size="lg" tooltip="Climb Challenge">
-                  <Link href="/climb">
-                    <Image
-                      src="/climb/icon.webp"
-                      alt=""
-                      width={24}
-                      height={24}
-                      className="size-6!"
-                    />
-                    <span className="pl-1 font-oswald text-lg font-semibold uppercase group-data-[collapsible=icon]:sr-only">
-                      Climb Challenge
-                    </span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
                 <SidebarMenuButton asChild size="lg" tooltip="Leaderboards">
                   <Link href="/leaderboard/kills">
                     <IoPodium className="size-6! text-chart-3 dark:text-chart-1" />
