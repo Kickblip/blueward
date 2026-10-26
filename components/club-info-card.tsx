@@ -4,6 +4,7 @@ import Image from "next/image"
 import { Button } from "./ui/button"
 import Link from "next/link"
 import { FaDiscord } from "react-icons/fa6"
+import { ClubTag } from "./club-tag"
 
 export function ClubInfoCard({ club }: { club: typeof clubs.$inferSelect }) {
   return (
@@ -45,7 +46,7 @@ export function ClubInfoCard({ club }: { club: typeof clubs.$inferSelect }) {
           )}
         </div>
 
-        <div className="absolute right-2 bottom-2">
+        <div className="absolute right-2 bottom-2 z-20">
           {club.discordInvite && (
             <Button variant="secondary" size="sm" asChild>
               <Link
@@ -65,6 +66,8 @@ export function ClubInfoCard({ club }: { club: typeof clubs.$inferSelect }) {
         <h2 className="font-oswald text-3xl font-semibold uppercase transition-colors duration-200 group-hover:text-chart-3 dark:group-hover:text-chart-1">
           {club.name}
         </h2>
+
+        <ClubTag tag={club.tag} iconId={club.iconId} />
 
         <p className="text-sm font-medium text-muted-foreground">
           {club.bio ?? "No description provided."}

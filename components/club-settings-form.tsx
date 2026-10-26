@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea"
 import type { clubs } from "@/lib/schema"
 import { toast } from "sonner"
 import { discordInviteLinkToCode } from "@/lib/utils"
+import Image from "next/image"
 
 export function ClubSettingsForm({
   club,
@@ -74,6 +75,37 @@ export function ClubSettingsForm({
           <FieldLabel htmlFor="club-tag">Club Name</FieldLabel>
           <Input id="club-tag" name="tag" defaultValue={club.tag} />
         </Field>
+
+        <fieldset>
+          <legend className="mb-2 text-sm font-medium">Club icon</legend>
+
+          <div className="grid grid-cols-5 gap-2 sm:grid-cols-6">
+            {Array.from({ length: 30 }, (_, index) => index + 1).map(
+              (iconId) => (
+                <label key={iconId} className="cursor-pointer">
+                  <input
+                    type="radio"
+                    name="iconId"
+                    value={iconId}
+                    defaultChecked={club.iconId === iconId}
+                    className="peer sr-only"
+                    required
+                  />
+
+                  <span className="flex h-12 items-center justify-center rounded-md border peer-checked:border-chart-3 peer-checked:bg-chart-3/20 dark:peer-checked:border-chart-1 dark:peer-checked:bg-chart-1/20">
+                    <Image
+                      src={`/clubs/icons/${iconId}.png`}
+                      alt=""
+                      width={32}
+                      height={32}
+                      className="object-contain"
+                    />
+                  </span>
+                </label>
+              )
+            )}
+          </div>
+        </fieldset>
 
         <Field>
           <FieldLabel htmlFor="club-discord">Discord invite</FieldLabel>

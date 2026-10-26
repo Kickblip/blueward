@@ -75,10 +75,11 @@ export default async function Page({
 
         {membership && (
           <Tooltip>
-            <TooltipTrigger>
+            <TooltipTrigger asChild>
               <form
                 action={leaveClub.bind(null, slug)}
                 className="flex flex-col gap-2"
+                tabIndex={isOwner ? 0 : undefined}
               >
                 <Button
                   type="submit"
@@ -92,7 +93,7 @@ export default async function Page({
               </form>
             </TooltipTrigger>
             {isOwner && (
-              <TooltipContent>
+              <TooltipContent className="text-center">
                 You must transfer ownership before leaving this club
               </TooltipContent>
             )}

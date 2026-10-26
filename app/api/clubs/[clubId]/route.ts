@@ -30,6 +30,7 @@ const clubSettingsSchema = z.object({
     .min(1)
     .max(6)
     .regex(/^[A-Z0-9]+$/, "Club tags must contain letters or numbers only."),
+  iconId: z.coerce.number().int().min(1).max(30),
   discordInvite: z
     .string()
     .transform(discordInviteLinkToCode)

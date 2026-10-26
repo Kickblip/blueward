@@ -405,6 +405,7 @@ export const clubs = pgTable("clubs", {
   bio: varchar({ length: 512 }),
   discordInvite: varchar({ length: 128 }),
   tag: varchar({ length: 6 }).notNull().default("CLUB"),
+  iconId: integer().notNull().default(1),
   createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
   logoKey: varchar({ length: 255 }),
   bannerKey: varchar({ length: 255 }),

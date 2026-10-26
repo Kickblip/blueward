@@ -22,6 +22,7 @@ import { fetchPlayerCardByPuuid } from "@/app/api/player/[puuid]/card/route"
 import { Button } from "@/components/ui/button"
 import { ChevronRight, ChevronLeft } from "lucide-react"
 import { NoteBubble } from "@/components/note-bubble"
+import { ClubTag } from "@/components/club-tag"
 
 export default async function PlayerProfile({
   params,
@@ -158,12 +159,10 @@ export default async function PlayerProfile({
                 <Tooltip key={club.id}>
                   <TooltipTrigger asChild>
                     <Link href={`/clubs/${club.slug}`}>
-                      <div className="rounded-full border bg-secondary px-2 py-0.5 font-oswald text-sm font-semibold uppercase">
-                        {club.name}
-                      </div>
+                      <ClubTag tag={club.tag} iconId={club.iconId} />
                     </Link>
                   </TooltipTrigger>
-                  <TooltipContent>Club</TooltipContent>
+                  <TooltipContent>{club.name}</TooltipContent>
                 </Tooltip>
               ))}
 

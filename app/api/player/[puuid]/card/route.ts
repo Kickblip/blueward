@@ -16,7 +16,13 @@ export function fetchPlayerCardByPuuid(puuid: string) {
             columns: { clubId: true, role: true },
             with: {
               club: {
-                columns: { id: true, name: true, slug: true },
+                columns: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                  tag: true,
+                  iconId: true,
+                },
               },
             },
           },

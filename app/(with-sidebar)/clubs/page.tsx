@@ -20,7 +20,7 @@ export default async function Page() {
   const clubs = await fetchClubs()
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-3xl flex-col">
+    <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <FaUsers className="size-6 text-chart-3 dark:text-chart-1" />
@@ -105,11 +105,16 @@ export default async function Page() {
         </Show>
       </div>
 
-      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="mt-4 grid auto-rows-fr grid-cols-1 gap-4 sm:grid-cols-3">
         {clubs.map((club) => (
-          <Link key={club.id} href={`/clubs/${club.slug}`} className="group">
+          <div key={club.id} className="group relative isolate grid">
+            <Link
+              href={`/clubs/${club.slug}`}
+              aria-label={club.name}
+              className="absolute inset-0 z-10 rounded-md"
+            />
             <ClubInfoCard club={club} />
-          </Link>
+          </div>
         ))}
       </div>
     </div>
