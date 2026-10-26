@@ -36,7 +36,6 @@ import {
 } from "./ui/dropdown-menu"
 import { IoMdSettings } from "react-icons/io"
 import { safeSubstring } from "@/lib/utils"
-import Image from "next/image"
 
 export async function AppSidebar({
   user,
@@ -67,7 +66,7 @@ export async function AppSidebar({
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
+              {/* <SidebarMenuItem>
                 <SidebarMenuButton asChild size="lg" tooltip="Climb Challenge">
                   <Link href="/climb">
                     <Image
@@ -82,7 +81,7 @@ export async function AppSidebar({
                     </span>
                   </Link>
                 </SidebarMenuButton>
-              </SidebarMenuItem>
+              </SidebarMenuItem> */}
 
               <SidebarMenuItem>
                 <SidebarMenuButton asChild size="lg" tooltip="Leaderboards">

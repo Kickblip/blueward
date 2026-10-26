@@ -8,9 +8,6 @@ import {
 import { PodiumRow } from "@/components/podium-row"
 import { LeaderboardRow } from "@/components/leaderboard-row"
 import { currentUser } from "@clerk/nextjs/server"
-import Link from "next/link"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
 
 export default async function Home() {
   const user = await currentUser()
@@ -75,27 +72,6 @@ export default async function Home() {
         )}
       </div>
       <div className="invisible col-span-1 flex flex-col gap-4 md:visible">
-        <Link href="/climb">
-          <div className="relative h-[17rem] w-full overflow-hidden rounded-md border border-blue-300/70 shadow-[0_0_28px_rgba(59,130,246,0.55)]">
-            <Image
-              src="/climb/banner.webp"
-              alt=""
-              fill
-              sizes="(min-width: 1280px) 416px, (min-width: 768px) 33vw, 100vw"
-              className="object-cover"
-            />
-
-            <div className="absolute inset-x-0 bottom-0 z-10 p-2">
-              <Button
-                size="lg"
-                className="w-full bg-zinc-300 px-4 font-oswald text-xl font-semibold text-zinc-800 uppercase opacity-90 hover:bg-zinc-200 hover:text-zinc-800"
-              >
-                Go to leaderboard
-              </Button>
-            </div>
-          </div>
-        </Link>
-
         {games.map((g) => (
           <RecentGame
             key={g.matchId}

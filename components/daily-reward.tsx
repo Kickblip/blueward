@@ -70,10 +70,10 @@ export function DailyReward({ claimed }: { claimed: boolean }) {
           <TooltipTrigger asChild>
             <Button variant="ghost" size="icon-lg">
               <Image
-                src="/gift.webp"
+                src="/calendar.png"
                 alt="Daily Login Button"
-                width={24}
-                height={24}
+                width={26}
+                height={26}
                 className={isClaimed ? "" : "animate-bounce"}
               />
             </Button>

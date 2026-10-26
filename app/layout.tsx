@@ -67,13 +67,13 @@ export default function RootLayout({
         oswald.variable
       )}
     >
-      <head>
+      {/* <head>
         <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4054324585153187"
           crossOrigin="anonymous"
         />
-      </head>
+      </head> */}
 
       <body>
         <ClerkProvider

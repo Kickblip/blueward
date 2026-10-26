@@ -67,10 +67,10 @@ export function PromoCode() {
           <TooltipTrigger asChild>
             <Button variant="ghost" size="icon-lg">
               <Image
-                src="/promo.webp"
+                src="/ticket.png"
                 alt="Promo Code Button"
-                width={30}
-                height={30}
+                width={28}
+                height={28}
               />
             </Button>
           </TooltipTrigger>

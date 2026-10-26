@@ -49,7 +49,7 @@ export function UserBalance() {
         <PopoverTrigger asChild>
           <TooltipTrigger asChild>
             <Button variant="secondary" size="lg">
-              <CrystalIcon size={14} />
+              <CrystalIcon size={20} />
               <span className="font-oswald text-sm">
                 {isLoading ? (
                   <Spinner />
@@ -95,7 +95,7 @@ export function UserBalance() {
                 >
                   {transaction.amount > 0 && "+"}
                   {toNumberWithCommas(transaction.amount)}
-                  <CrystalIcon size={14} />
+                  <CrystalIcon size={16} />
                 </span>
               </div>
             ))}
