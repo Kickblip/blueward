@@ -321,7 +321,6 @@ export const BANNER_CONFIG = {
   77: { name: "Blade Dancer", description: "", rarity: "common", mediaPosition: "center 10%"},
   78: { name: "Dancing Droplet", description: "", rarity: "common", mediaPosition: "center 30%"},
   79: { name: "Unstoppable Smash", description: "", rarity: "common", mediaPosition: "center 20%"},
-  81: { name: "Voluntary Participant", description: "", rarity: "common", mediaPosition: "center 20%"},
   82: { name: "Breaking Out", description: "", rarity: "common", mediaPosition: "center 10%"},
   83: { name: "Immeasurable Greed", description: "", rarity: "common", mediaPosition: "center 30%"},
   88: { name: "Reluctant Soldier", description: "", rarity: "common", mediaPosition: "center 20%"},
