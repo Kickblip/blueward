@@ -750,10 +750,15 @@ export const draftParticipant = spacetimedb.reducer(
       fail("It is not your turn to pick")
 
     // Check that the targe participant is in the same room as the captain
-    participantInRoom(ctx, lobby.roomId, participantId)
+    const target = participantInRoom(ctx, lobby.roomId, participantId)
 
     if (ctx.db.assignments.participantId.find(participantId))
       fail("Player is not available")
+
+    const account = ctx.db.accounts.identityKey.find(target.identityKey)
+
+    if (!account?.rank || account.roles.length === 0)
+      fail("Selected player needs to set their rank/roles first")
 
     // Check that the captain has space on their team
     // Admins can move people onto teams so it's worth checking this as well as pick order
