@@ -203,7 +203,7 @@ export function CrystalIcon({
 }) {
   return (
     <Image
-      src="/bcrystalb.png"
+      src="/crystal.png"
       alt=""
       width={size ?? 16}
       height={size ?? 16}
