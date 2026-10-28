@@ -30,7 +30,7 @@ export function ClubInfoCard({ club }: { club: typeof clubs.$inferSelect }) {
           )}
         </div>
 
-        <div className="absolute -bottom-8 left-4 h-24 w-24 overflow-hidden rounded-xl border-4 border-secondary">
+        <div className="absolute -bottom-8 left-4 h-24 w-24 overflow-hidden rounded-xl border-4 border-secondary bg-secondary">
           {club.logoKey ? (
             <Image
               src={`${process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL}/${club.logoKey}`}
