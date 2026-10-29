@@ -231,6 +231,8 @@ export function PoolCard({
     isTeamCaptain &&
     currentAssignment?.teamId === DRAFT_PICK_ORDER[activeLobby.draftPickIndex]
 
+
+
   function draft() {
     if (!activeLobby || !canDraft) return
 
@@ -245,7 +247,12 @@ export function PoolCard({
       }
     })
   }
-
+  const isSelectable = participant.rank !== null && participant.roles.length > 0;
+  const draftDisabledReason = !isSelectable
+    ? "This player needs to select their rank and role"
+    : !canDraft
+      ? "Wait for your team's pick"
+      : null
   const content = (
     <div className="relative min-h-0 flex-1 overflow-hidden rounded-md border bg-secondary">
       {participant.player && (
@@ -267,18 +274,30 @@ export function PoolCard({
               rank={participant.rank}
             />
           </div>
-
           <div className="flex flex-wrap items-center gap-2">
             {activeLobby?.phase === "DRAFTING" && isTeamCaptain && (
-              <Button
-                type="button"
-                size="sm"
-                className="font-oswald font-semibold uppercase"
-                disabled={!canDraft || isDrafting}
-                onClick={draft}
-              >
-                {isDrafting ? "Adding..." : "Add to team"}
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+
+                    className="inline-flex"
+                    tabIndex={draftDisabledReason  ? 0 : undefined}
+                  >
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="font-oswald font-semibold uppercase disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
+                      disabled={!canDraft || isDrafting || !isSelectable}
+                      onClick={draft}
+                    >
+                      {isDrafting ? "Adding..." : "Add to team"}
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {draftDisabledReason && (
+                  <TooltipContent>{draftDisabledReason}</TooltipContent>
+                )}
+              </Tooltip>
             )}
 
             <PlayerDropdownMenu
