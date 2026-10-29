@@ -110,7 +110,7 @@ export function ClubSettingsImageUpload({
         )}
       </div>
 
-      <div className="absolute -bottom-8 left-4 h-32 w-32 overflow-hidden rounded-xl border-4 border-background">
+      <div className="absolute -bottom-8 left-4 h-32 w-32 overflow-hidden rounded-xl border-4 border-background bg-background">
         {logoKey ? (
           <Image
             src={`${process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL}/${logoKey}`}
