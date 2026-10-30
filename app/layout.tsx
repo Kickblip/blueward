@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     title: title,
     description: description,
     images: [
-      { url: "/og-image.jpg", width: 1280, height: 720, alt: "BLUEWARD" },
+      { url: "/og-image2.jpg", width: 1280, height: 720, alt: "BLUEWARD" },
     ],
   },
 
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: title,
     description: description,
-    images: ["/og-image.jpg"],
+    images: ["/og-image2.jpg"],
   },
 }
 

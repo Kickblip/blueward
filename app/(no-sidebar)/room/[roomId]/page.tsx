@@ -13,12 +13,12 @@ export const metadata: Metadata = {
   title,
   openGraph: {
     title,
-    images: ["/room-og-image.jpg"],
+    images: ["/og-image-room.jpg"],
   },
   twitter: {
     card: "summary_large_image",
     title,
-    images: ["/room-og-image.jpg"],
+    images: ["/og-image-room.jpg"],
   },
 }
 
