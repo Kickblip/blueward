@@ -13,4 +13,6 @@ import {
 export default __t.row({
   id: __t.string().primaryKey(),
   ownerAuthId: __t.string().name("owner_auth_id"),
+  forceSignIn: __t.bool().name("force_sign_in"),
+  forceRankRoles: __t.bool().name("force_rank_roles"),
 });

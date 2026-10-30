@@ -21,7 +21,7 @@ import {
 import { BannerBackground } from "@/components/banner-background"
 import { LevelBadge } from "@/components/level-badge"
 import { EllipsisIcon } from "lucide-react"
-import { FaTrash, FaX, FaClipboard } from "react-icons/fa6"
+import { FaTrash, FaX, FaClipboard, FaHammer } from "react-icons/fa6"
 import { PiCrownSimpleFill } from "react-icons/pi"
 import { FaArrowCircleLeft, FaArrowCircleRight, FaUser } from "react-icons/fa"
 import Link from "next/link"
@@ -217,7 +217,7 @@ export function PoolCard({
   participant: RoomParticipant
   useOwnerView: boolean
 }) {
-  const { activeLobby, currentParticipant, actions } = useRoom()
+  const { activeLobby, currentParticipant, actions, forceRankRoles } = useRoom()
   const [isDrafting, startDraftTransition] = useTransition()
 
   const currentAssignment = activeLobby?.players.find(
@@ -245,7 +245,10 @@ export function PoolCard({
       }
     })
   }
-  const isSelectable = participant.rank !== null && participant.roles.length > 0
+  const isSelectable =
+    !forceRankRoles ||
+    (participant.rank !== null && participant.roles.length > 0)
+
   const draftDisabledReason = !isSelectable
     ? "This player needs to select their rank and role"
     : !canDraft
@@ -414,7 +417,8 @@ export function PlayerDropdownMenu({
   useOwnerView: boolean
   participant: RoomParticipant
 }) {
-  const { activeLobby, currentParticipant, roomId, actions } = useRoom()
+  const { activeLobby, currentParticipant, roomId, actions, forceSignIn } =
+    useRoom()
 
   const assignment = activeLobby?.players.find(
     ({ player: assignedParticipant }) =>
@@ -484,17 +488,22 @@ export function PlayerDropdownMenu({
       })
   }
 
-  function kick() {
+  function removePlayer(ban: boolean) {
     if (participant.id === currentParticipant.id) return
 
-    if (!window.confirm(`Kick ${participant.displayName} from this room?`)) {
+    const verb = ban ? "Ban" : "Kick"
+
+    if (!window.confirm(`${verb} ${participant.displayName} from this room?`))
       return
-    }
 
     void actions
-      .kickParticipant({ roomId, participantId: participant.id })
+      .kickParticipant({
+        roomId,
+        participantId: participant.id,
+        ban,
+      })
       .catch(() => {
-        toast.error("Could not kick this player")
+        toast.error(`Could not ${verb.toLowerCase()} this player`)
       })
   }
 
@@ -621,12 +630,27 @@ export function PlayerDropdownMenu({
                   participant.id === currentParticipant.id ||
                   (Boolean(assignment) && activeLobby?.phase !== "OPEN")
                 }
-                onSelect={kick}
+                onSelect={() => removePlayer(false)}
                 className="font-oswald font-semibold uppercase"
               >
                 <FaTrash />
                 Kick Player
               </DropdownMenuItem>
+
+              {forceSignIn && participant.player && (
+                <DropdownMenuItem
+                  variant="destructive"
+                  disabled={
+                    participant.id === currentParticipant.id ||
+                    (Boolean(assignment) && activeLobby?.phase !== "OPEN")
+                  }
+                  onSelect={() => removePlayer(true)}
+                  className="font-oswald font-semibold uppercase"
+                >
+                  <FaHammer />
+                  Ban Player
+                </DropdownMenuItem>
+              )}
             </DropdownMenuGroup>
           </>
         )}

@@ -96,15 +96,25 @@ function ConnectedRoom({ roomId, viewerAuthId, children }: Props) {
     const renewal = startSessionRenewal(
       async () => {
         if (!connection.isActive) return
-        const { ticket } = await issueRoomTicket(
+
+        const result = await issueRoomTicket(
           roomId,
           identity,
           hasJoined.current,
           viewerAuthId
         )
+
         if (cancelled || !connection.isActive) return
-        await connection.reducers.joinRoom({ ticket })
+
+        if ("error" in result) {
+          setError(result.error)
+          return
+        }
+
+        await connection.reducers.joinRoom({ ticket: result.ticket })
+
         if (cancelled) return
+
         hasJoined.current = true
         setJoinedConnection(connection)
         setError(null)
@@ -207,6 +217,8 @@ function ConnectedRoom({ roomId, viewerAuthId, children }: Props) {
       value={{
         roomId,
         ownerAuthId: room.ownerAuthId,
+        forceSignIn: room.forceSignIn,
+        forceRankRoles: room.forceRankRoles,
         dummies,
         lobbies,
         isOwner: session.identityKey === `clerk:${room.ownerAuthId}`,

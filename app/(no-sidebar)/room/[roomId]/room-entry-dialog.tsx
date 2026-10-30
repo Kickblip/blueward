@@ -15,7 +15,13 @@ import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { continueAsGuest } from "./actions"
 import { Spinner } from "@/components/ui/spinner"
 
-export function RoomEntryDialog({ roomId }: { roomId: string }) {
+export function RoomEntryDialog({
+  roomId,
+  forceSignIn,
+}: {
+  roomId: string
+  forceSignIn: boolean
+}) {
   const [mode, setMode] = useState<"sign-in" | "guest">("sign-in")
   const [state, formAction, pending] = useActionState(continueAsGuest, {})
 
@@ -38,19 +44,23 @@ export function RoomEntryDialog({ roomId }: { roomId: string }) {
           <div className="flex flex-col gap-4">
             <SignIn redirectUrl={`/room/${roomId}`} />
 
-            <div className="flex items-center gap-3 text-xs text-muted-foreground uppercase before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
-              Or
-            </div>
+            {!forceSignIn && (
+              <>
+                <div className="flex items-center gap-3 text-xs text-muted-foreground uppercase before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
+                  Or
+                </div>
 
-            <Button
-              type="button"
-              variant="outline"
-              size="lg"
-              className="w-full font-oswald font-semibold uppercase"
-              onClick={() => setMode("guest")}
-            >
-              Continue as guest
-            </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  className="w-full font-oswald font-semibold uppercase"
+                  onClick={() => setMode("guest")}
+                >
+                  Continue as guest
+                </Button>
+              </>
+            )}
           </div>
         ) : (
           <form action={formAction} className="flex flex-col gap-4">

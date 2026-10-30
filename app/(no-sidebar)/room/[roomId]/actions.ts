@@ -13,7 +13,11 @@ import {
 } from "@/lib/guest-session"
 import type { RoomParticipant } from "@/lib/room-types"
 import { players } from "@/lib/schema"
-import { callRoomService, spacetimeRoomExists } from "@/lib/spacetime/server"
+import {
+  callRoomService,
+  getSpacetimeRoom,
+  spacetimeRoomBanned,
+} from "@/lib/spacetime/server"
 
 const continueAsGuestSchema = z.object({
   roomId: z.uuid("Invalid room").toLowerCase(),
@@ -49,8 +53,11 @@ export async function continueAsGuest(
 
   if (userId) redirect(`/room/${roomId}`)
 
-  if (!(await spacetimeRoomExists(roomId)))
-    return { error: "This room no longer exists" }
+  const room = await getSpacetimeRoom(roomId)
+
+  if (!room) return { error: "This room no longer exists" }
+
+  if (room.forceSignIn) return { error: "Sign in to join this room" }
 
   await saveGuestSession(displayName)
   redirect(`/room/${roomId}`)
@@ -61,7 +68,7 @@ export async function issueRoomTicket(
   clientIdentity: string,
   refresh: boolean,
   expectedAuthId: string | null
-): Promise<{ ticket: string }> {
+): Promise<{ ticket: string } | { error: string }> {
   const input = roomTicketSchema.parse({
     roomId,
     clientIdentity,
@@ -69,8 +76,19 @@ export async function issueRoomTicket(
     expectedAuthId,
   })
   const user = await currentUser()
+
   if ((user?.id ?? null) !== input.expectedAuthId)
-    throw new Error("Your sign-in changed. Reload the room")
+    return { error: "Your sign-in changed. Reload the room" }
+
+  const room = await getSpacetimeRoom(input.roomId)
+
+  if (!room) return { error: "This room no longer exists" }
+
+  if (room.forceSignIn && !user) return { error: "Sign in to join this room" }
+
+  if (user && (await spacetimeRoomBanned(input.roomId, user.id)))
+    return { error: "You are banned from this room" }
+
   let identityKey: string
   let displayName: string
   let profile: RoomParticipant["player"] = null

@@ -31,6 +31,15 @@ const rooms = table(
   {
     id: t.string().primaryKey(),
     ownerAuthId: t.string(),
+    forceSignIn: t.bool().default(false),
+    forceRankRoles: t.bool().default(true),
+  }
+)
+
+const roomBans = table(
+  { name: "room_bans" },
+  {
+    roomIdentity: t.string().primaryKey(),
   }
 )
 
@@ -112,6 +121,7 @@ const sessions = table(
 const spacetimedb = schema({
   configuration,
   rooms,
+  roomBans,
   accounts,
   participants,
   lobbies,
@@ -242,12 +252,21 @@ export const createRoom = spacetimedb.reducer(
   (ctx, { payload }) => {
     publisher(ctx)
 
-    const { roomId, lobbyId, ownerAuthId } = parse(roomPayload, json(payload))
+    const { roomId, lobbyId, ownerAuthId, forceSignIn, forceRankRoles } = parse(
+      roomPayload,
+      json(payload)
+    )
 
     if (ctx.db.rooms.id.find(roomId) || ctx.db.lobbies.id.find(lobbyId))
       fail("Room already exists")
 
-    ctx.db.rooms.insert({ id: roomId, ownerAuthId })
+    ctx.db.rooms.insert({
+      id: roomId,
+      ownerAuthId,
+      forceSignIn,
+      forceRankRoles,
+    })
+
     ctx.db.lobbies.insert({
       id: lobbyId,
       roomId,
@@ -258,6 +277,18 @@ export const createRoom = spacetimedb.reducer(
   }
 )
 
+function requireRoomAccess(ctx: Context, roomId: string, identityKey: string) {
+  const room = ctx.db.rooms.id.find(roomId)
+
+  if (!room) fail("Room not found")
+
+  if (room.forceSignIn && !identityKey.startsWith("clerk:"))
+    fail("Sign in to join this room")
+
+  if (ctx.db.roomBans.roomIdentity.find(`${roomId}:${identityKey}`))
+    fail("You are banned from this room")
+}
+
 export const issueTicket = spacetimedb.reducer(
   { payload: t.string() },
   (ctx, { payload }) => {
@@ -265,7 +296,7 @@ export const issueTicket = spacetimedb.reducer(
 
     const value = parse(ticketPayload, json(payload))
 
-    if (!ctx.db.rooms.id.find(value.roomId)) fail("Room not found")
+    requireRoomAccess(ctx, value.roomId, value.identityKey)
 
     if (value.expiresAtMs <= now(ctx)) fail("Credential expired")
 
@@ -324,7 +355,7 @@ export const joinRoom = spacetimedb.reducer(
     // Who the ticket is for and which room they want
     const value = parse(ticketPayload, json(credential.payload))
 
-    if (!ctx.db.rooms.id.find(value.roomId)) fail("Room not found")
+    requireRoomAccess(ctx, value.roomId, value.identityKey)
 
     // Check if this person is already in that room
     const roomIdentity = `${value.roomId}:${value.identityKey}`
@@ -597,13 +628,13 @@ export const makeParticipantOwner = spacetimedb.reducer(
 )
 
 export const kickParticipant = spacetimedb.reducer(
-  roomParticipantArgs,
-  (ctx, { roomId, participantId }) => {
+  { ...roomParticipantArgs, ban: t.bool() },
+  (ctx, { roomId, participantId, ban }) => {
     const room = owner(ctx, roomId)
     const target = participantInRoom(ctx, roomId, participantId)
 
     if (target.identityKey === `clerk:${room.ownerAuthId}`)
-      fail("Cannot kick the room owner")
+      fail("Cannot remove the room owner")
 
     const assignment = ctx.db.assignments.participantId.find(participantId)
 
@@ -611,7 +642,18 @@ export const kickParticipant = spacetimedb.reducer(
       assignment &&
       ctx.db.lobbies.id.find(assignment.lobbyId)?.phase !== "OPEN"
     )
-      fail("Players cannot be kicked after their draft has started")
+      fail("Players cannot be removed after their draft has started")
+
+    if (ban) {
+      if (!room.forceSignIn) fail("Bans require a room with forced sign-in")
+
+      if (!target.identityKey.startsWith("clerk:"))
+        fail("Only signed-in players can be banned")
+
+      ctx.db.roomBans.insert({
+        roomIdentity: target.roomIdentity,
+      })
+    }
 
     if (assignment) ctx.db.assignments.participantId.delete(participantId)
 
@@ -755,9 +797,13 @@ export const draftParticipant = spacetimedb.reducer(
     if (ctx.db.assignments.participantId.find(participantId))
       fail("Player is not available")
 
+    const room = ctx.db.rooms.id.find(lobby.roomId)
     const account = ctx.db.accounts.identityKey.find(target.identityKey)
 
-    if (!account?.rank || account.roles.length === 0)
+    if (!room) fail("Room not found")
+    if (!account) fail("Player not found")
+
+    if (room.forceRankRoles && (!account.rank || account.roles.length === 0))
       fail("Selected player needs to set their rank/roles first")
 
     // Check that the captain has space on their team

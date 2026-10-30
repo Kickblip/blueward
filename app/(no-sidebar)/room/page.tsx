@@ -1,18 +1,20 @@
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, PlusIcon } from "lucide-react"
+import { ChevronLeft } from "lucide-react"
 import { createRoom } from "./actions"
-import { Logo } from "@/components/logo"
 import Link from "next/link"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
 import { auth } from "@clerk/nextjs/server"
 import { ErrorMessage } from "@/components/error-message"
 import { clubMembers, players } from "@/lib/schema"
 import { db } from "@/lib/db"
 import { and, eq, inArray } from "drizzle-orm"
+import { Switch } from "@/components/ui/switch"
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldLabel,
+  FieldTitle,
+} from "@/components/ui/field"
 
 export default async function Page() {
   const { userId } = await auth()
@@ -47,33 +49,56 @@ export default async function Page() {
 
   return (
     <div className="grid min-h-screen w-full place-items-center">
-      <div className="flex flex-col items-center gap-4">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="lg" asChild>
-              <Link href="/">
-                <ChevronLeft />
-                <Logo className="size-8!" />
-              </Link>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Return Home</TooltipContent>
-        </Tooltip>
+      <div className="flex w-full max-w-sm flex-col gap-4">
+        <Button variant="secondary" size="sm" className="w-fit" asChild>
+          <Link href="/">
+            <ChevronLeft />
+            <span className="">Return Home</span>
+          </Link>
+        </Button>
 
-        <h1 className="font-oswald text-2xl font-semibold uppercase sm:text-3xl">
-          Create a New Room
+        <h1 className="font-oswald text-xl font-semibold uppercase">
+          Create a Team-Drafting Room
         </h1>
 
-        <form action={createRoom}>
+        <form action={createRoom} className="flex flex-col gap-4">
+          <FieldLabel htmlFor="force-sign-in">
+            <Field orientation="horizontal">
+              <FieldContent>
+                <FieldTitle>Force Sign In</FieldTitle>
+                <FieldDescription>
+                  Require players to sign in before joining. Guests cannot join.
+                  Allows the owner to ban players from this room.
+                </FieldDescription>
+              </FieldContent>
+              <Switch name="forceSignIn" id="force-sign-in" value="true" />
+            </Field>
+          </FieldLabel>
+
+          <FieldLabel htmlFor="force-rank-roles">
+            <Field orientation="horizontal">
+              <FieldContent>
+                <FieldTitle>Force Rank and Roles (Recommended)</FieldTitle>
+                <FieldDescription>
+                  Require players to select a rank and role before they can be
+                  drafted.
+                </FieldDescription>
+              </FieldContent>
+              <Switch
+                name="forceRankRoles"
+                id="force-rank-roles"
+                value="true"
+                defaultChecked
+              />
+            </Field>
+          </FieldLabel>
+
           <Button
             type="submit"
             size="lg"
-            className="bg-primary text-primary-foreground hover:bg-primary/80"
+            className="font-oswald text-lg font-semibold uppercase"
           >
-            <PlusIcon className="size-6!" />
-            <span className="pl-1 font-oswald text-lg font-semibold uppercase">
-              Create a room
-            </span>
+            Create a room
           </Button>
         </form>
       </div>

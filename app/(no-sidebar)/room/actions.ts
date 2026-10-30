@@ -8,7 +8,7 @@ import { clubMembers, players } from "@/lib/schema"
 import { and, eq, inArray } from "drizzle-orm"
 import { callRoomService } from "@/lib/spacetime/server"
 
-export async function createRoom() {
+export async function createRoom(formData: FormData) {
   const { userId } = await auth()
 
   if (!userId) {
@@ -34,7 +34,13 @@ export async function createRoom() {
   const roomId = randomUUID()
   const lobbyId = randomUUID()
 
-  await callRoomService("create_room", { roomId, lobbyId, ownerAuthId: userId })
+  await callRoomService("create_room", {
+    roomId,
+    lobbyId,
+    ownerAuthId: userId,
+    forceSignIn: formData.get("forceSignIn") === "true",
+    forceRankRoles: formData.get("forceRankRoles") === "true",
+  })
 
   redirect(`/room/${roomId}`)
 }

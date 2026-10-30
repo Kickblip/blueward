@@ -37,6 +37,8 @@ export type RoomParticipant = {
 export type RoomSnapshot = {
   roomId: string
   ownerAuthId: string
+  forceSignIn: boolean
+  forceRankRoles: boolean
   dummies: RoomParticipant[]
   lobbies: {
     id: string

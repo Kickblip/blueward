@@ -41,13 +41,57 @@ export async function callRoomService(
   )
 }
 
-export async function spacetimeRoomExists(roomId: string) {
+export async function getSpacetimeRoom(roomId: string) {
   const id = z.uuid().parse(roomId).toLowerCase()
+
   const response = await request(
     "sql",
-    `SELECT id FROM rooms WHERE id = '${id}'`,
+    `SELECT force_sign_in, force_rank_roles FROM rooms WHERE id = '${id}'`,
     "text/plain"
   )
-  const result = (await response.json()) as { rows: unknown[][] }[]
+
+  const result = z
+    .array(
+      z.object({
+        rows: z.array(z.tuple([z.boolean(), z.boolean()])),
+      })
+    )
+    .parse(await response.json())
+
+  const row = result.flatMap(({ rows }) => rows)[0]
+
+  if (!row) return null
+
+  return {
+    forceSignIn: row[0],
+    forceRankRoles: row[1],
+  }
+}
+
+export async function spacetimeRoomBanned(roomId: string, authId: string) {
+  const id = z.uuid().parse(roomId).toLowerCase()
+  const userId = z
+    .string()
+    .min(1)
+    .max(128)
+    .regex(/^[A-Za-z0-9_-]+$/)
+    .parse(authId)
+
+  const roomIdentity = `${id}:clerk:${userId}`
+
+  const response = await request(
+    "sql",
+    `SELECT room_identity FROM room_bans WHERE room_identity = '${roomIdentity}'`,
+    "text/plain"
+  )
+
+  const result = z
+    .array(
+      z.object({
+        rows: z.array(z.tuple([z.string()])),
+      })
+    )
+    .parse(await response.json())
+
   return result.some(({ rows }) => rows.length > 0)
 }

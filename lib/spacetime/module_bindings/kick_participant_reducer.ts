@@ -13,4 +13,5 @@ import {
 export default {
   roomId: __t.string(),
   participantId: __t.string(),
+  ban: __t.bool(),
 };

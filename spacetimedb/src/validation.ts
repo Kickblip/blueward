@@ -42,6 +42,7 @@ const identityKey = z
   .string()
   .max(160)
   .regex(/^(clerk:[A-Za-z0-9_-]+|guest:[0-9a-f-]{36})$/)
+
 export const ticketPayload = z.object({
   ticket: uuid,
   roomId: uuid,
@@ -52,6 +53,7 @@ export const ticketPayload = z.object({
   expiresAtMs: z.number().int().positive().safe(),
   refresh: z.boolean(),
 })
+
 export const roomPayload = z.object({
   roomId: uuid,
   lobbyId: uuid,
@@ -60,4 +62,6 @@ export const roomPayload = z.object({
     .min(1)
     .max(128)
     .regex(/^[A-Za-z0-9_-]+$/),
+  forceSignIn: z.boolean().default(false),
+  forceRankRoles: z.boolean().default(true),
 })

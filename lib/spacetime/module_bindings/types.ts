@@ -65,6 +65,11 @@ export type Participants = __Infer<typeof Participants>;
 export const RoomAssignments = __t.object("RoomAssignments", {});
 export type RoomAssignments = __Infer<typeof RoomAssignments>;
 
+export const RoomBans = __t.object("RoomBans", {
+  roomIdentity: __t.string(),
+});
+export type RoomBans = __Infer<typeof RoomBans>;
+
 export const RoomInfo = __t.object("RoomInfo", {});
 export type RoomInfo = __Infer<typeof RoomInfo>;
 
@@ -89,6 +94,8 @@ export type RoomParticipants = __Infer<typeof RoomParticipants>;
 export const Rooms = __t.object("Rooms", {
   id: __t.string(),
   ownerAuthId: __t.string(),
+  forceSignIn: __t.bool(),
+  forceRankRoles: __t.bool(),
 });
 export type Rooms = __Infer<typeof Rooms>;
 
