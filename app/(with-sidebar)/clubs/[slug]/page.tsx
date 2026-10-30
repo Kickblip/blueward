@@ -12,6 +12,21 @@ import {
   Tooltip,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { FaShield } from "react-icons/fa6"
+import { PiCrownSimpleFill } from "react-icons/pi"
+
+const elevatedRoles = {
+  OWNER: {
+    label: "Club owner",
+    icon: PiCrownSimpleFill,
+    className: "text-yellow-500",
+  },
+  ADMIN: {
+    label: "Club admin",
+    icon: FaShield,
+    className: "text-rose-500",
+  },
+} as const
 
 export default async function Page({
   params,
@@ -39,23 +54,45 @@ export default async function Page({
   return (
     <div className="grid grid-cols-3 gap-4">
       <div className="col-span-2 flex flex-col gap-4">
-        {members.map((member) => (
-          <div
-            key={member.playerId}
-            className="flex items-center gap-3 rounded-md border bg-secondary px-4 py-3"
-          >
-            <h2 className="min-w-0 truncate font-oswald text-xl font-semibold">
-              {member.playerCard?.riotIdGameName ?? "Unknown"}
-            </h2>
+        {members.map((member) => {
+          const role =
+            member.role === "MEMBER" ? null : elevatedRoles[member.role]
+          const RoleIcon = role?.icon
 
-            {member.playerCard && (
-              <LevelBadge
-                experience={member.playerCard.experience}
-                className="shrink-0"
-              />
-            )}
-          </div>
-        ))}
+          return (
+            <div
+              key={member.playerId}
+              className="flex items-center gap-3 rounded-md border bg-secondary px-4 py-3"
+            >
+              <h2 className="min-w-0 truncate font-oswald text-xl font-semibold">
+                {member.playerCard?.riotIdGameName ?? "Unknown"}
+              </h2>
+
+              {role && RoleIcon && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span
+                      role="img"
+                      aria-label={role.label}
+                      className={`shrink-0 ${role.className}`}
+                    >
+                      <RoleIcon aria-hidden="true" className="size-4" />
+                    </span>
+                  </TooltipTrigger>
+
+                  <TooltipContent>{role.label}</TooltipContent>
+                </Tooltip>
+              )}
+
+              {member.playerCard && (
+                <LevelBadge
+                  experience={member.playerCard.experience}
+                  className="shrink-0"
+                />
+              )}
+            </div>
+          )
+        })}
       </div>
 
       <div className="col-span-1 flex flex-col gap-2">

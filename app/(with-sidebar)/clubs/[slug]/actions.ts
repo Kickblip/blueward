@@ -4,6 +4,7 @@ import { and, eq, ne } from "drizzle-orm"
 import { unstable_cache, updateTag } from "next/cache"
 import { fetchPlayerCardByPuuid } from "@/app/api/player/[puuid]/card/route"
 import { db } from "@/lib/db"
+import { calculateLevel } from "@/lib/level"
 import { clubMembers, clubs, players } from "@/lib/schema"
 import { safeSubstring } from "@/lib/utils"
 import { auth } from "@clerk/nextjs/server"
@@ -46,7 +47,7 @@ export async function fetchClubMembersBySlug(slug: string) {
 
   if (!members) return null
 
-  return Promise.all(
+  const enrichedMembers = await Promise.all(
     members.map(async ({ player, ...membership }) => {
       const card = await fetchPlayerCardByPuuid(
         safeSubstring(player.puuid, 0, 20)
@@ -64,6 +65,19 @@ export async function fetchClubMembersBySlug(slug: string) {
       }
     })
   )
+
+  return enrichedMembers.sort((a, b) => {
+    const aLevel = a.playerCard ? calculateLevel(a.playerCard.experience) : -1
+    const bLevel = b.playerCard ? calculateLevel(b.playerCard.experience) : -1
+
+    return (
+      bLevel - aLevel ||
+      (b.playerCard?.experience ?? -1) - (a.playerCard?.experience ?? -1) ||
+      (a.playerCard?.riotIdGameName ?? "").localeCompare(
+        b.playerCard?.riotIdGameName ?? ""
+      )
+    )
+  })
 }
 
 export async function fetchClubBySlug(slug: string) {
