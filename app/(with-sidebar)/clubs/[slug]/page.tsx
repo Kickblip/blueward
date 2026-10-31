@@ -12,6 +12,8 @@ import {
   Tooltip,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { FaShield } from "react-icons/fa6"
+import { PiCrownSimpleFill } from "react-icons/pi"
 
 export default async function Page({
   params,
@@ -39,23 +41,47 @@ export default async function Page({
   return (
     <div className="grid grid-cols-3 gap-4">
       <div className="col-span-2 flex flex-col gap-4">
-        {members.map((member) => (
-          <div
-            key={member.playerId}
-            className="flex items-center gap-3 rounded-md border bg-secondary px-4 py-3"
-          >
-            <h2 className="min-w-0 truncate font-oswald text-xl font-semibold">
-              {member.playerCard?.riotIdGameName ?? "Unknown"}
-            </h2>
+        {members.map((member) => {
+          return (
+            <div
+              key={member.playerId}
+              className="flex items-center gap-3 rounded-md border bg-secondary px-4 py-3"
+            >
+              <h2 className="min-w-0 truncate font-oswald text-xl font-semibold">
+                {member.playerCard?.riotIdGameName ?? "Unknown"}
+              </h2>
 
-            {member.playerCard && (
-              <LevelBadge
-                experience={member.playerCard.experience}
-                className="shrink-0"
-              />
-            )}
-          </div>
-        ))}
+              {member.playerCard && (
+                <LevelBadge
+                  experience={member.playerCard.experience}
+                  className="shrink-0"
+                />
+              )}
+
+              {member.role === "OWNER" && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center justify-center rounded-sm bg-orange-400 p-1 text-white">
+                      <PiCrownSimpleFill size={14} />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>Club Owner</TooltipContent>
+                </Tooltip>
+              )}
+
+              {member.role === "ADMIN" && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center justify-center rounded-sm bg-rose-500 p-1 text-white">
+                      <FaShield size={14} />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>Club Admin</TooltipContent>
+                </Tooltip>
+              )}
+            </div>
+          )
+        })}
       </div>
 
       <div className="col-span-1 flex flex-col gap-2">
