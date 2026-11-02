@@ -48,12 +48,12 @@ export default async function Page({
               className="flex items-center gap-3 rounded-md border bg-secondary px-4 py-3"
             >
               <h2 className="min-w-0 truncate font-oswald text-xl font-semibold">
-                {member.playerCard?.riotIdGameName ?? "Unknown"}
+                {member.player.riotIdGameName ?? "Unknown"}
               </h2>
 
-              {member.playerCard && (
+              {member.player && (
                 <LevelBadge
-                  experience={member.playerCard.experience}
+                  experience={member.player.experience}
                   className="shrink-0"
                 />
               )}

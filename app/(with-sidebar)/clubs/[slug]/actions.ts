@@ -47,16 +47,11 @@ export async function fetchClubMembersBySlug(slug: string) {
 
   if (!members) return null
 
-  const enrichedMembers = members.map(({ player, ...membership }) => ({
-    ...membership,
-    playerCard: player,
-  }))
-
-  return enrichedMembers.sort(
+  return members.sort(
     (a, b) =>
-      (b.playerCard?.experience ?? -1) - (a.playerCard?.experience ?? -1) ||
-      (a.playerCard?.riotIdGameName ?? "").localeCompare(
-        b.playerCard?.riotIdGameName ?? ""
+      (b.player?.experience ?? -1) - (a.player?.experience ?? -1) ||
+      (a.player?.riotIdGameName ?? "").localeCompare(
+        b.player?.riotIdGameName ?? ""
       )
   )
 }
