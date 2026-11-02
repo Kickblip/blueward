@@ -8,6 +8,7 @@ import { eq } from "drizzle-orm"
 import { safeSubstring } from "@/lib/utils"
 import { updateTag } from "next/cache"
 import { isClerkAPIResponseError } from "@clerk/nextjs/errors"
+import { invalidatePlayerClubs } from "@/lib/club-cache"
 
 const CPID_TO_PLATFORM: Record<string, string> = {
   NA1: "na1",
@@ -226,6 +227,8 @@ export async function claimProfileByPuuid(args: {
       })
       .where(eq(players.id, player.id))
   }
+
+  await invalidatePlayerClubs([puuid])
 
   const username = formatClerkUsername(riotIdGameName)
 

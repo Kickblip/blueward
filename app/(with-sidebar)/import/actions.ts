@@ -18,6 +18,7 @@ import {
   transactions,
 } from "@/lib/schema"
 import { safeSubstring } from "@/lib/utils"
+import { invalidatePlayerClubs } from "@/lib/club-cache"
 
 const submissionSchema = z.object({
   matchId: z.string().trim().min(1).max(32),
@@ -270,7 +271,7 @@ export async function reviewMatchSubmission(formData: FormData) {
     }
   })
 
-  if (reviewed.puuids) revalidateImportedMatch(reviewed.puuids)
+  if (reviewed.puuids) await revalidateImportedMatch(reviewed.puuids)
   revalidatePath(`/import/${reviewed.clubSlug}`)
   redirect(`/import/${reviewed.clubSlug}`)
 }
@@ -304,7 +305,7 @@ async function getAuthorizedPendingSubmission(
   return submission ?? null
 }
 
-function revalidateImportedMatch(puuids: string[]) {
+async function revalidateImportedMatch(puuids: string[]) {
   revalidateTag("recent-games", "max")
   revalidateTag("top-players-by-mmr", "max")
   revalidateTag("individual-mmr-ladder-positions", "max")
@@ -317,6 +318,8 @@ function revalidateImportedMatch(puuids: string[]) {
     revalidateTag(`recent-matches:${shortPuuid}`, "max")
     updateTag(`player-card:${shortPuuid}`)
   }
+
+  await invalidatePlayerClubs(puuids)
 }
 
 export async function fetchWithRetry(
