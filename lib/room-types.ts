@@ -4,6 +4,7 @@ export const ROOM_ROLES = [
   "MIDDLE",
   "BOTTOM",
   "UTILITY",
+  "FILL",
 ] as const
 export const ROOM_RANKS = [
   "IRON",

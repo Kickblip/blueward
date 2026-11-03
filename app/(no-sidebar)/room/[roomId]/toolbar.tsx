@@ -65,6 +65,7 @@ const ROLE_OPTIONS = [
   { value: "MIDDLE", label: "Middle", Icon: MiddleRoleIcon },
   { value: "BOTTOM", label: "Bottom", Icon: BottomRoleIcon },
   { value: "UTILITY", label: "Support", Icon: UtilityRoleIcon },
+  { value: "FILL", label: "Fill", Icon: MdOutlineShuffleOn },
 ] as const
 
 const RANK_OPTIONS = ROOM_RANKS.map((value) => ({

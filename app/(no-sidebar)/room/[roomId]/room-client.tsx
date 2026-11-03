@@ -4,7 +4,7 @@ import { cn, safeSubstring } from "@/lib/utils"
 import type { RoomParticipant } from "@/lib/room-types"
 import { Toolbar } from "./toolbar"
 import { Footer } from "./footer"
-import { useTransition } from "react"
+import { useTransition, type ComponentType } from "react"
 import { useRoom } from "./room-context"
 import dynamic from "next/dynamic"
 
@@ -40,6 +40,7 @@ import {
 import { DRAFT_PICK_ORDER } from "@/lib/draft"
 import { toast } from "sonner"
 import { Spinner } from "@/components/ui/spinner"
+import { MdOutlineShuffleOn } from "react-icons/md"
 
 const RoomProvider = dynamic(() => import("./room-provider"), {
   ssr: false,
@@ -158,13 +159,17 @@ function RoomContents() {
 }
 
 const ROLE_ICONS: Partial<
-  Record<RoomParticipant["roles"][number], typeof TopRoleIcon>
+  Record<
+    RoomParticipant["roles"][number],
+    ComponentType<{ className?: string }>
+  >
 > = {
   TOP: TopRoleIcon,
   JUNGLE: JungleRoleIcon,
   MIDDLE: MiddleRoleIcon,
   BOTTOM: BottomRoleIcon,
   UTILITY: UtilityRoleIcon,
+  FILL: MdOutlineShuffleOn,
 }
 
 function PlayerPreferenceBadges({

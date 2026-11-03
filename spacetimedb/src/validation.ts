@@ -6,7 +6,7 @@ export const displayName = z.string().trim().min(1).max(32)
 export const preferences = z.object({
   roles: z
     .array(z.enum(ROOM_ROLES))
-    .max(5)
+    .max(6)
     .refine((roles) => new Set(roles).size === roles.length),
   rank: z.enum(ROOM_RANKS).nullable(),
 })
