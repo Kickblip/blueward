@@ -2,22 +2,21 @@
 
 import { randomUUID } from "node:crypto"
 import { auth, currentUser } from "@clerk/nextjs/server"
-import { asc, eq } from "drizzle-orm"
 import { redirect } from "next/navigation"
 import * as z from "zod"
-import { db } from "@/lib/db"
 import {
   getGuestSession,
   guestDisplayNameSchema,
   saveGuestSession,
 } from "@/lib/guest-session"
 import type { RoomParticipant } from "@/lib/room-types"
-import { clubMembers, clubs, players } from "@/lib/schema"
 import {
   callRoomService,
   getSpacetimeRoom,
   spacetimeRoomBanned,
 } from "@/lib/spacetime/server"
+import { fetchPlayerCardByPuuid } from "@/app/api/player/[puuid]/card/route"
+import { safeSubstring } from "@/lib/utils"
 
 const continueAsGuestSchema = z.object({
   roomId: z.uuid("Invalid room").toLowerCase(),
@@ -95,36 +94,34 @@ export async function issueRoomTicket(
   let expiresAtMs = Date.now() + 10 * 60 * 1000
 
   if (user) {
-    const [player] = await db
-      .select({
-        id: players.id,
-        puuid: players.puuid,
-        riotIdGameName: players.riotIdGameName,
-        riotIdTagline: players.riotIdTagline,
-        experience: players.experience,
-        bannerId: players.bannerId,
-      })
-      .from(players)
-      .where(eq(players.authId, user.id))
-      .limit(1)
+    const puuid = user.privateMetadata.puuid
 
-    if (!player)
+    const player =
+      typeof puuid === "string"
+        ? await fetchPlayerCardByPuuid(safeSubstring(puuid, 0, 20))
+        : null
+
+    if (!player || player.authId !== user.id)
       redirect(
         `/claim-riot?next=${encodeURIComponent(`/room/${input.roomId}`)}`
       )
 
-    const playerClubs = await db
-      .select({ tag: clubs.tag, iconId: clubs.iconId, name: clubs.name })
-      .from(clubMembers)
-      .innerJoin(clubs, eq(clubs.id, clubMembers.clubId))
-      .where(eq(clubMembers.playerId, player.id))
-      .orderBy(asc(clubs.name), asc(clubs.id))
-      .limit(3)
+    const playerClubs = player.clubMemberships
+      .map(({ club }) => club)
+      .sort((a, b) => a.name.localeCompare(b.name) || a.id - b.id)
+      .slice(0, 3)
+      .map(({ tag, iconId, name }) => ({ tag, iconId, name }))
 
     identityKey = `clerk:${user.id}`
     displayName = player.riotIdGameName
     profile = {
-      ...player,
+      id: player.id,
+      puuid: player.puuid,
+      riotIdGameName: player.riotIdGameName,
+      riotIdTagline: player.riotIdTagline,
+      experience: player.experience,
+      bannerId: player.bannerId,
+      clubs: playerClubs,
       avatarUrl: z
         .url({ protocol: /^https$/ })
         .max(2048)

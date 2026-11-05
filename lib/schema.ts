@@ -15,7 +15,7 @@ import {
   jsonb,
 } from "drizzle-orm/pg-core"
 import { relations, sql } from "drizzle-orm"
-import { MAX_NOTE_LENGTH } from "./config"
+import { MAX_CLUB_NAME_LENGTH, MAX_NOTE_LENGTH } from "./config"
 
 // matches table -> 1 row per game
 // objectives table -> 1 row per team per game (2 rows per game)
@@ -400,8 +400,8 @@ export const clubMemberRoleEnum = pgEnum("club_member_role", [
 
 export const clubs = pgTable("clubs", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  name: varchar({ length: 64 }).notNull(),
-  slug: varchar({ length: 64 }).notNull().unique(),
+  name: varchar({ length: MAX_CLUB_NAME_LENGTH }).notNull(),
+  slug: varchar({ length: MAX_CLUB_NAME_LENGTH }).notNull().unique(),
   bio: varchar({ length: 512 }),
   discordInvite: varchar({ length: 128 }),
   tag: varchar({ length: 6 }).notNull().default("CLUB"),

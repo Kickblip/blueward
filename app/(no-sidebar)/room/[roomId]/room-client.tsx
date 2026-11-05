@@ -167,11 +167,13 @@ const ROLE_ICONS: Partial<
   UTILITY: UtilityRoleIcon,
 }
 
-function PlayerName({ participant }: { participant: RoomParticipant }) {
-  const clubs = participant.player?.clubs ?? []
+function PlayerClubBadges({
+  clubs = [],
+}: Pick<NonNullable<RoomParticipant["player"]>, "clubs">) {
+  if (clubs.length === 0) return null
 
   return (
-    <div className="flex min-w-0 items-center gap-2">
+    <div className="flex flex-wrap items-center gap-1">
       {clubs.map((club) => (
         <Tooltip key={`${club.tag}-${club.iconId}-${club.name}`}>
           <TooltipTrigger asChild>
@@ -182,10 +184,6 @@ function PlayerName({ participant }: { participant: RoomParticipant }) {
           <TooltipContent>{club.name}</TooltipContent>
         </Tooltip>
       ))}
-
-      <h2 className="truncate font-oswald text-4xl font-semibold uppercase">
-        {participant.displayName}
-      </h2>
     </div>
   )
 }
@@ -297,6 +295,8 @@ export function PoolCard({
               roles={participant.roles}
               rank={participant.rank}
             />
+
+            <PlayerClubBadges clubs={participant.player?.clubs} />
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {activeLobby?.phase === "DRAFTING" && isTeamCaptain && (
@@ -330,7 +330,9 @@ export function PoolCard({
           </div>
         </div>
 
-        <PlayerName participant={participant} />
+        <h2 className="font-oswald text-4xl font-semibold uppercase">
+          {participant.displayName}
+        </h2>
       </div>
     </div>
   )
@@ -398,6 +400,8 @@ export function PlayerCard({
               roles={participant.roles}
               rank={participant.rank}
             />
+
+            <PlayerClubBadges clubs={participant.player?.clubs} />
           </div>
 
           <PlayerDropdownMenu
@@ -406,7 +410,9 @@ export function PlayerCard({
           />
         </div>
 
-        <PlayerName participant={participant} />
+        <h2 className="font-oswald text-4xl font-semibold uppercase">
+          {participant.displayName}
+        </h2>
       </div>
     </div>
   )
