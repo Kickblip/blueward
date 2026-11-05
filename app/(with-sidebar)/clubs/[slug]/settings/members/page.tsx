@@ -1,9 +1,15 @@
-import { eq } from "drizzle-orm"
+import { auth } from "@clerk/nextjs/server"
+import { and, eq } from "drizzle-orm"
 import { EllipsisIcon } from "lucide-react"
 import { notFound } from "next/navigation"
 import { FaShield, FaTrash, FaUser } from "react-icons/fa6"
 import { PiCrownSimpleFill } from "react-icons/pi"
-import { makeOwner, promoteToAdmin, removeMember } from "./actions"
+import {
+  demoteToMember,
+  makeOwner,
+  promoteToAdmin,
+  removeMember,
+} from "./actions"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -20,7 +26,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { db } from "@/lib/db"
-import { clubs } from "@/lib/schema"
+import { clubMembers, clubs, players } from "@/lib/schema"
 
 const roleDisplay = {
   OWNER: {
@@ -46,6 +52,7 @@ export default async function Page({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
+  const { userId } = await auth()
 
   const club = await db.query.clubs.findFirst({
     where: eq(clubs.slug, slug),
@@ -68,6 +75,20 @@ export default async function Page({
   })
 
   if (!club) notFound()
+
+  const [currentMember] = userId
+    ? await db
+        .select({ playerId: clubMembers.playerId, role: clubMembers.role })
+        .from(clubMembers)
+        .innerJoin(players, eq(players.id, clubMembers.playerId))
+        .where(
+          and(
+            eq(clubMembers.clubId, club.id),
+            eq(players.authId, userId)
+          )
+        )
+        .limit(1)
+    : []
 
   const data = club.members.map(({ playerId, role, player }) => ({
     id: playerId,
@@ -128,39 +149,69 @@ export default async function Page({
                         </DropdownMenuTrigger>
 
                         <DropdownMenuContent align="end" className="w-48">
-                          <form
-                            action={promoteToAdmin.bind(
-                              null,
-                              slug,
-                              member.playerId
-                            )}
-                            method="post"
-                          >
-                            <DropdownMenuItem asChild>
-                              <button
-                                type="submit"
-                                className="w-full cursor-pointer font-oswald font-semibold uppercase"
-                              >
-                                <FaShield className="size-3 text-chart-3 dark:text-chart-1" />
-                                Promote to Admin
-                              </button>
-                            </DropdownMenuItem>
-                          </form>
+                          {member.role === "MEMBER" && (
+                            <form
+                              action={promoteToAdmin.bind(
+                                null,
+                                slug,
+                                member.playerId
+                              )}
+                              method="post"
+                            >
+                              <DropdownMenuItem asChild>
+                                <button
+                                  type="submit"
+                                  className="w-full cursor-pointer font-oswald font-semibold uppercase"
+                                >
+                                  <FaShield className="size-3 text-chart-3 dark:text-chart-1" />
+                                  Promote to Admin
+                                </button>
+                              </DropdownMenuItem>
+                            </form>
+                          )}
 
-                          <form
-                            action={makeOwner.bind(null, slug, member.playerId)}
-                            method="post"
-                          >
-                            <DropdownMenuItem asChild>
-                              <button
-                                type="submit"
-                                className="w-full cursor-pointer font-oswald font-semibold uppercase"
-                              >
-                                <PiCrownSimpleFill className="size-3 text-chart-3 dark:text-chart-1" />
-                                Make Owner
-                              </button>
-                            </DropdownMenuItem>
-                          </form>
+                          {member.role === "ADMIN" &&
+                            member.playerId !== currentMember?.playerId && (
+                            <form
+                              action={demoteToMember.bind(
+                                null,
+                                slug,
+                                member.playerId
+                              )}
+                              method="post"
+                            >
+                              <DropdownMenuItem asChild>
+                                <button
+                                  type="submit"
+                                  className="w-full cursor-pointer font-oswald font-semibold uppercase"
+                                >
+                                  <FaUser className="size-3 text-chart-3 dark:text-chart-1" />
+                                  Demote to Member
+                                </button>
+                              </DropdownMenuItem>
+                            </form>
+                          )}
+
+                          {currentMember?.role === "OWNER" && (
+                            <form
+                              action={makeOwner.bind(
+                                null,
+                                slug,
+                                member.playerId
+                              )}
+                              method="post"
+                            >
+                              <DropdownMenuItem asChild>
+                                <button
+                                  type="submit"
+                                  className="w-full cursor-pointer font-oswald font-semibold uppercase"
+                                >
+                                  <PiCrownSimpleFill className="size-3 text-chart-3 dark:text-chart-1" />
+                                  Make Owner
+                                </button>
+                              </DropdownMenuItem>
+                            </form>
+                          )}
 
                           <form
                             action={removeMember.bind(

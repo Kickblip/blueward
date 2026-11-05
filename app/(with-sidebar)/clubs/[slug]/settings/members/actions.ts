@@ -94,6 +94,33 @@ export async function promoteToAdmin(slug: string, targetPlayerId: number) {
   updateTag(`club:${context.slug}`)
 }
 
+export async function demoteToMember(slug: string, targetPlayerId: number) {
+  const context = await requireOwner(slug, targetPlayerId)
+
+  if (context.targetPlayerId === context.ownerPlayerId) {
+    throw new Error("You cannot demote yourself.")
+  }
+
+  const [demoted] = await db
+    .update(clubMembers)
+    .set({ role: "MEMBER" })
+    .where(
+      and(
+        eq(clubMembers.clubId, context.clubId),
+        eq(clubMembers.playerId, context.targetPlayerId),
+        eq(clubMembers.role, "ADMIN")
+      )
+    )
+    .returning({ playerId: clubMembers.playerId })
+
+  if (!demoted) {
+    throw new Error("Only admins can be demoted.")
+  }
+
+  await invalidatePlayerCards([context.targetPlayerId])
+  updateTag(`club:${context.slug}`)
+}
+
 export async function makeOwner(slug: string, targetPlayerId: number) {
   const context = await requireOwner(slug, targetPlayerId)
 
