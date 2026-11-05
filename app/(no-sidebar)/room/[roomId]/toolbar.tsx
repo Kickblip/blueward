@@ -46,6 +46,7 @@ import {
 import { FaGear, FaUser, FaSun, FaMoon } from "react-icons/fa6"
 import {
   BottomRoleIcon,
+  FillRoleIcon,
   JungleRoleIcon,
   MiddleRoleIcon,
   TopRoleIcon,
@@ -65,6 +66,7 @@ const ROLE_OPTIONS = [
   { value: "MIDDLE", label: "Middle", Icon: MiddleRoleIcon },
   { value: "BOTTOM", label: "Bottom", Icon: BottomRoleIcon },
   { value: "UTILITY", label: "Support", Icon: UtilityRoleIcon },
+  { value: "FILL", label: "Fill", Icon: FillRoleIcon },
 ] as const
 
 const RANK_OPTIONS = ROOM_RANKS.map((value) => ({
@@ -347,12 +349,12 @@ export function Toolbar() {
           <Tooltip defaultOpen>
             <TooltipTrigger asChild>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="lg">
-                  {isSavingPreferences ? (
-                    <Spinner />
-                  ) : (
-                    <FaGear className="size-5 text-chart-3 dark:text-chart-1" />
-                  )}
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  disabled={isSavingPreferences}
+                >
+                  <FaGear className="size-5 text-chart-3 dark:text-chart-1" />
                   <span className="font-oswald text-lg font-semibold uppercase">
                     Rank & Roles
                   </span>
@@ -361,7 +363,7 @@ export function Toolbar() {
             </TooltipTrigger>
             <TooltipContent>Update your preferences</TooltipContent>
           </Tooltip>
-          <DropdownMenuContent align="start" className="w-56">
+          <DropdownMenuContent align="start" className="w-67">
             <DropdownMenuGroup>
               <DropdownMenuLabel>Theme</DropdownMenuLabel>
               <div className="flex w-full items-center gap-1 pr-1">
@@ -397,7 +399,13 @@ export function Toolbar() {
                       disabled={isSavingPreferences}
                       onClick={() => handleRoleToggle(value)}
                     >
-                      <Icon />
+                      <Icon
+                        className={
+                          selected
+                            ? "not-dark:[&_.fill-chart-3]:fill-primary-foreground"
+                            : undefined
+                        }
+                      />
                     </Button>
                   )
                 })}
@@ -488,7 +496,13 @@ export function Toolbar() {
                           aria-pressed={selected}
                           onClick={() => handleDummyRoleToggle(value)}
                         >
-                          <Icon />
+                          <Icon
+                            className={
+                              selected
+                                ? "not-dark:[&_.fill-chart-3]:fill-primary-foreground"
+                                : undefined
+                            }
+                          />
                         </Button>
                       )
                     })}

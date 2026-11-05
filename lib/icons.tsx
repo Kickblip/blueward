@@ -384,6 +384,39 @@ export function UtilityRoleIcon({
   )
 }
 
+export function FillRoleIcon({
+  size,
+  className,
+}: {
+  size?: number
+  className?: string
+}) {
+  return (
+    <svg
+      width={size ?? 32}
+      height={size ?? 32}
+      viewBox="0 0 32 32"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      <path
+        d="M3 14H29L31 16L29 18H3L1 16L3 14Z"
+        className="fill-chart-3 dark:fill-chart-1"
+      />
+      <path
+        d="M3 14H29L31 16L29 18H3L1 16L3 14Z"
+        transform="rotate(60 16 16)"
+        className="fill-chart-3 dark:fill-chart-1"
+      />
+      <path
+        d="M3 14H29L31 16L29 18H3L1 16L3 14Z"
+        transform="rotate(120 16 16)"
+        className="fill-chart-3 dark:fill-chart-1"
+      />
+    </svg>
+  )
+}
+
 export function ShopTitleSvg({ className }: { className?: string }) {
   return (
     <svg

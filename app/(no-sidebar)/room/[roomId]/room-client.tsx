@@ -27,6 +27,7 @@ import { FaArrowCircleLeft, FaArrowCircleRight, FaUser } from "react-icons/fa"
 import Link from "next/link"
 import {
   BottomRoleIcon,
+  FillRoleIcon,
   JungleRoleIcon,
   MiddleRoleIcon,
   TopRoleIcon,
@@ -165,6 +166,7 @@ const ROLE_ICONS: Partial<
   MIDDLE: MiddleRoleIcon,
   BOTTOM: BottomRoleIcon,
   UTILITY: UtilityRoleIcon,
+  FILL: FillRoleIcon,
 }
 
 function PlayerPreferenceBadges({
