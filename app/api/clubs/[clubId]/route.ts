@@ -7,16 +7,17 @@ import { db } from "@/lib/db"
 import { clubMembers, clubs, players } from "@/lib/schema"
 import { NextRequest } from "next/server"
 import { discordInviteLinkToCode } from "@/lib/utils"
+import { MAX_CLUB_NAME_LENGTH, MIN_CLUB_NAME_LENGTH } from "@/lib/config"
 
 const clubIdSchema = z.coerce.number().int().positive()
 
 const clubSettingsSchema = z.object({
-  name: z.string().trim().min(2).max(64),
+  name: z.string().trim().min(MIN_CLUB_NAME_LENGTH).max(MAX_CLUB_NAME_LENGTH),
   slug: z
     .string()
     .trim()
     .toLowerCase()
-    .max(64)
+    .max(MAX_CLUB_NAME_LENGTH)
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
   bio: z
     .string()

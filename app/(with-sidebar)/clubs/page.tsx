@@ -15,6 +15,7 @@ import { createClub, fetchClubs } from "./actions"
 import Link from "next/link"
 import { ClubInfoCard } from "@/components/club-info-card"
 import { Show } from "@clerk/nextjs"
+import { MAX_CLUB_NAME_LENGTH, MIN_CLUB_NAME_LENGTH } from "@/lib/config"
 
 export default async function Page() {
   const clubs = await fetchClubs()
@@ -63,8 +64,8 @@ export default async function Page() {
                           name="name"
                           placeholder="SK Telecom"
                           required
-                          minLength={2}
-                          maxLength={64}
+                          minLength={MIN_CLUB_NAME_LENGTH}
+                          maxLength={MAX_CLUB_NAME_LENGTH}
                         />
                       </Field>
 

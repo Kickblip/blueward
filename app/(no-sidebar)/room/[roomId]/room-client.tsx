@@ -7,7 +7,7 @@ import { Footer } from "./footer"
 import { useTransition } from "react"
 import { useRoom } from "./room-context"
 import dynamic from "next/dynamic"
-
+import { ClubTag } from "@/components/club-tag"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -169,6 +169,27 @@ const ROLE_ICONS: Partial<
   FILL: FillRoleIcon,
 }
 
+function PlayerClubBadges({
+  clubs = [],
+}: Pick<NonNullable<RoomParticipant["player"]>, "clubs">) {
+  if (clubs.length === 0) return null
+
+  return (
+    <div className="flex flex-wrap items-center gap-1">
+      {clubs.map((club) => (
+        <Tooltip key={`${club.tag}-${club.iconId}-${club.name}`}>
+          <TooltipTrigger asChild>
+            <span>
+              <ClubTag tag={club.tag} iconId={club.iconId} />
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>{club.name}</TooltipContent>
+        </Tooltip>
+      ))}
+    </div>
+  )
+}
+
 function PlayerPreferenceBadges({
   roles,
   rank,
@@ -276,6 +297,8 @@ export function PoolCard({
               roles={participant.roles}
               rank={participant.rank}
             />
+
+            <PlayerClubBadges clubs={participant.player?.clubs} />
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {activeLobby?.phase === "DRAFTING" && isTeamCaptain && (
@@ -379,6 +402,8 @@ export function PlayerCard({
               roles={participant.roles}
               rank={participant.rank}
             />
+
+            <PlayerClubBadges clubs={participant.player?.clubs} />
           </div>
 
           <PlayerDropdownMenu

@@ -19,6 +19,7 @@ import type { clubs } from "@/lib/schema"
 import { toast } from "sonner"
 import { discordInviteLinkToCode } from "@/lib/utils"
 import Image from "next/image"
+import { MAX_CLUB_NAME_LENGTH, MIN_CLUB_NAME_LENGTH } from "@/lib/config"
 
 export function ClubSettingsForm({
   club,
@@ -48,7 +49,13 @@ export function ClubSettingsForm({
       <FieldGroup>
         <Field>
           <FieldLabel htmlFor="club-name">Club Name</FieldLabel>
-          <Input id="club-name" name="name" defaultValue={club.name} />
+          <Input
+            id="club-name"
+            name="name"
+            defaultValue={club.name}
+            maxLength={MAX_CLUB_NAME_LENGTH}
+            minLength={MIN_CLUB_NAME_LENGTH}
+          />
         </Field>
 
         <Field>

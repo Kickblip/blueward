@@ -23,6 +23,16 @@ const profile = z.object({
     .max(2048)
     .regex(/^https:\/\/[^\s]+$/)
     .nullable(),
+  clubs: z
+    .array(
+      z.object({
+        tag: z.string().min(1).max(6),
+        iconId: z.number().int().nonnegative(),
+        name: z.string().max(64),
+      })
+    )
+    .max(3)
+    .optional(),
 })
 
 const profileJson = z

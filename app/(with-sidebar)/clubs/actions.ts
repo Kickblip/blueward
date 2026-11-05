@@ -7,6 +7,7 @@ import { redirect } from "next/navigation"
 import { safeSubstring } from "@/lib/utils"
 import { db } from "@/lib/db"
 import { clubMembers, clubs, players } from "@/lib/schema"
+import { MAX_CLUB_NAME_LENGTH, MIN_CLUB_NAME_LENGTH } from "@/lib/config"
 
 export async function createClub(formData: FormData) {
   const { userId } = await auth()
@@ -24,7 +25,10 @@ export async function createClub(formData: FormData) {
     throw new Error("Club tag must contain 1-6 letters or numbers.")
   }
 
-  if (name.length < 2 || name.length > 64) {
+  if (
+    name.length < MIN_CLUB_NAME_LENGTH ||
+    name.length > MAX_CLUB_NAME_LENGTH
+  ) {
     throw new Error("Club name must be between 2 and 64 characters.")
   }
 
@@ -32,6 +36,8 @@ export async function createClub(formData: FormData) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
+    .slice(0, MAX_CLUB_NAME_LENGTH)
+    .replace(/-+$/, "")
 
   if (!slug) {
     throw new Error("Club name must contain letters or numbers.")
