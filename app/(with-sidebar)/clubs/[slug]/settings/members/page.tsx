@@ -1,5 +1,5 @@
 import { auth } from "@clerk/nextjs/server"
-import { and, eq } from "drizzle-orm"
+import { eq } from "drizzle-orm"
 import { notFound } from "next/navigation"
 import { FaShield, FaUser } from "react-icons/fa6"
 import { PiCrownSimpleFill } from "react-icons/pi"
@@ -13,7 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { db } from "@/lib/db"
-import { clubMembers, clubs, players } from "@/lib/schema"
+import { clubs } from "@/lib/schema"
 
 const roleDisplay = {
   OWNER: {
@@ -52,6 +52,7 @@ export default async function Page({
         with: {
           player: {
             columns: {
+              authId: true,
               riotIdGameName: true,
               riotIdTagline: true,
             },
@@ -63,25 +64,9 @@ export default async function Page({
 
   if (!club) notFound()
 
-  const [currentMember] = userId
-    ? await db
-        .select({ playerId: clubMembers.playerId, role: clubMembers.role })
-        .from(clubMembers)
-        .innerJoin(players, eq(players.id, clubMembers.playerId))
-        .where(
-          and(
-            eq(clubMembers.clubId, club.id),
-            eq(players.authId, userId)
-          )
-        )
-        .limit(1)
-    : []
-
-  const data = club.members.map(({ playerId, role, player }) => ({
-    id: playerId,
-    name: `${player.riotIdGameName}#${player.riotIdTagline}`,
-    role,
-  }))
+  const currentMember = userId
+    ? club.members.find((member) => member.player.authId === userId)
+    : undefined
 
   return (
     <div className="container mx-auto py-10">
@@ -123,16 +108,13 @@ export default async function Page({
                   </TableCell>
 
                   <TableCell>
-                    <div className="flex justify-end">
+                    <div className="flex min-h-8 items-center justify-end">
                       <MemberActions
                         slug={slug}
                         playerId={member.playerId}
                         name={name}
                         role={member.role}
                         currentMemberRole={currentMember?.role}
-                        isCurrentMember={
-                          member.playerId === currentMember?.playerId
-                        }
                       />
                     </div>
                   </TableCell>

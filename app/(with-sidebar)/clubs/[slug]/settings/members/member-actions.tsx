@@ -39,25 +39,25 @@ const actionDetails: Record<
   }
 > = {
   promote: {
-    title: "Promote to Admin?",
+    title: "Promote to Admin",
     description: (name: string) =>
       `Promote ${name} to club admin? They will have access to admin permissions.`,
     confirmLabel: "Promote",
   },
   demote: {
-    title: "Demote to Member?",
+    title: "Demote to Member",
     description: (name: string) =>
       `Demote ${name} to a regular club member? They will lose admin permissions.`,
     confirmLabel: "Demote",
   },
   owner: {
-    title: "Make Owner?",
+    title: "Make Owner",
     description: (name: string) =>
       `Transfer club ownership to ${name}? You will become an admin.`,
     confirmLabel: "Make Owner",
   },
   remove: {
-    title: "Remove Member?",
+    title: "Remove Member",
     description: (name: string) =>
       `Remove ${name} from this club? They will no longer be a member.`,
     confirmLabel: "Remove Member",
@@ -70,16 +70,22 @@ export function MemberActions({
   name,
   role,
   currentMemberRole,
-  isCurrentMember,
 }: {
   slug: string
   playerId: number
   name: string
   role: MemberRole
   currentMemberRole?: MemberRole
-  isCurrentMember: boolean
 }) {
   const [activeAction, setActiveAction] = useState<MemberAction | null>(null)
+
+  const isOwner = currentMemberRole === "OWNER"
+
+  if (
+    role === "OWNER" ||
+    (!isOwner && (currentMemberRole !== "ADMIN" || role !== "MEMBER"))
+  )
+    return null
 
   const action = activeAction
     ? {
@@ -111,7 +117,7 @@ export function MemberActions({
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end" className="w-48">
-          {role === "MEMBER" && (
+          {isOwner && role === "MEMBER" && (
             <DropdownMenuItem onSelect={() => setActiveAction("promote")}>
               <FaShield className="size-3 text-chart-3 dark:text-chart-1" />
               <span className="font-oswald font-semibold uppercase">
@@ -120,7 +126,7 @@ export function MemberActions({
             </DropdownMenuItem>
           )}
 
-          {role === "ADMIN" && !isCurrentMember && (
+          {isOwner && role === "ADMIN" && (
             <DropdownMenuItem onSelect={() => setActiveAction("demote")}>
               <FaUser className="size-3 text-chart-3 dark:text-chart-1" />
               <span className="font-oswald font-semibold uppercase">
@@ -129,8 +135,11 @@ export function MemberActions({
             </DropdownMenuItem>
           )}
 
-          {currentMemberRole === "OWNER" && !isCurrentMember && (
-            <DropdownMenuItem onSelect={() => setActiveAction("owner")}>
+          {isOwner && (
+            <DropdownMenuItem
+              onSelect={() => setActiveAction("owner")}
+              variant="destructive"
+            >
               <PiCrownSimpleFill className="size-3 text-chart-3 dark:text-chart-1" />
               <span className="font-oswald font-semibold uppercase">
                 Make Owner
@@ -138,7 +147,10 @@ export function MemberActions({
             </DropdownMenuItem>
           )}
 
-          <DropdownMenuItem onSelect={() => setActiveAction("remove")}>
+          <DropdownMenuItem
+            onSelect={() => setActiveAction("remove")}
+            variant="destructive"
+          >
             <FaTrash className="size-3 text-chart-3 dark:text-chart-1" />
             <span className="font-oswald font-semibold uppercase">Remove</span>
           </DropdownMenuItem>
@@ -155,7 +167,7 @@ export function MemberActions({
           {details && (
             <>
               <DialogHeader>
-                <DialogTitle className="font-oswald font-semibold uppercase">
+                <DialogTitle className="font-oswald text-lg font-semibold uppercase">
                   {details.title}
                 </DialogTitle>
                 <DialogDescription>
@@ -166,14 +178,11 @@ export function MemberActions({
               <form action={submitAction}>
                 <DialogFooter>
                   <DialogClose asChild>
-                    <Button type="button" variant="outline">
+                    <Button type="button" variant="default">
                       Cancel
                     </Button>
                   </DialogClose>
-                  <Button
-                    type="submit"
-                    variant={activeAction === "promote" ? "default" : "destructive"}
-                  >
+                  <Button type="submit" variant="destructive">
                     {details.confirmLabel}
                   </Button>
                 </DialogFooter>
