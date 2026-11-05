@@ -1,16 +1,9 @@
+import { auth } from "@clerk/nextjs/server"
 import { eq } from "drizzle-orm"
-import { EllipsisIcon } from "lucide-react"
 import { notFound } from "next/navigation"
-import { FaShield, FaTrash, FaUser } from "react-icons/fa6"
+import { FaShield, FaUser } from "react-icons/fa6"
 import { PiCrownSimpleFill } from "react-icons/pi"
-import { makeOwner, promoteToAdmin, removeMember } from "./actions"
-import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { MemberActions } from "./member-actions"
 import {
   Table,
   TableBody,
@@ -46,6 +39,7 @@ export default async function Page({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
+  const { userId } = await auth()
 
   const club = await db.query.clubs.findFirst({
     where: eq(clubs.slug, slug),
@@ -58,6 +52,7 @@ export default async function Page({
         with: {
           player: {
             columns: {
+              authId: true,
               riotIdGameName: true,
               riotIdTagline: true,
             },
@@ -69,11 +64,9 @@ export default async function Page({
 
   if (!club) notFound()
 
-  const data = club.members.map(({ playerId, role, player }) => ({
-    id: playerId,
-    name: `${player.riotIdGameName}#${player.riotIdTagline}`,
-    role,
-  }))
+  const currentMember = userId
+    ? club.members.find((member) => member.player.authId === userId)
+    : undefined
 
   return (
     <div className="container mx-auto py-10">
@@ -115,73 +108,14 @@ export default async function Page({
                   </TableCell>
 
                   <TableCell>
-                    <div className="flex justify-end">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            aria-label={`Actions for ${name}`}
-                          >
-                            <EllipsisIcon />
-                          </Button>
-                        </DropdownMenuTrigger>
-
-                        <DropdownMenuContent align="end" className="w-48">
-                          <form
-                            action={promoteToAdmin.bind(
-                              null,
-                              slug,
-                              member.playerId
-                            )}
-                            method="post"
-                          >
-                            <DropdownMenuItem asChild>
-                              <button
-                                type="submit"
-                                className="w-full cursor-pointer font-oswald font-semibold uppercase"
-                              >
-                                <FaShield className="size-3 text-chart-3 dark:text-chart-1" />
-                                Promote to Admin
-                              </button>
-                            </DropdownMenuItem>
-                          </form>
-
-                          <form
-                            action={makeOwner.bind(null, slug, member.playerId)}
-                            method="post"
-                          >
-                            <DropdownMenuItem asChild>
-                              <button
-                                type="submit"
-                                className="w-full cursor-pointer font-oswald font-semibold uppercase"
-                              >
-                                <PiCrownSimpleFill className="size-3 text-chart-3 dark:text-chart-1" />
-                                Make Owner
-                              </button>
-                            </DropdownMenuItem>
-                          </form>
-
-                          <form
-                            action={removeMember.bind(
-                              null,
-                              slug,
-                              member.playerId
-                            )}
-                            method="post"
-                          >
-                            <DropdownMenuItem asChild>
-                              <button
-                                type="submit"
-                                className="w-full cursor-pointer font-oswald font-semibold uppercase"
-                              >
-                                <FaTrash className="size-3 text-chart-3 dark:text-chart-1" />
-                                Remove
-                              </button>
-                            </DropdownMenuItem>
-                          </form>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                    <div className="flex min-h-8 items-center justify-end">
+                      <MemberActions
+                        slug={slug}
+                        playerId={member.playerId}
+                        name={name}
+                        role={member.role}
+                        currentMemberRole={currentMember?.role}
+                      />
                     </div>
                   </TableCell>
                 </TableRow>

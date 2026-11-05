@@ -29,7 +29,11 @@ async function invalidatePlayerCards(playerIds: number[]) {
   }
 }
 
-async function requireOwner(slug: unknown, targetPlayerId: unknown) {
+async function requireRole(
+  slug: unknown,
+  targetPlayerId: unknown,
+  roles: ("OWNER" | "ADMIN")[]
+) {
   const input = memberTargetSchema.safeParse({ slug, targetPlayerId })
 
   if (!input.success) {
@@ -42,10 +46,11 @@ async function requireOwner(slug: unknown, targetPlayerId: unknown) {
     redirect(`/signin?redirect_url=/clubs/${input.data.slug}/settings/members`)
   }
 
-  const [owner] = await db
+  const [actor] = await db
     .select({
       clubId: clubs.id,
       playerId: players.id,
+      role: clubMembers.role,
     })
     .from(clubs)
     .innerJoin(clubMembers, eq(clubMembers.clubId, clubs.id))
@@ -54,25 +59,26 @@ async function requireOwner(slug: unknown, targetPlayerId: unknown) {
       and(
         eq(clubs.slug, input.data.slug),
         eq(players.authId, userId),
-        eq(clubMembers.role, "OWNER")
+        inArray(clubMembers.role, roles)
       )
     )
     .limit(1)
 
-  if (!owner) {
-    throw new Error("Only the club owner can manage members.")
+  if (!actor) {
+    throw new Error("You do not have permission to manage this member.")
   }
 
   return {
     slug: input.data.slug,
-    clubId: owner.clubId,
-    ownerPlayerId: owner.playerId,
+    clubId: actor.clubId,
+    actorPlayerId: actor.playerId,
+    actorRole: actor.role,
     targetPlayerId: input.data.targetPlayerId,
   }
 }
 
 export async function promoteToAdmin(slug: string, targetPlayerId: number) {
-  const context = await requireOwner(slug, targetPlayerId)
+  const context = await requireRole(slug, targetPlayerId, ["OWNER"])
 
   const [promoted] = await db
     .update(clubMembers)
@@ -94,10 +100,37 @@ export async function promoteToAdmin(slug: string, targetPlayerId: number) {
   updateTag(`club:${context.slug}`)
 }
 
-export async function makeOwner(slug: string, targetPlayerId: number) {
-  const context = await requireOwner(slug, targetPlayerId)
+export async function demoteToMember(slug: string, targetPlayerId: number) {
+  const context = await requireRole(slug, targetPlayerId, ["OWNER"])
 
-  if (context.targetPlayerId === context.ownerPlayerId) {
+  if (context.targetPlayerId === context.actorPlayerId) {
+    throw new Error("You cannot demote yourself.")
+  }
+
+  const [demoted] = await db
+    .update(clubMembers)
+    .set({ role: "MEMBER" })
+    .where(
+      and(
+        eq(clubMembers.clubId, context.clubId),
+        eq(clubMembers.playerId, context.targetPlayerId),
+        eq(clubMembers.role, "ADMIN")
+      )
+    )
+    .returning({ playerId: clubMembers.playerId })
+
+  if (!demoted) {
+    throw new Error("Only admins can be demoted.")
+  }
+
+  await invalidatePlayerCards([context.targetPlayerId])
+  updateTag(`club:${context.slug}`)
+}
+
+export async function makeOwner(slug: string, targetPlayerId: number) {
+  const context = await requireRole(slug, targetPlayerId, ["OWNER"])
+
+  if (context.targetPlayerId === context.actorPlayerId) {
     throw new Error("This player is already the owner.")
   }
 
@@ -109,7 +142,7 @@ export async function makeOwner(slug: string, targetPlayerId: number) {
       .where(
         and(
           eq(clubMembers.clubId, context.clubId),
-          eq(clubMembers.playerId, context.ownerPlayerId),
+          eq(clubMembers.playerId, context.actorPlayerId),
           eq(clubMembers.role, "OWNER")
         )
       )
@@ -136,13 +169,13 @@ export async function makeOwner(slug: string, targetPlayerId: number) {
     }
   })
 
-  await invalidatePlayerCards([context.ownerPlayerId, context.targetPlayerId])
+  await invalidatePlayerCards([context.actorPlayerId, context.targetPlayerId])
 
   updateTag(`club:${context.slug}`)
 }
 
 export async function removeMember(slug: string, targetPlayerId: number) {
-  const context = await requireOwner(slug, targetPlayerId)
+  const context = await requireRole(slug, targetPlayerId, ["OWNER", "ADMIN"])
 
   const [removed] = await db
     .delete(clubMembers)
@@ -150,7 +183,9 @@ export async function removeMember(slug: string, targetPlayerId: number) {
       and(
         eq(clubMembers.clubId, context.clubId),
         eq(clubMembers.playerId, context.targetPlayerId),
-        ne(clubMembers.role, "OWNER")
+        context.actorRole === "OWNER"
+          ? ne(clubMembers.role, "OWNER")
+          : eq(clubMembers.role, "MEMBER")
       )
     )
     .returning({ playerId: clubMembers.playerId })
