@@ -29,6 +29,7 @@ export type RoomParticipant = {
     experience: number
     bannerId: number
     avatarUrl: string | null
+    clubs?: { tag: string; iconId: number; name: string }[]
   } | null
   roles: (typeof ROOM_ROLES)[number][]
   rank: (typeof ROOM_RANKS)[number] | null

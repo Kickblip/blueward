@@ -7,7 +7,7 @@ import { Footer } from "./footer"
 import { useTransition } from "react"
 import { useRoom } from "./room-context"
 import dynamic from "next/dynamic"
-
+import { ClubTag } from "@/components/club-tag"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -167,6 +167,29 @@ const ROLE_ICONS: Partial<
   UTILITY: UtilityRoleIcon,
 }
 
+function PlayerName({ participant }: { participant: RoomParticipant }) {
+  const clubs = participant.player?.clubs ?? []
+
+  return (
+    <div className="flex min-w-0 items-center gap-2">
+      {clubs.map((club) => (
+        <Tooltip key={`${club.tag}-${club.iconId}-${club.name}`}>
+          <TooltipTrigger asChild>
+            <span>
+              <ClubTag tag={club.tag} iconId={club.iconId} />
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>{club.name}</TooltipContent>
+        </Tooltip>
+      ))}
+
+      <h2 className="truncate font-oswald text-4xl font-semibold uppercase">
+        {participant.displayName}
+      </h2>
+    </div>
+  )
+}
+
 function PlayerPreferenceBadges({
   roles,
   rank,
@@ -307,9 +330,7 @@ export function PoolCard({
           </div>
         </div>
 
-        <h2 className="font-oswald text-4xl font-semibold uppercase">
-          {participant.displayName}
-        </h2>
+        <PlayerName participant={participant} />
       </div>
     </div>
   )
@@ -385,9 +406,7 @@ export function PlayerCard({
           />
         </div>
 
-        <h2 className="font-oswald text-4xl font-semibold uppercase">
-          {participant.displayName}
-        </h2>
+        <PlayerName participant={participant} />
       </div>
     </div>
   )

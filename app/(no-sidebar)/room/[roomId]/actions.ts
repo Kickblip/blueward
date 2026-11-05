@@ -2,7 +2,7 @@
 
 import { randomUUID } from "node:crypto"
 import { auth, currentUser } from "@clerk/nextjs/server"
-import { eq } from "drizzle-orm"
+import { asc, eq } from "drizzle-orm"
 import { redirect } from "next/navigation"
 import * as z from "zod"
 import { db } from "@/lib/db"
@@ -12,7 +12,7 @@ import {
   saveGuestSession,
 } from "@/lib/guest-session"
 import type { RoomParticipant } from "@/lib/room-types"
-import { players } from "@/lib/schema"
+import { clubMembers, clubs, players } from "@/lib/schema"
 import {
   callRoomService,
   getSpacetimeRoom,
@@ -112,6 +112,14 @@ export async function issueRoomTicket(
       redirect(
         `/claim-riot?next=${encodeURIComponent(`/room/${input.roomId}`)}`
       )
+
+    const playerClubs = await db
+      .select({ tag: clubs.tag, iconId: clubs.iconId, name: clubs.name })
+      .from(clubMembers)
+      .innerJoin(clubs, eq(clubs.id, clubMembers.clubId))
+      .where(eq(clubMembers.playerId, player.id))
+      .orderBy(asc(clubs.name), asc(clubs.id))
+      .limit(3)
 
     identityKey = `clerk:${user.id}`
     displayName = player.riotIdGameName
