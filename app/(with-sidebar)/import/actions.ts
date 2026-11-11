@@ -65,6 +65,7 @@ export async function getClubReviewer(clubSlug: string) {
       clubId: clubs.id,
       clubName: clubs.name,
       playerId: players.id,
+      role: clubMembers.role,
     })
     .from(clubs)
     .innerJoin(clubMembers, eq(clubMembers.clubId, clubs.id))

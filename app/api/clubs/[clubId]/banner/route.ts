@@ -12,6 +12,7 @@ import { clubMembers, clubs, players } from "@/lib/schema"
 import { revalidateTag } from "next/cache"
 import { auth } from "@clerk/nextjs/server"
 import { and, eq, inArray } from "drizzle-orm"
+import { isClubImageKey } from "@/lib/club-images"
 
 const requestSchema = z.object({
   contentType: z.enum(IMAGE_MIME_TYPES),
@@ -109,6 +110,19 @@ export async function PATCH(
   const parsedRequest = patchRequestSchema.safeParse({ ...body, clubId })
 
   if (!parsedRequest.success) {
+    return NextResponse.json(
+      { ok: false, error: "Malformed request" },
+      { status: 400 }
+    )
+  }
+
+  if (
+    !isClubImageKey(
+      parsedRequest.data.key,
+      "banners",
+      parsedRequest.data.clubId
+    )
+  ) {
     return NextResponse.json(
       { ok: false, error: "Malformed request" },
       { status: 400 }
