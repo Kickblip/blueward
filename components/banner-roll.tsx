@@ -16,6 +16,7 @@ import { CrystalIcon } from "@/lib/icons"
 import { mutate } from "swr"
 import { BannerBackground } from "./banner-background"
 import { BannerOwnershipPopup } from "./banner-ownership-popup"
+import { useBannerRollContext } from "./banner-roll-context"
 import { CardBody, CardContainer, CardItem } from "./ui/3d-card"
 import { Button } from "./ui/button"
 import { toast } from "sonner"
@@ -102,7 +103,7 @@ export function BannerRoll({ variant = "default" }: { variant?: BannerSetId }) {
       rarityForRoll((((index * 7) % CELL_COUNT) + 0.5) / CELL_COUNT, rates)
     )
   )
-  const [isRolling, setIsRolling] = useState(false)
+  const { isRolling, setIsRolling } = useBannerRollContext()
   const [popupData, setPopupData] = useState<RollResponse | null>(null)
   const activeSpin = useRef<{
     startRotation: number
@@ -167,7 +168,6 @@ export function BannerRoll({ variant = "default" }: { variant?: BannerSetId }) {
       }
 
       const data = parse as RollResponse
-      await mutate("/api/shop/balance", { balance: data.balance }, false)
 
       const currentAngle = ((rotation % 360) + 360) % 360
       const winnerIndex = Math.floor(Math.random() * CELL_COUNT)
@@ -198,6 +198,7 @@ export function BannerRoll({ variant = "default" }: { variant?: BannerSetId }) {
           )
         )
         setPopupData(data)
+        void mutate("/api/shop/balance", { balance: data.balance }, false)
         setIsRolling(false)
       }, SPIN_DURATION * 1000)
     } catch (error) {

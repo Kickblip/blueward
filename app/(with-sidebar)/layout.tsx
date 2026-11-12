@@ -17,6 +17,7 @@ import { PromoCode } from "@/components/promo-code"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { redirect } from "next/navigation"
 import { AnnouncementBanner } from "@/components/announcement-banner"
+import { BannerRollProvider } from "@/components/banner-roll-context"
 
 export default async function Layout({
   children,
@@ -43,43 +44,45 @@ export default async function Layout({
   }
 
   return (
-    <SidebarProvider defaultOpen={false}>
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <AnnouncementBanner />
+    <BannerRollProvider>
+      <SidebarProvider defaultOpen={false}>
+        <AppSidebar user={user} />
+        <SidebarInset>
+          <AnnouncementBanner />
 
-        <header className="z-20 flex h-16 shrink-0 items-center justify-between">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" variant="secondary" />
-            {user && <DailyReward claimed={claimed} />}
-            {user && <PromoCode />}
-          </div>
+          <header className="z-20 flex h-16 shrink-0 items-center justify-between">
+            <div className="flex items-center gap-2 px-4">
+              <SidebarTrigger className="-ml-1" variant="secondary" />
+              {user && <DailyReward claimed={claimed} />}
+              {user && <PromoCode />}
+            </div>
 
-          <div className="flex items-center gap-2 px-4">
-            <ThemeToggle />
-            {user && <UserBalance />}
-            <SearchButton />
-          </div>
-        </header>
+            <div className="flex items-center gap-2 px-4">
+              <ThemeToggle />
+              {user && <UserBalance />}
+              <SearchButton />
+            </div>
+          </header>
 
-        <div className="z-10 flex w-full gap-4 p-4">
-          {/* <AdSlot
+          <div className="z-10 flex w-full gap-4 p-4">
+            {/* <AdSlot
             name="left-rail"
             className="hidden h-[600px] w-[160px] shrink-0 2xl:grid"
           /> */}
 
-          <main className="mx-auto flex w-full max-w-7xl min-w-0 flex-1 flex-col">
-            {children}
-          </main>
+            <main className="mx-auto flex w-full max-w-7xl min-w-0 flex-1 flex-col">
+              {children}
+            </main>
 
-          {/* <AdSlot
+            {/* <AdSlot
             name="right-rail"
             className="hidden h-[600px] w-[160px] shrink-0 2xl:grid"
           /> */}
-        </div>
+          </div>
 
-        <Footer />
-      </SidebarInset>
-    </SidebarProvider>
+          <Footer />
+        </SidebarInset>
+      </SidebarProvider>
+    </BannerRollProvider>
   )
 }
