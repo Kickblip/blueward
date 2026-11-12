@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useState } from "react"
 import { TRANSACTION_TYPES } from "@/lib/config"
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
+import { useBannerRollContext } from "./banner-roll-context"
 
 type Transaction = {
   id: number
@@ -28,6 +29,7 @@ async function fetcher<T>(url: string): Promise<T> {
 
 export function UserBalance() {
   const [open, setOpen] = useState(false)
+  const { isRolling } = useBannerRollContext()
 
   const { data, isLoading } = useSWR<{ balance: number }>(
     "/api/shop/balance",
@@ -39,7 +41,7 @@ export function UserBalance() {
     isLoading: transactionsLoading,
     error: transactionsError,
   } = useSWR<{ transactions: Transaction[] }>(
-    open ? "/api/shop/balance/transactions" : null,
+    open && !isRolling ? "/api/shop/balance/transactions" : null,
     fetcher
   )
 
@@ -48,7 +50,7 @@ export function UserBalance() {
       <Tooltip>
         <PopoverTrigger asChild>
           <TooltipTrigger asChild>
-            <Button variant="secondary" size="lg">
+            <Button variant="secondary" size="lg" disabled={isRolling}>
               <CrystalIcon size={20} />
               <span className="font-oswald text-sm">
                 {isLoading ? (
@@ -63,7 +65,11 @@ export function UserBalance() {
         <TooltipContent>View transaction history</TooltipContent>
       </Tooltip>
       <PopoverContent align="end">
-        {transactionsLoading ? (
+        {isRolling ? (
+          <p className="text-sm text-muted-foreground">
+            Transaction history is hidden while the wheel spins.
+          </p>
+        ) : transactionsLoading ? (
           <div className="flex flex-col gap-2">
             <Skeleton className="h-4 w-12 rounded-full" />
             <Skeleton className="h-4 w-12 rounded-full" />
